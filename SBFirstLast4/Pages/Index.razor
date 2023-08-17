@@ -1,9 +1,28 @@
 ﻿@page "/"
 @layout NoMenuLayout
+@inject NavigationManager NavigationManager;
 <PageTitle>Index</PageTitle>
 
-<h1>what about this(file addition)</h1>
+<h1>then can you do this</h1>
 
-Welcome to your new app.
+Welcome to your new app.@Content
 
 <SurveyPrompt Title="How is Blazor working for you?" />
+
+@code {
+	private string Content = string.Empty;
+	protected override async void OnInitialized()
+	{
+
+		foreach (var i in WordDictionary.Initialize())
+		{
+			Content = i;
+			StateHasChanged();
+			await Task.Delay(1);
+		}
+		Content = "完了！";
+		StateHasChanged();
+		base.OnInitialized();
+		await Task.Delay(200);
+	}
+}
