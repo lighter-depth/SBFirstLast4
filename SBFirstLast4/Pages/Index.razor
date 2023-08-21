@@ -1,28 +1,33 @@
 ﻿@page "/"
 @layout NoMenuLayout
 @inject NavigationManager NavigationManager;
-<PageTitle>Index</PageTitle>
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage;
+<PageTitle>Loading</PageTitle>
 
-<h1>then can you do this</h1>
-
-Welcome to your new app.@Content
-
-<SurveyPrompt Title="How is Blazor working for you?" />
+@Content
 
 @code {
 	private string Content = string.Empty;
-	protected override async void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 
-		foreach (var i in WordDictionary.Initialize())
+		await foreach (var i in WordDictionary.Initialize(LocalStorage))
 		{
 			Content = i;
 			StateHasChanged();
 			await Task.Delay(1);
 		}
+		if(Content.At(0) != '読') // 読み込み成功時に出力されるメッセージ「読み込みを完了しています...」
+		{
+			Content = "読み込み中に例外が発生しました。ページをリロードしてください";
+			StateHasChanged();
+			await Task.Delay(1);
+			return;
+		}
 		Content = "完了！";
 		StateHasChanged();
 		base.OnInitialized();
 		await Task.Delay(200);
+		NavigationManager.NavigateTo("home", false);
 	}
 }

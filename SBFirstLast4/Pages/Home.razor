@@ -1,0 +1,180 @@
+﻿@page "/home"
+@inject NavigationManager NavigationManager
+@layout NoMenuLayout
+@using System.Text.RegularExpressions
+<PageTitle>ホーム</PageTitle>
+
+
+<div class="page">
+    <div class="header">
+        <div class="border">
+            <div class="stack-panel">
+                <label class="label">つかいかた</label>
+                <label class="text-label">
+                    最初の文字と最後の文字を指定すると、<br>
+                    しりとりで使用可能な単語を出力します。<br>
+                    ひらがなかアスタリスク以外を入力することはできません。<br><br>
+                    アスタリスクを入力した場合は「ワイルドカード」扱いとなり、<br>
+                    条件にマッチする単語をすべて出力します。
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="grid">
+        <div class="border">
+            <div class="stack-panel">
+                <div class="inner-grid">
+                    <label class="label">最初の文字</label>
+                    <label class="sub-label" style="@(ShowFirstCharWarning ? "display:;" : "display: none;")">@FirstCharWarning</label>
+                    <input class="text-box" type="text" @oninput="@(ui => FirstChar = (string?)ui.Value ?? string.Empty)"/>
+                </div>
+                <div class="divider"></div>
+                <div class="inner-grid">
+                    <label class="label">最後の文字</label>
+                    <label class="sub-label" style="@(ShowLastCharWarning ? "display:;" : "display: none;")">@LastCharWarning</label>
+                    <input class="text-box" type="text" @oninput="@(ui => LastChar = (string?)ui.Value ?? string.Empty)" />
+                </div>
+                <div class="divider"></div>
+                <button class="search-button" @onclick="SearchButton_Click">単語を検索</button>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .page {
+        display: grid;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #F5F6F1;
+    }
+
+    .header {
+        display: block;
+    }
+
+    .grid {
+        display: grid;
+        padding-top: 0px;
+    }
+
+    .border {
+        margin: 20px;
+        border: 2px solid gray;
+        border-radius: 10px;
+        padding: 20px;
+        background-color: white;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .stack-panel {
+        display: flex;
+        flex-direction: column;
+        padding-left: 30px;
+        padding-right: 30px;
+        padding-top: 10px;
+        padding-bottom: 10px
+    }
+
+    .inner-grid {
+        display: grid;
+        grid-template-rows: auto auto;
+        row-gap: 15px;
+        margin-bottom: 10px;
+        justify-items: center;
+        align-items: center;
+    }
+
+    .label {
+        text-align: center;
+        font-family: 'Regular';
+        font-weight: bold;
+        font-size: 30px;
+        color: black;
+    }
+
+    .sub-label {
+        text-align: center;
+        font-family: 'Regular';
+        font-size: 20px;
+        color: darkred;
+        padding: 0 0 10px 0;
+        margin-top: -10px;
+        margin-bottom: -10px;
+    }
+
+    .text-label {
+        padding-top: 20px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: 100;
+        color: black;
+    }
+
+    .text-box {
+        width: 70px;
+        height: 70px;
+        font-family: 'Regular';
+        font-size: 55px;
+        text-align: center;
+        padding-top: 8px;
+    }
+
+    .divider {
+        height: 2px;
+        background-color: darkgray;
+        margin: 10px 0;
+    }
+
+    .search-button {
+        width: fit-content;
+        align-self: center;
+        font-weight: bold;
+        font-size: 30px;
+        background-color: darkmagenta;
+        color: white;
+        padding: 10px 150px;
+        margin-top: 20px;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    private string FirstChar = string.Empty;
+    private string LastChar = string.Empty;
+    private static readonly Regex KanaRegex = new("^[*＊ぁ-ゟー]+$");
+    private bool ShowFirstCharWarning = false;
+    private string FirstCharWarning = string.Empty;
+    private bool ShowLastCharWarning = false;
+    private string LastCharWarning = string.Empty;
+    private void SearchButton_Click()
+    {
+        var returnFlag = false;
+        if(!KanaRegex.IsMatch(FirstChar))
+        {
+            FirstCharWarning = "ひらがなを入力してください";
+            ShowFirstCharWarning = true;
+            StateHasChanged();
+            returnFlag = true;
+        }
+        if (!KanaRegex.IsMatch(LastChar))
+        {
+            LastCharWarning = "ひらがなを入力してください";
+            ShowLastCharWarning = true;
+            StateHasChanged();
+            returnFlag = true;
+        }
+        if (returnFlag) return;
+        SearchResult.FirstChar = FirstChar.At(0);
+        SearchResult.LastChar = LastChar.At(0);
+        NavigationManager.NavigateTo("result");
+    }
+}

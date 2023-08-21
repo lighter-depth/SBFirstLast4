@@ -1,38 +1,74 @@
 ﻿using System.Net;
+using Blazored.LocalStorage;
 
 namespace SBFirstLast4;
 
 public static class WordDictionary
 {
 	public static List<Word> PerfectDic { get; private set; } = new();
+	public static List<string> PerfectNameDic { get; private set; } = new();
 	public static List<string> NoTypeWords { get; internal set; } = new();
 	public static List<Word> TypedWords { get; internal set; } = new();
 	static readonly List<List<Word>> SplitList = new();
-	public static IEnumerable<string> Initialize()
+	public static async IAsyncEnumerable<string> Initialize(ILocalStorageService localStorage)
 	{
 		using var client = new HttpClient();
+		yield return "Loading no type words...";
+		var tasks = new List<Task>();
 		for (var i = 0; i < 240; i++)
 		{
-			yield return $"notype{i}.csv を読み込み中...";
-			ReadNoTypeWords(client, i);
+			yield return $"Loading no type words... ({i}/240)";
+			tasks.Add(ReadNoTypeWords(client, i));
+			if (i % 42 == 0 || i == 239)
+			{
+				try
+				{
+					await Task.WhenAll(tasks);
+				}
+				catch
+				{
+					yield break;
+				}
+				tasks.Clear();
+			}
 		}
-		foreach (var i in SBUtils.KanaListSpread)
+		yield return "Loading typed words...";
+		var typedCount = 0;
+		while (typedCount < SBUtils.KanaListSpread.Length) // 67
 		{
-			yield return $"{i} から始まる単語を読み込み中...";
-			ReadTypedWords(client, i);
+			tasks.Add(ReadTypedWords(client, SBUtils.KanaListSpread[typedCount]));
+			if (typedCount % 10 == 0)
+			{
+				yield return $"Loading typed words... ({typedCount / 10}/7)";
+				try
+				{
+					await Task.WhenAll(tasks);
+				}
+				catch
+				{
+					yield break;
+				}
+				tasks.Clear();
+			}
+			typedCount++;
 		}
+		yield return "Loading typed words... (7/7)";
+		await Task.WhenAll(tasks);
 		yield return "Loading perfect dictionary...";
-		InitPerfectDic();
+		await Task.Run(InitPerfectDic);
+		yield return "Loading perfect name dictionary...";
+		await Task.Run(InitPerfectNameDic);
 		yield return "Initializing split lists...";
-		InitSplitList();
+		await Task.Run(InitSplitList);
 		yield return "読み込みを完了しています...";
 	}
 	static void InitPerfectDic()
 	{
-		var result = new Dictionary<string, (WordType Type1, WordType Type2)>();
-		foreach (var i in NoTypeWords) result.TryAdd(i, (WordType.Empty, WordType.Empty));
-		foreach (var i in TypedWords) result[i.Name] = (i.Type1, i.Type2);
-		PerfectDic = result.ToList().Select(x => new Word(x.Key, x.Value.Type1, x.Value.Type2)).ToList();
+		PerfectDic = new List<Word>().Concat(NoTypeWords.Select(x => (Word)x)).Concat(TypedWords).DistinctBy(x => x.Name).ToList();
+	}
+	static void InitPerfectNameDic()
+	{
+		PerfectNameDic = PerfectDic.Select(x => x.Name).ToList();
 	}
 	static void InitSplitList()
 	{
@@ -41,7 +77,7 @@ public static class WordDictionary
 	public static List<Word> GetSplitList(int index) => SplitList[index];
 	public static List<Word> GetSplitList(char startChar) => SplitList[SBUtils.KanaListSpread.ToList().IndexOf(startChar.ToString())];
 
-	static void ReadNoTypeWords(HttpClient client, int arg)
+	static async Task ReadNoTypeWords(HttpClient client, int arg)
 	{
 		var url = $"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/ntplain/notype{arg}.csv";
 		var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -49,20 +85,20 @@ public static class WordDictionary
 		request.Headers.Add("Accept-Charset", "utf-8");
 		string? resBodyStr;
 		HttpStatusCode resStatusCode;
-		Task<HttpResponseMessage> response;
+		HttpResponseMessage response;
 		try
 		{
-			response = client.SendAsync(request);
-			resBodyStr = response.Result.Content.ReadAsStringAsync().Result;
-			resStatusCode = response.Result.StatusCode;
+			response = await client.SendAsync(request);
+			resBodyStr = await response.Content.ReadAsStringAsync();
+			resStatusCode = response.StatusCode;
 		}
 		catch
 		{
-			return;
+			throw;
 		}
 		NoTypeWords.AddRange(resBodyStr.Split("\n").Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()));
 	}
-	static void ReadTypedWords(HttpClient client, string arg)
+	static async Task ReadTypedWords(HttpClient client, string arg)
 	{
 		var url = $"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/plain/typed-words-{arg}.csv";
 		var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -70,16 +106,16 @@ public static class WordDictionary
 		request.Headers.Add("Accept-Charset", "utf-8");
 		string? resBodyStr;
 		HttpStatusCode resStatusCode;
-		Task<HttpResponseMessage> response;
+		HttpResponseMessage response;
 		try
 		{
-			response = client.SendAsync(request);
-			resBodyStr = response.Result.Content.ReadAsStringAsync().Result;
-			resStatusCode = response.Result.StatusCode;
+			response = await client.SendAsync(request);
+			resBodyStr = await response.Content.ReadAsStringAsync();
+			resStatusCode = response.StatusCode;
 		}
 		catch
 		{
-			return;
+			throw;
 		}
 		TypedWords.AddRange(resBodyStr.Split("\n")
 			.Where(x => !string.IsNullOrWhiteSpace(x))

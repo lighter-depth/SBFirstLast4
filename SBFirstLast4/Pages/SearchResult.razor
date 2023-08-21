@@ -1,0 +1,161 @@
+﻿@page "/result"
+@layout NoMenuLayout
+<PageTitle>検索結果</PageTitle>
+
+
+<h1>検索結果</h1>
+
+<div class="container">
+	@if (isSearching)
+	{
+		<p class="loading-text">Now loading...</p>
+	}
+	else
+	{
+		<ul class="fancy-list">
+			@foreach (var item in VisibleItems)
+			{
+				<li>@item</li>
+			}
+		</ul>
+	}
+</div>
+
+<div class="pagination" >
+	<button @onclick="GoToPreviousPage" disabled="@IsFirstPage">Previous</button>
+	<button @onclick="GoToNextPage" disabled="@IsLastPage">Next</button>
+</div>
+
+<div class="indicators">
+	<div class="count-indicator">合計 @dataList.Count 件</div>
+	<div class="page-indicator">@CurrentPage/@TotalPages</div>
+</div>
+
+<style>
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f5f6f1;
+	}
+
+	.container {
+		max-width: 800px;
+		margin: 0 auto;
+		padding: 20px;
+	}
+
+	h1 {
+		text-align: center;
+		color: #333;
+		font-weight: bold;
+	}
+
+	.fancy-list {
+		list-style: none;
+		padding: 0;
+	}
+
+		.fancy-list li {
+			background: #f4f4f4;
+			margin: 10px 0;
+			padding: 15px;
+			border-radius: 5px;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+			transition: background 0.3s ease-in-out;
+		}
+
+			.fancy-list li:hover {
+				background: #ddd;
+			}
+
+	.btn-previous,
+	.btn-next {
+		padding: 10px 20px;
+		border: none;
+		border-radius: 30px;
+		font-size: 16px;
+		cursor: pointer;
+		transition: background-color 0.3s, color 0.3s;
+	}
+
+	.btn-previous {
+		background: linear-gradient(to left, #ff6a00, #ee0979);
+		color: white;
+	}
+
+	.btn-next {
+		background: linear-gradient(to right, #ee0979, #ff6a00);
+		color: white;
+	}
+
+		.btn-previous:hover,
+		.btn-next:hover {
+			background-color: white;
+			color: #ff6a00;
+		}
+
+		.btn-previous:disabled,
+		.btn-next:disabled {
+			background-color: #ddd;
+			color: #999;
+			cursor: not-allowed;
+		}
+
+	.indicators {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 10px;
+	}
+
+	.count-indicator,
+	.page-indicator {
+		font-size: 14px;
+		color: #666;
+		margin-bottom: 20px;
+	}
+
+	.loading-text {
+		font-size: 16px;
+		color: #999;
+	}
+</style>
+
+@code {
+	public static char FirstChar { get; set; }
+	public static char LastChar { get; set; }
+	private List<string> dataList = new();
+	private bool IsFirstPage => CurrentPage == 1;
+	private bool IsLastPage => CurrentPage == TotalPages;
+	private bool isSearching = true;
+	private const int ItemsPerPage = 20;
+	private int CurrentPage = 1;
+	private int TotalPages => (int)Math.Ceiling((double)dataList.Count / ItemsPerPage);
+	private List<string> VisibleItems => dataList.Skip((CurrentPage - 1) * ItemsPerPage).Take(ItemsPerPage).ToList();
+	protected override async Task OnInitializedAsync()
+	{
+		await base.OnInitializedAsync();
+		await Task.Delay(200);
+		dataList = Searcher.SearchFirstLast(FirstChar, LastChar);
+		isSearching = false;
+		StateHasChanged();
+		await Task.Delay(1);
+	}
+	private void GoToPreviousPage()
+	{
+		if (!IsFirstPage)
+		{
+			CurrentPage--;
+			StateHasChanged();
+		}
+	}
+
+	private void GoToNextPage()
+	{
+		if (!IsLastPage)
+		{
+			CurrentPage++;
+			StateHasChanged();
+		}
+	}
+}
