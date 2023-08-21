@@ -25,6 +25,7 @@ public class Searcher
     public static List<Word> SearchTyped(char startChar, Func<Word, bool> predicate) => WordDictionary.GetSplitList(startChar).Where(predicate).ToList();
     public static List<string> SearchFirstLast(char firstChar, char lastChar)
     {
+        if (firstChar is '*' or '＊' && lastChar is '*' or '＊') return WordDictionary.PerfectNameDic.Where(x => x.At(^1) != 'ん').ToList();
         if (firstChar is '*' or '＊') return WordDictionary.PerfectNameDic.Where(x => x.GetLastChar() == lastChar).ToList();
         if (lastChar is '*' or '＊') return WordDictionary.PerfectNameDic.Where(x => x.At(0) == firstChar && x.At(^1) != 'ん').ToList();
         return WordDictionary.PerfectNameDic.Where(x => x.At(0) == firstChar && x.GetLastChar() == lastChar).ToList();

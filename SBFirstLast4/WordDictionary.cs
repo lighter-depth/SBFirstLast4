@@ -12,6 +12,7 @@ public static class WordDictionary
 	static readonly List<List<Word>> SplitList = new();
 	public static async IAsyncEnumerable<string> Initialize(ILocalStorageService localStorage)
 	{
+		//yield return "読み込みをスキップしています..."; yield break;
 		using var client = new HttpClient();
 		yield return "Loading no type words...";
 		var tasks = new List<Task>();
