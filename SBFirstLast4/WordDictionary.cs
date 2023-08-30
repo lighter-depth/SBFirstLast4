@@ -10,8 +10,6 @@ using System.Xml;
 using Blazored.LocalStorage;
 using Magic.IndexedDb;
 using Magic.IndexedDb.SchemaAnnotations;
-using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 namespace SBFirstLast4;
 
