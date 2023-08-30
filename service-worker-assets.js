@@ -65,7 +65,7 @@
       "url": "icon-512.png"
     },
     {
-      "hash": "sha256-EtUd4J+Wxn\/S7jwqvifrD1hKL86K6cBwtkeh7BN1HbI=",
+      "hash": "sha256-FOcRDI4XRjCUY8QBfRlaekajS+8wSQ1KDGdxcfQ14NI=",
       "url": "index.html"
     },
     {
@@ -109,7 +109,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-y+U+q8ZeAztW6Ba71L5HKIJjQCBwEP01J9dtkzdcDps=",
+      "hash": "sha256-TXcKjhROyGk0WsQNb0aLcIgb1oXzCe7dncq0vGMooII=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -185,7 +185,7 @@
       "url": "_framework\/Newtonsoft.Json.dll"
     },
     {
-      "hash": "sha256-gA2frR1jx6XpKUP7t5CV5fBZPxMkV1zfmp2GrKu\/YcA=",
+      "hash": "sha256-eiMOSzbZrqstMuTrVuNJ58OsVebUhoHuye5C7NIoL0k=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -373,5 +373,5 @@
       "url": "_content\/Magic.IndexedDb\/magicDB.js"
     }
   ],
-  "version": "iVnMtkRL"
+  "version": "+NpXU+we"
 };
