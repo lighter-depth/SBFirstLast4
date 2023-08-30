@@ -1,24 +1,66 @@
-﻿using System.Net;
+﻿#pragma warning disable IDE1006
+
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.IO.Compression;
+using System.Net;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
+using System.Xml;
 using Blazored.LocalStorage;
+using Magic.IndexedDb;
+using Magic.IndexedDb.SchemaAnnotations;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace SBFirstLast4;
 
 public static class WordDictionary
 {
-	public static List<Word> PerfectDic { get; private set; } = new();
-	public static List<string> PerfectNameDic { get; private set; } = new();
-	public static List<string> NoTypeWords { get; internal set; } = new();
-	public static List<Word> TypedWords { get; internal set; } = new();
+	public static List<string> NoTypeWords { get; internal set; } = new(3_000_000);
+	public static List<Word> TypedWords { get; internal set; } = new(20_000);
+	public static bool IsLoadedCorrectly => NoTypeWords.Count > 2_000_000;
+
+	public static IEnumerable<Word> PerfectDic()
+	{
+		foreach (var i in NoTypeWords) yield return (Word)i;
+		foreach (var i in TypedWords) yield return i;
+	}
+	public static IEnumerable<string> PerfectNameDic()
+	{
+		foreach (var i in NoTypeWords) yield return i;
+		foreach (var i in TypedWords) yield return i.Name;
+	}
+
 	static readonly List<List<Word>> SplitList = new();
-	public static async IAsyncEnumerable<string> Initialize(ILocalStorageService localStorage)
+	private static readonly HttpClient client = new();
+
+	const string HAS_LOADED = "hasLoaded";
+	public static async IAsyncEnumerable<string> Initialize(ILocalStorageService localStorage, IMagicDbFactory magicDb)
 	{
 		//yield return "読み込みをスキップしています..."; yield break;
-		using var client = new HttpClient();
-		yield return "Loading no type words...";
+		await localStorage.ClearAsync();
+		var hasLoaded = false;//await localStorage.GetItemAsync<bool>(HAS_LOADED);
+		if (!hasLoaded)
+		{
+			await foreach (var i in LoadDataFromOnline()) yield return i;
+			//await foreach(var i in CacheDataToIndexedDb(magicDb)) yield return i;
+			//await localStorage.SetItemAsync(HAS_LOADED, true);
+		}
+		else
+		{
+			await foreach (var i in LoadDataFromIndexedDb(magicDb)) yield return i;
+		}
+		yield return "読み込みを完了しています...";
+	}
+	static async IAsyncEnumerable<string> LoadDataFromOnline()
+	{
+		yield return "タイプレス ワードを読み込んでいます...";
 		var tasks = new List<Task>();
+
 		for (var i = 0; i < 240; i++)
 		{
-			yield return $"Loading no type words... ({i}/240)";
+			yield return $"タイプレス ワードを読み込んでいます... ({i}/240)";
 			tasks.Add(ReadNoTypeWords(client, i));
 			if (i % 42 == 0 || i == 239)
 			{
@@ -33,14 +75,15 @@ public static class WordDictionary
 				tasks.Clear();
 			}
 		}
-		yield return "Loading typed words...";
+
+		yield return "タイプ付き ワードを読み込んでいます...";
 		var typedCount = 0;
 		while (typedCount < SBUtils.KanaListSpread.Length) // 67
 		{
 			tasks.Add(ReadTypedWords(client, SBUtils.KanaListSpread[typedCount]));
 			if (typedCount % 10 == 0)
 			{
-				yield return $"Loading typed words... ({typedCount / 10}/7)";
+				yield return $"タイプ付き ワードを読み込んでいます... ({typedCount / 10}/7)";
 				try
 				{
 					await Task.WhenAll(tasks);
@@ -53,23 +96,57 @@ public static class WordDictionary
 			}
 			typedCount++;
 		}
-		yield return "Loading typed words... (7/7)";
+		yield return "タイプ付き ワードを読み込んでいます... (7/7)";
 		await Task.WhenAll(tasks);
-		yield return "Loading perfect dictionary...";
-		await Task.Run(InitPerfectDic);
-		yield return "Loading perfect name dictionary...";
-		await Task.Run(InitPerfectNameDic);
-		yield return "Initializing split lists...";
+		yield return "リストを分割しています...";
 		await Task.Run(InitSplitList);
-		yield return "読み込みを完了しています...";
+		yield return "タイプレス リストを分離しています...";
+		await Task.Run(() =>
+		{
+			NoTypeWords = NoTypeWords.Except(TypedWords.Select(x => x.Name).AsParallel()).AsParallel().ToList();
+		});
 	}
-	static void InitPerfectDic()
+	static async IAsyncEnumerable<string> CacheDataToIndexedDb(IMagicDbFactory magicDb)
 	{
-		PerfectDic = new List<Word>().Concat(NoTypeWords.Select(x => (Word)x)).Concat(TypedWords).DistinctBy(x => x.Name).ToList();
+		yield return "キャッシュを保存しています...";
+		var manager = await magicDb.GetDbManager(SBUtils.DB_NAME);
+		yield return "キャッシュをクリアしています...";
+		await manager.ClearTable(SBUtils.DB_NAME);
+		yield return "ソースを分割しています...";
+		var splits = NoTypeWords.SplitToChunks(10000).ToArray();
+		var total = splits.Length;
+		yield return $"キャッシュを保存しています... (0/{total})";
+		var tasks = new List<Task>();
+		for(var i = 0; i < total; i++)
+		{
+			yield return $"キャッシュを保存しています... ({i + 1}/{total})";
+			try
+			{
+				tasks.Add(manager.AddRange(new[] { new WordModel { Value = splits[i] } }));
+				if (i % 42 == 0 || i == total - 1)
+				{
+					await Task.WhenAll(tasks);
+					tasks.Clear();
+				}
+			}
+			catch(Exception ex)
+			{
+				Debug.WriteLine(ex.Message);
+			}
+		}
 	}
-	static void InitPerfectNameDic()
+	static async IAsyncEnumerable<string> LoadDataFromIndexedDb(IMagicDbFactory magicDb)
 	{
-		PerfectNameDic = PerfectDic.Select(x => x.Name).ToList();
+		yield return "キャッシュを読み込んでいます...";
+		var manager = await magicDb.GetDbManager(SBUtils.DB_NAME);
+		var splits = (await manager.GetAll<WordModel>()).ToArray();
+		//var splits = (await manager.GetAll<WordModel>()).ToList();
+		var total = splits.Length;
+		for(var i = 0; i < total; i++)
+		{
+			yield return $"キャッシュを読み込んでいます... ({i + 1}/{total})";
+			NoTypeWords.AddRange(splits[i].Value);
+		}
 	}
 	static void InitSplitList()
 	{
@@ -93,11 +170,12 @@ public static class WordDictionary
 			resBodyStr = await response.Content.ReadAsStringAsync();
 			resStatusCode = response.StatusCode;
 		}
-		catch
+		catch (Exception ex)
 		{
+			Debug.WriteLine(ex.Message);
 			throw;
 		}
-		NoTypeWords.AddRange(resBodyStr.Split("\n").Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()));
+		NoTypeWords.AddRange(resBodyStr.Split("\n").Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).AsParallel());
 	}
 	static async Task ReadTypedWords(HttpClient client, string arg)
 	{
@@ -124,3 +202,13 @@ public static class WordDictionary
 			.Select(x => new Word(x.At(0) ?? string.Empty, x.At(1)?.StringToType() ?? WordType.Empty, x.At(2)?.StringToType() ?? WordType.Empty)));
 	}
 }
+[MagicTable("WordModel", SBUtils.DB_NAME)]
+public record WordModel
+{
+	[MagicPrimaryKey("id")]
+	public int _Id { get; set; }
+	[MagicIndex("Value")]
+	public required string[] Value { get; init; }
+}
+
+

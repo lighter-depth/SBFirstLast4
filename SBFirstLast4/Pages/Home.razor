@@ -1,6 +1,8 @@
 ﻿@page "/home"
 @inject NavigationManager NavigationManager
 @layout NoMenuLayout
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager;
 @using System.Text.RegularExpressions
 <PageTitle>ホーム</PageTitle>
 
@@ -153,6 +155,16 @@
     private string FirstCharWarning = string.Empty;
     private bool ShowLastCharWarning = false;
     private string LastCharWarning = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        if (!WordDictionary.IsLoadedCorrectly)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "ページがリロードされました。");
+            NavigationManager.NavigateTo("", false);
+            return;
+        }
+    }
     private void SearchButton_Click()
     {
         var returnFlag = false;

@@ -1,9 +1,12 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace SBFirstLast4;
 
 public static class SBUtils
 {
+	public const string DB_NAME = "WordList";
 	public static string[][] KanaList => kanaList ??= new[]
 {
 		new[]{ "あ", "い", "う", "え", "お" },
@@ -76,4 +79,19 @@ public static class SBUtils
 		['ぢ'] = 'じ',
 		['づ'] = 'ず'
 	};
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static Span<T> AsSpan<T>(this List<T> self) => CollectionsMarshal.AsSpan(self);
+	public static List<string[]> SplitToChunks(this List<string> source, int chunkSize)
+	{
+		const int chunksize = 10000;
+		var sourceSpan = source.AsSpan();
+		var chunks = new List<string[]>((int)Math.Ceiling((double)source.Count / chunkSize));
+		for (var i = 0; i < source.Count; i += chunksize)
+		{
+			var count = Math.Min(chunksize, source.Count - i);
+			chunks.Add(sourceSpan.Slice(i, count).ToArray());
+		}
+		return chunks;
+	}
 }

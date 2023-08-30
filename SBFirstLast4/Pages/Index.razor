@@ -2,22 +2,36 @@
 @layout NoMenuLayout
 @inject NavigationManager NavigationManager;
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage;
+@inject IMagicDbFactory _MagicDb;
 <PageTitle>Loading</PageTitle>
 
 @Content
+<br>
+@ErrorMsg
 
 @code {
 	private string Content = string.Empty;
+	private string ErrorMsg = string.Empty;
 	protected override async Task OnInitializedAsync()
 	{
-
-		await foreach (var i in WordDictionary.Initialize(LocalStorage))
+		try
 		{
-			Content = i;
+			await foreach (var i in WordDictionary.Initialize(LocalStorage, _MagicDb))
+			{
+				Content = i;
+				StateHasChanged();
+				await Task.Delay(1);
+			}
+		}
+		catch(Exception e)
+		{
+			Content = "読み込み中に例外が発生しました。ページをリロードしてください。";
+			ErrorMsg = $"エラーの内容：{e.InnerException?.Message ?? "null"}";
 			StateHasChanged();
 			await Task.Delay(1);
+			return;
 		}
-		if(Content.At(0) != '読') // 読み込み成功時に出力されるメッセージ「読み込みを完了しています...」
+		if (Content.At(0) != '読') // 読み込み成功時に出力されるメッセージ「読み込みを完了しています...」
 		{
 			Content = "読み込み中に例外が発生しました。ページをリロードしてください";
 			StateHasChanged();
