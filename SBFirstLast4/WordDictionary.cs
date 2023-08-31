@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE1006
+﻿#pragma warning disable IDE1006, CS0162, IDE0051
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -17,7 +17,8 @@ public static class WordDictionary
 {
 	public static List<string> NoTypeWords { get; internal set; } = new(3_000_000);
 	public static List<Word> TypedWords { get; internal set; } = new(20_000);
-	public static bool IsLoadedCorrectly => NoTypeWords.Count > 2_000_000;
+	public static bool IsLoadedCorrectly => NoTypeWords.Count > 2_000_000 || _loadSkip;
+	private static bool _loadSkip = false;
 
 	public static IEnumerable<Word> PerfectDic()
 	{
@@ -36,7 +37,7 @@ public static class WordDictionary
 	const string HAS_LOADED = "hasLoaded";
 	public static async IAsyncEnumerable<string> Initialize(ILocalStorageService localStorage, IMagicDbFactory magicDb)
 	{
-		//yield return "読み込みをスキップしています..."; yield break;
+		//yield return "読み込みをスキップしています..."; _loadSkip = true; yield break;
 		await localStorage.ClearAsync();
 		var hasLoaded = false;//await localStorage.GetItemAsync<bool>(HAS_LOADED);
 		if (!hasLoaded)
@@ -47,7 +48,7 @@ public static class WordDictionary
 		}
 		else
 		{
-			await foreach (var i in LoadDataFromIndexedDb(magicDb)) yield return i;
+			//await foreach (var i in LoadDataFromIndexedDb(magicDb)) yield return i;
 		}
 		yield return "読み込みを完了しています...";
 	}

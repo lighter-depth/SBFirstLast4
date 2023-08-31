@@ -10,7 +10,10 @@
 <div class="container">
 	@if (isSearching)
 	{
-		<p class="loading-text">単語を検索中...</p>
+		<p class="loading-text">
+			単語を検索中...<br>
+			(これには時間がかかることがあります)
+			</p>
 	}
 	else
 	{
@@ -126,6 +129,7 @@
 @code {
 	public static char FirstChar { get; set; }
 	public static char LastChar { get; set; }
+	public static Func<string, bool>? CustomLengthPred { get; set; }
 	private List<string> dataList = new();
 	private bool IsFirstPage => CurrentPage == 1;
 	private bool IsLastPage => CurrentPage == TotalPages;
@@ -144,7 +148,9 @@
 			return;
 		}
 		await Task.Delay(200);
-		dataList = Searcher.SearchFirstLast(FirstChar, LastChar);
+		dataList = CustomLengthPred is null
+					? Searcher.SearchFirstLast(FirstChar, LastChar)
+					: Searcher.SearchFirstLast(FirstChar, LastChar, CustomLengthPred);
 		isSearching = false;
 		StateHasChanged();
 		await Task.Delay(1);

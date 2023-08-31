@@ -30,5 +30,12 @@ public class Searcher
         if (lastChar is '*' or '＊') return WordDictionary.PerfectNameDic().Where(x => x.At(0) == firstChar && x.At(^1) != 'ん').ToList();
         return WordDictionary.PerfectNameDic().Where(x => x.At(0) == firstChar && x.GetLastChar() == lastChar).ToList();
     }
+	public static List<string> SearchFirstLast(char firstChar, char lastChar, Func<string, bool> pred)
+	{
+		if (firstChar is '*' or '＊' && lastChar is '*' or '＊') return WordDictionary.PerfectNameDic().Where(x => x.At(^1) != 'ん' && pred(x)).ToList();
+		if (firstChar is '*' or '＊') return WordDictionary.PerfectNameDic().Where(x => x.GetLastChar() == lastChar && pred(x)).ToList();
+		if (lastChar is '*' or '＊') return WordDictionary.PerfectNameDic().Where(x => x.At(0) == firstChar && x.At(^1) != 'ん' && pred(x)).ToList();
+		return WordDictionary.PerfectNameDic().Where(x => x.At(0) == firstChar && x.GetLastChar() == lastChar && pred(x)).ToList();
+	}
 }
 
