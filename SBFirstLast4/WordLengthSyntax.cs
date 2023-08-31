@@ -35,8 +35,8 @@ public partial class WordLengthSyntax
         return (minValue, maxValue) switch
         {
             (not null, not null) => word => word.Length >= minValue && word.Length < maxValue,
-            (not null, null) when input.Contains(',') => word => word.Length == minValue,
-            (not null, null) => word => word.Length >= minValue,
+            (not null, null) when input.Contains(',') => word => word.Length >= minValue,
+            (not null, null) => word => word.Length == minValue,
             (null, not null) => word => word.Length < maxValue,
             _ => throw new ArgumentException("無効な構文です")
         };
