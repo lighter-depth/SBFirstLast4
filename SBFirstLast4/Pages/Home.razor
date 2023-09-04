@@ -5,98 +5,100 @@
 <PageTitle>ホーム</PageTitle>
 
 
-<div class="page">
-	<div class="header">
-		<div class="border">
-			<div class="stack-panel">
-				<label class="label">つかいかた</label>
-				<label class="text-label">
-					検索オプションを指定して、必要な情報を入力すると、<br>
-					その条件に合った、しりとりで使用可能な単語を出力します。<br>
-					「文字」欄には、ひらがな以外を入力することはできません。
-				</label>
-			</div>
-		</div>
-	</div>
-	<div class="grid">
-		<div class="border">
-			<div class="stack-panel">
-				<div class="inner-grid">
-					<label class="label">検索オプション</label>
-					<div class="dropdown-container">
-						<select class="dropdown" @bind="SelectedSearchOptionItem">
-							@foreach (var item in SearchOptionItemList)
-							{
-								<option value="@item">@item</option>
-							}
-						</select>
-					</div>
+		<div class="header">
+			<div class="border">
+				<div class="stack-panel">
+					<label class="label">つかいかた</label>
+					<label class="text-label">
+						検索オプションを指定して、必要な情報を入力すると、<br>
+						その条件に合った、しりとりで使用可能な単語を出力します。<br>
+						「文字」欄には、ひらがな以外を入力することはできません。
+					</label>
 				</div>
 			</div>
 		</div>
-	</div>
-	<div class="grid">
-		<div class="border">
-			<div class="stack-panel">
-				@if (SelectedSearchOptionItem is "前方後方一致" or "前方一致")
-				{
+		<div class="grid">
+			<div class="border">
+				<div class="stack-panel">
 					<div class="inner-grid">
-						<label class="label">最初の文字</label>
-						<label class="sub-label" style="@(ShowFirstCharWarning ? "display:;" : "display: none;")">@FirstCharWarning</label>
-						<input class="text-box" type="text" @oninput="@(ui => FirstChar = (string?)ui.Value ?? string.Empty)" />
-					</div>
-					<div class="divider"></div>
-				}
-				@if (SelectedSearchOptionItem is "前方後方一致" or "後方一致")
-				{
-					<div class="inner-grid">
-						<label class="label">最後の文字</label>
-						<label class="sub-label" style="@(ShowLastCharWarning ? "display:;" : "display: none;")">@LastCharWarning</label>
-						<input class="text-box" type="text" @oninput="@(ui => LastChar = (string?)ui.Value ?? string.Empty)" />
-					</div>
-					<div class="divider"></div>
-				}
-				@if (SelectedSearchOptionItem is "正規表現")
-				{
-					<div class="inner-grid">
-						<label class="label">正規表現</label>
-						<label class="sub-label" style="@(ShowRegexWarning ? "display:;" : "display: none;")">@RegexWarning</label>
-						<input class="text-input" type="text" @bind="RegexPattern" />
-					</div>
-					<div class="divider"></div>
-				}
-				else
-				{
-					<div class="inner-grid">
-						<label class="label">文字数指定</label>
+						<label class="label">検索オプション</label>
 						<div class="dropdown-container">
-							<select class="dropdown" @bind="SelectedCustomLengthItem">
-								@foreach (var item in CustomLengthItemList)
+							<select class="dropdown" @bind="SelectedSearchOptionItem">
+								@foreach (var item in SearchOptionItemList)
 								{
 									<option value="@item">@item</option>
 								}
 							</select>
 						</div>
-						@if (SelectedCustomLengthItem == "カスタム")
-						{
-							<div class="custom-input">
-								<label class="custom-input-label">
-									カスタム文字数指定
-									<span class="tooltip-icon" data-tooltip="正規表現風の書き方で文字数を指定します。&#10;例:&#10;・ &quot;5&quot;   ... ５文字の単語のみ出力&#10;・ &quot;6,&quot;   ... ６文字以上の単語のみ出力&#10;・ &quot;4,7&quot;   ... ４文字以上、かつ７文字未満の単語のみ出力">?</span>
-								</label>
-								<label class="sub-label" style="@(ShowCustomLengthWarning ? "display:;" : "display: none;")">@CustomLengthWarning</label>
-								<input class="text-input" type="text" @bind="CustomLength" />
-							</div>
-						}
 					</div>
-					<div class="divider"></div>
-				}
-				<button class="search-button" @onclick="SearchButton_Click">単語を検索</button>
+				</div>
 			</div>
 		</div>
-	</div>
-</div>
+		<div class="grid">
+			<div class="border">
+				<div class="stack-panel">
+					@if (SelectedSearchOptionItem is "前方後方一致" or "前方一致")
+					{
+						<div class="inner-grid">
+							<label class="label">最初の文字</label>
+							<label class="sub-label" style="@(ShowFirstCharWarning ? "display:;" : "display: none;")">@FirstCharWarning</label>
+							<input class="text-box" type="text" @oninput="@(ui => FirstChar = (string?)ui.Value ?? string.Empty)" />
+						</div>
+						<div class="divider"></div>
+					}
+					@if (SelectedSearchOptionItem is "前方後方一致" or "後方一致")
+					{
+						<div class="inner-grid">
+							<label class="label">最後の文字</label>
+							<label class="sub-label" style="@(ShowLastCharWarning ? "display:;" : "display: none;")">@LastCharWarning</label>
+							<input class="text-box" type="text" @oninput="@(ui => LastChar = (string?)ui.Value ?? string.Empty)" />
+						</div>
+						<div class="divider"></div>
+					}
+					@if (SelectedSearchOptionItem is "正規表現")
+					{
+						<div class="inner-grid">
+							<label class="label">正規表現</label>
+							<label class="sub-label" style="@(ShowRegexWarning ? "display:;" : "display: none;")">@RegexWarning</label>
+							<input class="text-input" type="text" @bind="RegexPattern" />
+						</div>
+						<div class="divider"></div>
+					}
+					else
+					{
+						<div class="inner-grid">
+							<label class="label">文字数指定</label>
+							<div class="dropdown-container">
+								<select class="dropdown" @bind="SelectedCustomLengthItem">
+									@foreach (var item in CustomLengthItemList)
+									{
+										<option value="@item">@item</option>
+									}
+								</select>
+							</div>
+							@if (SelectedCustomLengthItem == "カスタム")
+							{
+								<div class="custom-input">
+									<label class="custom-input-label">
+										カスタム文字数指定
+										<span class="tooltip-icon" data-tooltip="正規表現風の書き方で文字数を指定します。&#10;例:&#10;・ &quot;5&quot;   ... ５文字の単語のみ出力&#10;・ &quot;6,&quot;   ... ６文字以上の単語のみ出力&#10;・ &quot;4,7&quot;   ... ４文字以上、かつ７文字未満の単語のみ出力">?</span>
+									</label>
+									<label class="sub-label" style="@(ShowCustomLengthWarning ? "display:;" : "display: none;")">@CustomLengthWarning</label>
+									<input class="text-input" type="text" @bind="CustomLength" />
+								</div>
+							}
+						</div>
+						<div class="divider"></div>
+					}
+					<button class="search-button" @onclick="SearchButton_Click">単語を検索</button>
+				</div>
+			</div>
+		</div>
 <style>
+	.app {
+		overflow: hidden;
+	}
+
 	.page {
 		display: grid;
 		justify-content: center;

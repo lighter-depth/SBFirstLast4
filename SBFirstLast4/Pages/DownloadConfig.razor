@@ -8,104 +8,104 @@
 
 
 
-<div class="container">
+<div class="grid">
+	<div class="border">
+		<div class="stack-panel">
+			<h1>ダウンロード設定</h1>
+		</div>
+	</div>
+</div>
+@if (!isDownloading)
+{
 	<div class="grid">
 		<div class="border">
 			<div class="stack-panel">
-				<h1>ダウンロード設定</h1>
+				<div class="inner-grid">
+					<label class="label">単語の文字数</label>
+					<div class="dropdown-container">
+						<select class="dropdown" @bind="SelectedSortArgItem">
+							@foreach (var item in SortArgItemList)
+							{
+								<option value="@item">@item</option>
+							}
+						</select>
+					</div>
+				</div>
+				<div class="divider"></div>
+				<div class="inner-grid">
+					<label class="label">表示する単語数</label>
+					<div class="dropdown-container">
+						<select class="dropdown" @bind="SelectedWordCountFormatItem">
+							@foreach (var item in WordCountFormatItemList)
+							{
+								<option value="@item">@item</option>
+							}
+						</select>
+					</div>
+					@if (SelectedWordCountFormatItem == "カスタム")
+					{
+						<div class="custom-input">
+							<label class="custom-input-label">カスタム単語数指定</label>
+							<label class="sub-label" style="@(ShowWordCountFormatWarning ? "display:;" : "display: none;")">数値を入力してください</label>
+							<input class="text-input" type="text" @bind="CustomWordCount" />
+						</div>
+					}
+				</div>
+				<div class="divider"></div>
+				<div class="inner-grid">
+					<label class="label">単語帳の書式</label>
+					<div class="dropdown-container">
+						<select class="dropdown" @bind="SelectedListFormatItem">
+							@foreach (var item in ListFormatItemList)
+							{
+								<option value="@item">@item</option>
+							}
+						</select>
+					</div>
+				</div>
+				<div class="divider"></div>
+				<div class="inner-grid">
+					<label class="label">ファイル名</label>
+					<input class="filename-input" type="text" @bind="FileName" />
+				</div>
+				<div class="divider"></div>
+				<div class="inner-grid">
+					<label class="label">エンコード</label>
+					<div class="dropdown-container">
+						<select class="dropdown" @bind="SelectedEncodingItem">
+							@foreach (var item in EncodingItemList)
+							{
+								<option value="@item">@item</option>
+							}
+						</select>
+					</div>
+				</div>
+				<div class="divider"></div>
+				<a @onclick="DownloadFile" class="btn-download">ダウンロード</a>
 			</div>
 		</div>
 	</div>
-	@if (!isDownloading)
-	{
-		<div class="grid">
-			<div class="border">
-				<div class="stack-panel">
-					<div class="inner-grid">
-						<label class="label">単語の文字数</label>
-						<div class="dropdown-container">
-							<select class="dropdown" @bind="SelectedSortArgItem">
-								@foreach (var item in SortArgItemList)
-								{
-									<option value="@item">@item</option>
-								}
-							</select>
-						</div>
-					</div>
-					<div class="divider"></div>
-					<div class="inner-grid">
-						<label class="label">表示する単語数</label>
-						<div class="dropdown-container">
-							<select class="dropdown" @bind="SelectedWordCountFormatItem">
-								@foreach (var item in WordCountFormatItemList)
-								{
-									<option value="@item">@item</option>
-								}
-							</select>
-						</div>
-						@if (SelectedWordCountFormatItem == "カスタム")
-						{
-							<div class="custom-input">
-								<label class="custom-input-label">カスタム単語数指定</label>
-								<label class="sub-label" style="@(ShowWordCountFormatWarning ? "display:;" : "display: none;")">数値を入力してください</label>
-								<input class="text-input" type="text" @bind="CustomWordCount" />
-							</div>
-						}
-					</div>
-					<div class="divider"></div>
-					<div class="inner-grid">
-						<label class="label">単語帳の書式</label>
-						<div class="dropdown-container">
-							<select class="dropdown" @bind="SelectedListFormatItem">
-								@foreach (var item in ListFormatItemList)
-								{
-									<option value="@item">@item</option>
-								}
-							</select>
-						</div>
-					</div>
-					<div class="divider"></div>
-					<div class="inner-grid">
-						<label class="label">ファイル名</label>
-						<input class="filename-input" type="text" @bind="FileName" />
-					</div>
-					<div class="divider"></div>
-					<div class="inner-grid">
-						<label class="label">エンコード</label>
-						<div class="dropdown-container">
-							<select class="dropdown" @bind="SelectedEncodingItem">
-								@foreach (var item in EncodingItemList)
-								{
-									<option value="@item">@item</option>
-								}
-							</select>
-						</div>
-					</div>
-					<div class="divider"></div>
-					<a @onclick="DownloadFile" class="btn-download">ダウンロード</a>
-				</div>
-			</div>
-		</div>
-	}
-	else
-	{
-		<p class="download-text">Downloading...</p>
-	}
-</div>
+}
+else
+{
+	<p class="download-text">Downloading...</p>
+}
 
 <style>
-	body {
-		font-family: Arial, sans-serif;
-		margin: 0;
-		padding: 0;
-		background-color: #f5f6f1;
-		justify-content: center;
+	.app {
+		overflow: hidden;
 	}
 
-	.container {
-		max-width: 800px;
-		margin: 0 auto;
-		align-self: center;
+	.page {
+		position: relative;
+		width: 100%;
+		background: center;
+		justify-content: center;
+		align-items: center;
+		min-height: 100vh;
+		background-color: #F5F6F1;
+		box-sizing: border-box;
+		padding: 0;
 	}
 
 	h1 {
@@ -119,6 +119,7 @@
 		display: grid;
 		align-items: center;
 		align-self: center;
+		width: 100%
 	}
 
 	.border {
@@ -365,15 +366,16 @@
 
 		var fileName = FileName + (listFormat == ListFormat.SimulatorCsv ? ".csv" : ".txt");
 		var encodingProvider = CodePagesEncodingProvider.Instance;
+		Encoding.RegisterProvider(encodingProvider);
 		var encoding = SelectedEncodingItem switch
 		{
-			"Shift-JIS" => encodingProvider.GetEncoding("shift-jis"),
+			"Shift-JIS" => Encoding.GetEncoding("shift_jis"),
 			"UTF-8" => Encoding.UTF8,
 			"UTF-16" => Encoding.Unicode,
 			_ => default
 		};
 
-		await BlazorDownloadFileService.DownloadFileFromText(fileName, content, System.Text.Encoding.UTF8, "text/plain");
+		await BlazorDownloadFileService.DownloadFileFromText(fileName, content, encoding, "text/plain");
 
 		isDownloading = false;
 	}
