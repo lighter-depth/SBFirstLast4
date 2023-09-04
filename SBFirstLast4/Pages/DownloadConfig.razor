@@ -1,0 +1,349 @@
+﻿@page "/download-config"
+@layout NoMenuLayout
+@inject NavigationManager NavigationManager
+@inject BlazorDownloadFile.IBlazorDownloadFileService BlazorDownloadFileService
+@using System.Text
+@using System.Text.RegularExpressions
+
+
+<h1>ダウンロード設定</h1>
+
+<div class="container">
+	@if (!isDownloading)
+	{
+		<div class="grid">
+			<div class="border">
+				<div class="stack-panel">
+					<div class="inner-grid">
+						<label class="label">単語の文字数</label>
+						<div class="dropdown-container">
+							<select class="dropdown" @bind="SelectedSortArgItem">
+								@foreach (var item in SortArgItemList)
+								{
+									<option value="@item">@item</option>
+								}
+							</select>
+						</div>
+					</div>
+					<div class="divider"></div>
+					<div class="inner-grid">
+						<label class="label">表示する単語数</label>
+						<div class="dropdown-container">
+							<select class="dropdown" @bind="SelectedWordCountFormatItem">
+								@foreach (var item in WordCountFormatItemList)
+								{
+									<option value="@item">@item</option>
+								}
+							</select>
+						</div>
+						@if (SelectedWordCountFormatItem == "カスタム")
+						{
+							<div class="custom-input">
+								<label class="custom-input-label">カスタム単語数指定</label>
+								<label class="sub-label" style="@(ShowWordCountFormatWarning ? "display:;" : "display: none;")">数値を入力してください</label>
+								<input class="text-input" type="text" @bind="CustomWordCount" />
+							</div>
+						}
+					</div>
+					<div class="divider"></div>
+					<div class="inner-grid">
+						<label class="label">単語帳の書式</label>
+						<div class="dropdown-container">
+							<select class="dropdown" @bind="SelectedListFormatItem">
+								@foreach (var item in ListFormatItemList)
+								{
+									<option value="@item">@item</option>
+								}
+							</select>
+						</div>
+					</div>
+					<div class="divider"></div>
+					<div class="inner-grid">
+						<label class="label">ファイル名</label>
+						<input class="filename-input" type="text" @bind="FileName" />
+					</div>
+					<div class="divider"></div>
+					<a @onclick="DownloadFile" class="btn-download">ダウンロード</a>
+				</div>
+			</div>
+		</div>
+	}
+	else
+	{
+		<p class="download-text">Downloading...</p>
+	}
+</div>
+
+<style>
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f5f6f1;
+	}
+
+	.container {
+		max-width: 800px;
+		margin: 0 auto;
+		padding: 20px;
+	}
+
+	h1 {
+		text-align: center;
+		color: #333;
+		font-weight: bold;
+	}
+
+	.grid {
+		display: grid;
+		padding-top: 0px;
+	}
+
+	.border {
+		margin: 20px;
+		border: 2px solid gray;
+		border-radius: 10px;
+		padding: 20px;
+		background-color: white;
+		box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+	}
+
+	.stack-panel {
+		display: flex;
+		flex-direction: column;
+		padding-left: 30px;
+		padding-right: 30px;
+		padding-top: 10px;
+		padding-bottom: 10px
+	}
+
+	.inner-grid {
+		display: grid;
+		grid-template-rows: auto auto;
+		row-gap: 15px;
+		margin-bottom: 10px;
+		justify-items: center;
+		align-items: center;
+	}
+
+	.label {
+		text-align: center;
+		font-weight: bold;
+		font-size: 30px;
+		color: black;
+	}
+
+	.sub-label {
+		text-align: center;
+		font-size: 20px;
+		color: darkred;
+		padding: 0 0 10px 0;
+		margin-top: -10px;
+		margin-bottom: -10px;
+	}
+
+	.dropdown-container {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+	}
+
+	.dropdown {
+		width: 80%;
+		padding: 12px;
+		font-size: 18px;
+		border: 2px solid gray;
+		border-radius: 5px;
+	}
+
+	.custom-input {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.custom-input-label {
+		display: flex;
+		align-items: center;
+		text-align: center;
+		font-size: 20px;
+		font-weight: bold;
+		color: black;
+		padding: 0 0 10px 0;
+		margin-top: 10px;
+		margin-bottom: 10px;
+	}
+
+	.text-input {
+		width: 80%;
+		padding: 12px;
+		font-size: 18px;
+		border: 2px solid gray;
+		border-radius: 5px;
+		margin-top: 8px;
+	}
+
+	.filename-input {
+		width: 80%;
+		padding: 12px;
+		font-size: 20px;
+		border: 2px solid gray;
+		border-radius: 5px;
+		margin-top: 8px;
+	}
+
+	.divider {
+		height: 2px;
+		background-color: darkgray;
+		margin: 10px 0;
+	}
+
+	.btn-download {
+		display: block;
+		text-align: center;
+		width: 300px;
+		line-height: 60px;
+		font-weight: bold;
+		height: 60px;
+		border: none;
+		border-radius: 30px;
+		font-size: 24px;
+		cursor: pointer;
+		background: linear-gradient(to right, #45aaf2, #007bff);
+		color: white;
+		transition: background-color 0.3s, color 0.3s;
+		text-decoration: none;
+		margin: 0 auto;
+		margin-top: 20px;
+	}
+
+		.btn-download:hover {
+			background-color: white;
+			color: #45aaf2;
+		}
+</style>
+
+@code {
+	public static List<string> DataListStr { get; set; } = new();
+	public static List<Word> DataListWord { get; set; } = new();
+	public static bool IsNotype { get; set; } = true;
+	public static ListDeclType DeclType { get; set; } = ListDeclType.None;
+	private bool isDownloading = false;
+
+	private string FileName = "新しい単語帳";
+
+	private List<string> SortArgItemList = new()
+	{
+		"指定なし", "７文字以上優先", "７文字以上のみ"
+	};
+	private string SelectedSortArgItem = "指定なし";
+
+	private List<string> WordCountFormatItemList = new()
+	{
+		"カスタム", "すべて"
+	};
+	private string SelectedWordCountFormatItem = "カスタム";
+	private bool ShowWordCountFormatWarning = false;
+	private string CustomWordCount = string.Empty;
+
+	private List<string> ListFormatItemList = new()
+	{
+		"Wiki形式 (空行省略)", "Wiki形式 (空行表記)", "隅付き括弧・スラッシュ表記", "シミュレーター形式"
+	};
+	private string SelectedListFormatItem = "隅付き括弧・スラッシュ表記";
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		if (!WordDictionary.IsLoadedCorrectly)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+	}
+	private async Task DownloadFile()
+	{
+
+		var listType = DeclType switch
+		{
+			ListDeclType.FirstLast => ListType.None,
+			ListDeclType.First => ListType.FirstChar,
+			ListDeclType.Last => ListType.LastChar,
+			ListDeclType.Regex => ListType.LastChar,
+			ListDeclType.TypedOnly => ListType.TypedOnly,
+			_ => default
+		};
+
+		var sortArg = SelectedSortArgItem switch
+		{
+			"指定なし" => SortArg.NoConstraint,
+			"７文字以上優先" => SortArg.HopefullyMoreThanSeven,
+			"７文字以上のみ" => SortArg.OnlyMoreThanSeven,
+			_ => default
+		};
+
+		var listFormat = SelectedListFormatItem switch
+		{
+			"Wiki形式 (空行省略)" => ListFormat.InformalWiki,
+			"Wiki形式 (空行表記)" => ListFormat.FormalWiki,
+			"隅付き括弧・スラッシュ表記" => ListFormat.SlashBracket,
+			"シミュレーター形式" => ListFormat.SimulatorCsv,
+			_ => default
+		};
+
+		var wordCountFormat = SelectedWordCountFormatItem switch
+		{
+			"カスタム" => WordCountFormat.Custom,
+			"すべて" => WordCountFormat.All,
+			_ => default
+		};
+
+		if (wordCountFormat == WordCountFormat.Custom && (!int.TryParse(CustomWordCount, out _) || string.IsNullOrWhiteSpace(CustomWordCount)))
+		{
+			ShowWordCountFormatWarning = true;
+			StateHasChanged();
+			return;
+		}
+		else
+		{
+			ShowWordCountFormatWarning = false;
+			CustomWordCount = wordCountFormat == WordCountFormat.Custom ? CustomWordCount : string.Empty;
+		}
+		isDownloading = true;
+		var content = listType == default
+		? ListBuilder.BuildSingle
+		(
+			DataListStr,
+			CustomWordCount,
+			sortArg,
+			listFormat,
+			wordCountFormat
+		)
+		: IsNotype
+		? ListBuilder.Build
+		(
+			DataListStr,
+			CustomWordCount,
+			listType,
+			sortArg,
+			listFormat,
+			wordCountFormat
+		)
+		: ListBuilder.Build
+		(
+			DataListWord,
+			WordType.Empty,
+			CustomWordCount,
+			listType,
+			sortArg,
+			listFormat,
+			wordCountFormat
+		);
+
+		var fileName = FileName + (listFormat == ListFormat.SimulatorCsv ? ".csv" : ".txt");
+
+		await BlazorDownloadFileService.DownloadFileFromText(fileName, content, System.Text.Encoding.UTF8, "text/plain");
+
+		isDownloading = false;
+	}
+}

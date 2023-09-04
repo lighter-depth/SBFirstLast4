@@ -1,7 +1,7 @@
 ﻿@page "/result"
 @layout NoMenuLayout
-@inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager;
+@using System.Text.RegularExpressions;
 <PageTitle>検索結果</PageTitle>
 
 
@@ -13,7 +13,7 @@
 		<p class="loading-text">
 			単語を検索中...<br>
 			(これには時間がかかることがあります)
-			</p>
+		</p>
 	}
 	else
 	{
@@ -26,9 +26,17 @@
 	}
 </div>
 
-<div class="pagination" >
-	<button @onclick="GoToPreviousPage" disabled="@IsFirstPage">Previous</button>
-	<button @onclick="GoToNextPage" disabled="@IsLastPage">Next</button>
+<div class="pagination">
+	<div class="pagination-buttons">
+		<button @onclick="GoToPreviousPage" disabled="@IsFirstPage">まえへ</button>
+		<button @onclick="GoToNextPage" disabled="@IsLastPage">つぎへ</button>
+	</div>
+	<div class="download-button">
+		@if (!isSearching && VisibleItems.Any())
+		{
+			<a @onclick="DownloadButton_OnClick" class="btn-download">ファイルに保存</a>
+		}
+	</div>
 </div>
 
 <div class="indicators">
@@ -74,34 +82,47 @@
 				background: #ddd;
 			}
 
-	.btn-previous,
-	.btn-next {
+	.pagination {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 20px;
+	}
+
+	.pagination-buttons button {
 		padding: 10px 20px;
 		border: none;
 		border-radius: 30px;
 		font-size: 16px;
 		cursor: pointer;
 		transition: background-color 0.3s, color 0.3s;
+		text-decoration: none;
 	}
 
-	.btn-previous {
-		background: linear-gradient(to left, #ff6a00, #ee0979);
-		color: white;
-	}
-
-	.btn-next {
-		background: linear-gradient(to right, #ee0979, #ff6a00);
-		color: white;
-	}
-
-		.btn-previous:hover,
-		.btn-next:hover {
-			background-color: white;
-			color: #ff6a00;
+		.pagination-buttons button.disabled {
+			background-color: #ddd;
+			color: #999;
+			cursor: not-allowed;
 		}
 
-		.btn-previous:disabled,
-		.btn-next:disabled {
+	.download-button a {
+		padding: 10px 20px;
+		border: none;
+		border-radius: 30px;
+		font-size: 16px;
+		cursor: pointer;
+		background: linear-gradient(to right, #45aaf2, #007bff);
+		color: white;
+		transition: background-color 0.3s, color 0.3s;
+		text-decoration: none;
+	}
+
+		.download-button a:hover {
+			background-color: white;
+			color: #45aaf2;
+		}
+
+		.download-button a:disabled {
 			background-color: #ddd;
 			color: #999;
 			cursor: not-allowed;
@@ -130,6 +151,9 @@
 	public static char FirstChar { get; set; }
 	public static char LastChar { get; set; }
 	public static Func<string, bool>? CustomLengthPred { get; set; }
+	public static
+	Regex? RegexBody
+	{ get; set; }
 	private List<string> dataList = new();
 	private bool IsFirstPage => CurrentPage == 1;
 	private bool IsLastPage => CurrentPage == TotalPages;
@@ -143,14 +167,15 @@
 		await base.OnInitializedAsync();
 		if (!WordDictionary.IsLoadedCorrectly)
 		{
-			await JsRuntime.InvokeVoidAsync("alert", "ページがリロードされました。");
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
 		await Task.Delay(200);
-		dataList = CustomLengthPred is null
+		dataList = RegexBody is null
+					? CustomLengthPred is null
 					? Searcher.SearchFirstLast(FirstChar, LastChar)
-					: Searcher.SearchFirstLast(FirstChar, LastChar, CustomLengthPred);
+					: Searcher.SearchFirstLast(FirstChar, LastChar, CustomLengthPred)
+					: Searcher.SearchRegex(RegexBody);
 		isSearching = false;
 		StateHasChanged();
 		await Task.Delay(1);
@@ -171,5 +196,10 @@
 			CurrentPage++;
 			StateHasChanged();
 		}
+	}
+	private void DownloadButton_OnClick()
+	{
+		DownloadConfig.DataListStr = dataList;
+		NavigationManager.NavigateTo("download-config");
 	}
 }

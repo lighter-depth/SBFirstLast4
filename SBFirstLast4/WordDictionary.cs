@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE1006, CS0162, IDE0051
+﻿#pragma warning disable IDE1006, CS0162, IDE0051, IDE0052, IDE0044, IDE0060
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -20,6 +20,15 @@ public static class WordDictionary
 	public static bool IsLoadedCorrectly => NoTypeWords.Count > 2_000_000 || _loadSkip;
 	private static bool _loadSkip = false;
 
+	private static readonly string[] _dummyData = new[]
+	{
+		"のーまる", "どうぶつ", "しょくぶつ", "ちめい", "かんじょう",
+		"げいじゅつ", "たべもの", "ぼうりょく", "いりょう", "じんたい",
+		"きかい", "りか", "さきのばし", "じんぶつ", "こうさく",
+		"ふくしょく", "しゃかい", "あそび", "むし", "すうがく",
+		"ずぼし", "しゅうきょう", "すぽーつ", "てんではなしにならねぇよ", "ものがたり"
+	};
+
 	public static IEnumerable<Word> PerfectDic()
 	{
 		foreach (var i in NoTypeWords) yield return (Word)i;
@@ -37,7 +46,7 @@ public static class WordDictionary
 	const string HAS_LOADED = "hasLoaded";
 	public static async IAsyncEnumerable<string> Initialize(ILocalStorageService localStorage, IMagicDbFactory magicDb)
 	{
-		//yield return "読み込みをスキップしています..."; _loadSkip = true; yield break;
+		//yield return "読み込みをスキップしています..."; _loadSkip = true; NoTypeWords.AddRange(_dummyData);  yield break;
 		await localStorage.ClearAsync();
 		var hasLoaded = false;//await localStorage.GetItemAsync<bool>(HAS_LOADED);
 		if (!hasLoaded)
@@ -98,7 +107,7 @@ public static class WordDictionary
 		yield return "タイプ付き ワードを読み込んでいます... (7/7)";
 		await Task.WhenAll(tasks);
 		yield return "リストを分割しています...";
-		await Task.Run(InitSplitList);
+		//await Task.Run(InitSplitList);
 		yield return "タイプレス リストを分離しています...";
 		await Task.Run(() =>
 		{

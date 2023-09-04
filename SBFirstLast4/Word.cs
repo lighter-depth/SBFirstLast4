@@ -18,17 +18,17 @@ public record struct Word(string Name, WordType Type1, WordType Type2) : ICompar
 			 : IsSingleType ? $"{Name} ({type1})"
 			 : $"{Name} ({type1}/{type2})";
 	}
-	public readonly string ToFormat(int formatType, WordType omitType = WordType.Empty)
+	public readonly string ToFormat(ListFormat formatType, WordType omitType = WordType.Empty)
 	{
 		var word = this with { };
-		if (omitType != WordType.Empty && formatType != 3)
+		if (omitType != WordType.Empty && formatType != ListFormat.SimulatorCsv)
 		{
 			var otherType = Type1 == omitType ? Type2 : Type1;
 			word = word with { Type1 = otherType, Type2 = WordType.Empty };
 		}
 		var type1 = word.Type1 != WordType.Empty ? word.Type1.TypeToString() : string.Empty;
 		var type2 = word.Type2 != WordType.Empty ? word.Type2.TypeToString() : string.Empty;
-		if (formatType == 2) return word.ToString();
+		if (formatType == ListFormat.SlashBracket) return word.ToString();
 		return word.Name + toSpace(word.Type1) + type1 + toSpace(word.Type2) + type2;
 		static string toSpace(WordType type) => type != WordType.Empty ? " " : string.Empty;
 	}
@@ -104,6 +104,10 @@ public record struct Word(string Name, WordType Type1, WordType Type2) : ICompar
 public enum WordType
 {
 	Empty, Normal, Animal, Plant, Place, Emote, Art, Food, Violence, Health, Body, Mech, Science, Time, Person, Work, Cloth, Society, Play, Bug, Math, Insult, Religion, Sports, Weather, Tale
+}
+public enum WordFormat
+{
+
 }
 public static class WordTypeEx
 {

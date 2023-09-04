@@ -41,18 +41,29 @@ public static class SBUtils
 			return false;
 		}
 	}
-	public static IEnumerable<Word> SortByLength(this IEnumerable<Word> words, int arg)
+	public static IEnumerable<Word> SortByLength(this IEnumerable<Word> words, SortArg arg)
 	{
 		var result = new List<Word>();
-		if (arg == 2) return words;
+		if (arg == SortArg.NoConstraint) return words;
 		for (var i = 7; i < 12; i++) result.AddRange(words.Where(x => x.Name.Length == i));
 		result.AddRange(words.Where(x => x.Name.Length >= 12));
-		if (arg == 1) return result;
+		if (arg == SortArg.OnlyMoreThanSeven) return result;
 		result.AddRange(words.Where(x => x.Name.Length == 6).Select(x => x with { Name = $"({x.Name})" }));
 		result.AddRange(words.Where(x => x.Name.Length < 6).Select(x => x with { Name = $"({x.Name})" }));
 		return result;
 	}
-	public static T? At<T>(this IEnumerable<T> source, int index) => source.ElementAtOrDefault(index);
+    public static IEnumerable<string> SortByLength(this IEnumerable<string> words, SortArg arg)
+    {
+        var result = new List<string>();
+        if (arg == SortArg.NoConstraint) return words;
+        for (var i = 7; i < 12; i++) result.AddRange(words.Where(x => x.Length == i));
+        result.AddRange(words.Where(x => x.Length >= 12));
+        if (arg == SortArg.OnlyMoreThanSeven) return result;
+        result.AddRange(words.Where(x => x.Length == 6).Select(x => $"({x})" ));
+        result.AddRange(words.Where(x => x.Length < 6).Select(x => $"({x})" ));
+        return result;
+    }
+    public static T? At<T>(this IEnumerable<T> source, int index) => source.ElementAtOrDefault(index);
 	public static T? At<T>(this IEnumerable<T> source, Index index) => source.ElementAtOrDefault(index);
 
 	public static char GetLastChar(this string str)

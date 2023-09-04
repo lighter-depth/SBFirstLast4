@@ -1,8 +1,6 @@
 ﻿@page "/home"
 @inject NavigationManager NavigationManager
 @layout NoMenuLayout
-@inject IJSRuntime JsRuntime
-@inject NavigationManager NavigationManager;
 @using System.Text.RegularExpressions
 <PageTitle>ホーム</PageTitle>
 
@@ -13,11 +11,9 @@
 			<div class="stack-panel">
 				<label class="label">つかいかた</label>
 				<label class="text-label">
-					最初の文字と最後の文字を指定すると、<br>
-					しりとりで使用可能な単語を出力します。<br>
-					ひらがなかアスタリスク以外を入力することはできません。<br><br>
-					アスタリスクを入力した場合は「ワイルドカード」扱いとなり、<br>
-					条件にマッチする単語をすべて出力します。
+					検索オプションを指定して、必要な情報を入力すると、<br>
+					その条件に合った、しりとりで使用可能な単語を出力します。<br>
+					「文字」欄には、ひらがな以外を入力することはできません。
 				</label>
 			</div>
 		</div>
@@ -26,58 +22,88 @@
 		<div class="border">
 			<div class="stack-panel">
 				<div class="inner-grid">
-					<label class="label">最初の文字</label>
-					<label class="sub-label" style="@(ShowFirstCharWarning ? "display:;" : "display: none;")">@FirstCharWarning</label>
-					<input class="text-box" type="text" @oninput="@(ui => FirstChar = (string?)ui.Value ?? string.Empty)" />
-				</div>
-				<div class="divider"></div>
-				<div class="inner-grid">
-					<label class="label">最後の文字</label>
-					<label class="sub-label" style="@(ShowLastCharWarning ? "display:;" : "display: none;")">@LastCharWarning</label>
-					<input class="text-box" type="text" @oninput="@(ui => LastChar = (string?)ui.Value ?? string.Empty)" />
-				</div>
-				<div class="divider"></div>
-				<div class="inner-grid">
-					<label class="label">文字数指定</label>
+					<label class="label">検索オプション</label>
 					<div class="dropdown-container">
-						<select class="dropdown" @bind="SelectedCustomLengthItem">
-							@foreach (var item in ItemList)
+						<select class="dropdown" @bind="SelectedSearchOptionItem">
+							@foreach (var item in SearchOptionItemList)
 							{
 								<option value="@item">@item</option>
 							}
 						</select>
 					</div>
-					@if (SelectedCustomLengthItem == "カスタム")
-					{
-						<div class="custom-input">
-							<label class="custom-input-label">
-								カスタム文字数指定
-								<span class="tooltip-icon" data-tooltip="正規表現風の書き方で文字数を指定します。&#10;例:&#10;・ &quot;5&quot;   ... ５文字の単語のみ出力&#10;・ &quot;6,&quot;   ... ６文字以上の単語のみ出力&#10;・ &quot;4,7&quot;   ... ４文字以上、かつ７文字未満の単語のみ出力">?</span>
-							</label>
-							<label class="sub-label" style="@(ShowCustomLengthWarning ? "display:;" : "display: none;")">@CustomLengthWarning</label>
-							<input class="text-input" type="text" @bind="CustomLength" />
-						</div>
-					}
 				</div>
-				<div class="divider"></div>
+			</div>
+		</div>
+	</div>
+	<div class="grid">
+		<div class="border">
+			<div class="stack-panel">
+				@if (SelectedSearchOptionItem is "前方後方一致" or "前方一致")
+				{
+					<div class="inner-grid">
+						<label class="label">最初の文字</label>
+						<label class="sub-label" style="@(ShowFirstCharWarning ? "display:;" : "display: none;")">@FirstCharWarning</label>
+						<input class="text-box" type="text" @oninput="@(ui => FirstChar = (string?)ui.Value ?? string.Empty)" />
+					</div>
+					<div class="divider"></div>
+				}
+				@if (SelectedSearchOptionItem is "前方後方一致" or "後方一致")
+				{
+					<div class="inner-grid">
+						<label class="label">最後の文字</label>
+						<label class="sub-label" style="@(ShowLastCharWarning ? "display:;" : "display: none;")">@LastCharWarning</label>
+						<input class="text-box" type="text" @oninput="@(ui => LastChar = (string?)ui.Value ?? string.Empty)" />
+					</div>
+					<div class="divider"></div>
+				}
+				@if (SelectedSearchOptionItem is "正規表現")
+				{
+					<div class="inner-grid">
+						<label class="label">正規表現</label>
+						<label class="sub-label" style="@(ShowRegexWarning ? "display:;" : "display: none;")">@RegexWarning</label>
+						<input class="text-input" type="text" @bind="RegexPattern" />
+					</div>
+					<div class="divider"></div>
+				}
+				else
+				{
+					<div class="inner-grid">
+						<label class="label">文字数指定</label>
+						<div class="dropdown-container">
+							<select class="dropdown" @bind="SelectedCustomLengthItem">
+								@foreach (var item in CustomLengthItemList)
+								{
+									<option value="@item">@item</option>
+								}
+							</select>
+						</div>
+						@if (SelectedCustomLengthItem == "カスタム")
+						{
+							<div class="custom-input">
+								<label class="custom-input-label">
+									カスタム文字数指定
+									<span class="tooltip-icon" data-tooltip="正規表現風の書き方で文字数を指定します。&#10;例:&#10;・ &quot;5&quot;   ... ５文字の単語のみ出力&#10;・ &quot;6,&quot;   ... ６文字以上の単語のみ出力&#10;・ &quot;4,7&quot;   ... ４文字以上、かつ７文字未満の単語のみ出力">?</span>
+								</label>
+								<label class="sub-label" style="@(ShowCustomLengthWarning ? "display:;" : "display: none;")">@CustomLengthWarning</label>
+								<input class="text-input" type="text" @bind="CustomLength" />
+							</div>
+						}
+					</div>
+					<div class="divider"></div>
+				}
 				<button class="search-button" @onclick="SearchButton_Click">単語を検索</button>
 			</div>
 		</div>
 	</div>
 </div>
 <style>
-	* {
-		margin: 0;
-		padding: 0;
-		box-sizing: border-box;
-	}
-
 	.page {
 		display: grid;
 		justify-content: center;
 		align-items: center;
 		min-height: 100vh;
 		background-color: #F5F6F1;
+		box-sizing: border-box;
 	}
 
 	.header {
@@ -237,30 +263,47 @@
 </style>
 
 @code {
-	private string FirstChar = string.Empty;
-	private string LastChar = string.Empty;
 	private static readonly Regex KanaRegex = new("^[*＊ぁ-ゟー]+$");
+
+
+	private string FirstChar = string.Empty;
 	private bool ShowFirstCharWarning = false;
 	private string FirstCharWarning = string.Empty;
+
+	private string LastChar = string.Empty;
 	private bool ShowLastCharWarning = false;
 	private string LastCharWarning = string.Empty;
+
+	private string RegexPattern = string.Empty;
+	private bool ShowRegexWarning = false;
+	private string RegexWarning = string.Empty;
+
 	private string SelectedCustomLengthItem = "なし";
 	private string CustomLength = string.Empty;
 	private bool ShowCustomLengthWarning = false;
 	private string CustomLengthWarning = string.Empty;
-	private List<string> ItemList = new List<string>
+	private List<string> CustomLengthItemList = new()
 	{
 		"なし",
 		"７文字以上",
 		"６文字以上",
 		"カスタム"
 	};
-	protected override async Task OnInitializedAsync()
+
+
+	private string SelectedSearchOptionItem = "前方後方一致";
+	private List<string> SearchOptionItemList = new()
+	{
+		"前方後方一致",
+		"前方一致",
+		"後方一致",
+		"正規表現"
+	};
+	protected override void OnInitialized()
 	{
 		base.OnInitialized();
 		if (!WordDictionary.IsLoadedCorrectly)
 		{
-			await JsRuntime.InvokeVoidAsync("alert", "ページがリロードされました。");
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
@@ -268,7 +311,10 @@
 	private void SearchButton_Click()
 	{
 		var returnFlag = false;
-		if (!KanaRegex.IsMatch(FirstChar))
+		var isRegex = SelectedSearchOptionItem == "正規表現";
+		if (SelectedSearchOptionItem == "前方一致") LastChar = "*";
+		if (SelectedSearchOptionItem == "後方一致") FirstChar = "*";
+		if (!KanaRegex.IsMatch(FirstChar) && !isRegex)
 		{
 			FirstCharWarning = "ひらがなを入力してください";
 			ShowFirstCharWarning = true;
@@ -281,7 +327,7 @@
 			ShowFirstCharWarning = false;
 			StateHasChanged();
 		}
-		if (!KanaRegex.IsMatch(LastChar))
+		if (!KanaRegex.IsMatch(LastChar) && !isRegex)
 		{
 			LastCharWarning = "ひらがなを入力してください";
 			ShowLastCharWarning = true;
@@ -294,8 +340,21 @@
 			ShowLastCharWarning = false;
 			StateHasChanged();
 		}
+		if (isRegex && !SBUtils.IsValidRegex(RegexPattern))
+		{
+			RegexWarning = "無効な構文です";
+			ShowRegexWarning = true;
+			StateHasChanged();
+			returnFlag = true;
+		}
+		else
+		{
+			RegexWarning = string.Empty;
+			ShowRegexWarning = false;
+			StateHasChanged();
+		}
 		Func<string, bool>? pred = null;
-		if (SelectedCustomLengthItem == "カスタム"
+		if (!isRegex && SelectedCustomLengthItem == "カスタム"
 			&& !WordLengthSyntax.TryParseInputToPredicate(CustomLength, out pred, out var errorMsg))
 		{
 			CustomLengthWarning = errorMsg;
@@ -318,6 +377,15 @@
 			"７文字以上" => word => word.Length >= 7,
 			"６文字以上" => word => word.Length >= 6,
 			_ => pred
+		};
+		SearchResult.RegexBody = isRegex ? new(RegexPattern) : null;
+		DownloadConfig.DeclType = SelectedSearchOptionItem switch
+		{
+			"前方後方一致" => ListDeclType.FirstLast,
+			"前方一致" => ListDeclType.First,
+			"後方一致" => ListDeclType.Last,
+			"正規表現" => ListDeclType.Regex,
+			_ => default
 		};
 		NavigationManager.NavigateTo("result");
 	}

@@ -37,5 +37,6 @@ public class Searcher
 		if (lastChar is '*' or '＊') return WordDictionary.PerfectNameDic().Where(x => x.At(0) == firstChar && x.At(^1) != 'ん' && pred(x)).ToList();
 		return WordDictionary.PerfectNameDic().Where(x => x.At(0) == firstChar && x.GetLastChar() == lastChar && pred(x)).ToList();
 	}
+    public static List<string> SearchRegex(Regex regex) => WordDictionary.PerfectNameDic().Where(x => regex.IsMatch(x)).ToList();
 }
 
