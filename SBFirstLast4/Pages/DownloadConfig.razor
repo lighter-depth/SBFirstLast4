@@ -11,7 +11,14 @@
 <div class="grid">
 	<div class="border">
 		<div class="stack-panel">
-			<h1>ダウンロード設定</h1>
+			<div class="inner-grid">
+				<label class="label">ダウンロード設定</label>
+				<label class="text-label">
+					単語帳のダウンロードに関する、種々の設定を行います。<br>
+					「シミュレーター形式」を選択した場合はCSVファイルで、<br>
+					それ以外を選択した場合はTXTファイルで出力されます。
+				</label>
+			</div>
 		</div>
 	</div>
 </div>
@@ -97,34 +104,27 @@ else
 	}
 
 	.page {
-		position: relative;
-		width: 100%;
-		background: center;
+		display: grid;
 		justify-content: center;
 		align-items: center;
 		min-height: 100vh;
 		background-color: #F5F6F1;
 		box-sizing: border-box;
-		padding: 0;
 	}
 
-	h1 {
-		text-align: center;
-		color: #333;
-		font-weight: bold;
-		align-self: center;
-	}
 
 	.grid {
 		display: grid;
 		align-items: center;
 		align-self: center;
+		justify-content: normal;
 		width: 100%
 	}
 
 	.border {
 		margin: 20px;
 		border: 2px solid gray;
+		justify-content: center;
 		border-radius: 10px;
 		padding: 20px;
 		background-color: white;
@@ -165,6 +165,14 @@ else
 		margin-bottom: -10px;
 	}
 
+	.text-label {
+		padding-top: 10px;
+		text-align: center;
+		font-size: 18px;
+		font-weight: 100;
+		color: black;
+	}
+
 	.dropdown-container {
 		width: 100%;
 		display: flex;
@@ -198,7 +206,7 @@ else
 	}
 
 	.text-input {
-		width: 140%;
+		width: 90%;
 		padding: 12px;
 		font-size: 18px;
 		border: 2px solid gray;
