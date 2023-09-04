@@ -80,23 +80,26 @@
 		margin: 0;
 		padding: 0;
 		background-color: #f5f6f1;
+		justify-content: center;
 	}
 
 	.container {
 		max-width: 800px;
 		margin: 0 auto;
-		padding: 20px;
+		align-self: center;
 	}
 
 	h1 {
 		text-align: center;
 		color: #333;
 		font-weight: bold;
+		align-self: center;
 	}
 
 	.grid {
 		display: grid;
-		padding-top: 0px;
+		align-items: center;
+		align-self: center;
 	}
 
 	.border {
@@ -175,7 +178,7 @@
 	}
 
 	.text-input {
-		width: 80%;
+		width: 100%;
 		padding: 12px;
 		font-size: 18px;
 		border: 2px solid gray;
@@ -216,11 +219,6 @@
 		margin: 0 auto;
 		margin-top: 20px;
 	}
-
-		.btn-download:hover {
-			background-color: white;
-			color: #45aaf2;
-		}
 </style>
 
 @code {
