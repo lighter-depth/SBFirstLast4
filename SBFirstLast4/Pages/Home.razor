@@ -167,9 +167,19 @@
 
 	.text-box {
 		width: 80px;
-		height: auto;
-		font-size: 55px;
+		height: 80px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 		text-align: center;
+		border: 2px solid gray;
+		border-radius: 10px;
+		font-size: 32px; /* Adjust the font size to your preference */
+		background-color: white;
+		box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+		white-space: nowrap; /* Prevents text from collapsing on mobile devices */
+		overflow: hidden; /* Hides overflow text if it exceeds the input's width */
+		text-overflow: ellipsis;
 	}
 
 	.dropdown-container {

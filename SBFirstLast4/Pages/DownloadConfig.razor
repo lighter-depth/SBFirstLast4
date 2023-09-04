@@ -6,9 +6,16 @@
 @using System.Text.RegularExpressions
 
 
-<h1>ダウンロード設定</h1>
+
 
 <div class="container">
+	<div class="grid">
+		<div class="border">
+			<div class="stack-panel">
+				<h1>ダウンロード設定</h1>
+			</div>
+		</div>
+	</div>
 	@if (!isDownloading)
 	{
 		<div class="grid">
@@ -61,6 +68,18 @@
 					<div class="inner-grid">
 						<label class="label">ファイル名</label>
 						<input class="filename-input" type="text" @bind="FileName" />
+					</div>
+					<div class="divider"></div>
+					<div class="inner-grid">
+						<label class="label">エンコード</label>
+						<div class="dropdown-container">
+							<select class="dropdown" @bind="SelectedEncodingItem">
+								@foreach (var item in EncodingItemList)
+								{
+									<option value="@item">@item</option>
+								}
+							</select>
+						</div>
 					</div>
 					<div class="divider"></div>
 					<a @onclick="DownloadFile" class="btn-download">ダウンロード</a>
@@ -132,7 +151,7 @@
 	.label {
 		text-align: center;
 		font-weight: bold;
-		font-size: 30px;
+		font-size: 27px;
 		color: black;
 	}
 
@@ -178,7 +197,7 @@
 	}
 
 	.text-input {
-		width: 100%;
+		width: 140%;
 		padding: 12px;
 		font-size: 18px;
 		border: 2px solid gray;
@@ -249,6 +268,12 @@
 		"Wiki形式 (空行省略)", "Wiki形式 (空行表記)", "隅付き括弧・スラッシュ表記", "シミュレーター形式"
 	};
 	private string SelectedListFormatItem = "隅付き括弧・スラッシュ表記";
+
+	private List<string> EncodingItemList = new()
+	{
+		"Shift-JIS", "UTF-8", "UTF-16"
+	};
+	private string SelectedEncodingItem = "Shift-JIS";
 
 	protected override void OnInitialized()
 	{
@@ -339,6 +364,14 @@
 		);
 
 		var fileName = FileName + (listFormat == ListFormat.SimulatorCsv ? ".csv" : ".txt");
+		var encodingProvider = CodePagesEncodingProvider.Instance;
+		var encoding = SelectedEncodingItem switch
+		{
+			"Shift-JIS" => encodingProvider.GetEncoding("shift-jis"),
+			"UTF-8" => Encoding.UTF8,
+			"UTF-16" => Encoding.Unicode,
+			_ => default
+		};
 
 		await BlazorDownloadFileService.DownloadFileFromText(fileName, content, System.Text.Encoding.UTF8, "text/plain");
 
