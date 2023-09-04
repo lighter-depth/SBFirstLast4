@@ -109,7 +109,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-3tNMXTNWQ1mwwlkYMmPyM8M+lNy0fWud8\/vk9ZqkdgU=",
+      "hash": "sha256-BG9sRxrTQb+j99BBIkNRQ1SA77pYVdZ1XI+563PiRhs=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -193,7 +193,7 @@
       "url": "_framework\/Newtonsoft.Json.dll"
     },
     {
-      "hash": "sha256-\/GdMhGfCWT6W6zN5gMnQ1tKJvlrdWtoaR2xkicuPlJY=",
+      "hash": "sha256-sbwICIyQ65km8JLtApoPHu0HkG0mHRiD\/YGFH3Zst90=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -281,7 +281,7 @@
       "url": "_framework\/System.ObjectModel.dll"
     },
     {
-      "hash": "sha256-vGHdAat23xoxOXhlP3uQ4uS01T6VYMroFI+iROFKoM4=",
+      "hash": "sha256-tvFRTuVsc7LE4N8k932EHdyP4jXVzF3NYuIVf9+n7pM=",
       "url": "_framework\/System.Private.CoreLib.dll"
     },
     {
@@ -389,5 +389,5 @@
       "url": "_content\/Magic.IndexedDb\/magicDB.js"
     }
   ],
-  "version": "G4ixEsJ4"
+  "version": "6PhyZFxG"
 };
