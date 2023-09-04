@@ -72,7 +72,7 @@ public static class ListBuilder
 	{
 		var header = formatType is not ListFormat.SimulatorCsv ? "・" : string.Empty;
 		var splitter = formatType is not ListFormat.SimulatorCsv ? "、" : Environment.NewLine;
-		var footer = "ㅤ" + Environment.NewLine;
+		var footer = "  " + Environment.NewLine;
 		var sb = new StringBuilder();
 		sb.Append(header);
 		sb.Append(filtered[0]);
