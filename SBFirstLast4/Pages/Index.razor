@@ -18,7 +18,7 @@
 			<div class="card-body">
 				<button class="btn btn-lite" @onclick="LiteDictionaryBtn_Click">
 					<i class="oi oi-book"></i>
-					ライト版辞書　　　　　　　　　　
+					ライト版辞書
 				</button>
 				<p class="card-text">タイプ付き単語のみを含んだ、<br>シンプルな辞書です。</p>
 			</div>
@@ -27,7 +27,7 @@
 			<div class="card-body">
 				<button class="btn btn-full" @onclick="FullDictionaryBtn_Click">
 					<i class="oi oi-folder"></i>
-					完全版辞書　　　　　　　　　　
+					完全版辞書
 				</button>
 				<p class="card-text">タイプ無しの単語も含んだ、<br>完全版の辞書です。</p>
 			</div>
@@ -73,8 +73,17 @@
 			box-shadow: 0 0 20px rgba(0,0,0,0.2);
 		}
 
+	.card-body {
+		display: flex;
+		flex-flow: column;
+	}
 
 	.btn {
+		align-self: stretch;
+		display: flex;
+		justify-content: space-between;
+		align-content: center;
+		gap: 10px;
 		height: 80px;
 		margin: 10px,0px,10px,0;
 		border-radius: 10px;
@@ -119,25 +128,25 @@
 		bottom: 40px;
 	}
 
-	.cache-button button {
-		padding: 10px 20px;
-		border: none;
-		border-radius: 30px;
-		font-size: 16px;
-		cursor: pointer;
-		transition: background-color 0.3s, color 0.3s;
-		text-decoration: none;
-	}
+		.cache-button button {
+			padding: 10px 20px;
+			border: none;
+			border-radius: 30px;
+			font-size: 16px;
+			cursor: pointer;
+			transition: background-color 0.3s, color 0.3s;
+			text-decoration: none;
+		}
 </style>
 
 <style type="text/css" media="screen and (max-width: 640.98px)">
 	.btn {
-		font-size: 10px;
+		font-size: 20px;
 	}
 </style>
 <style type="text/css" media="screen and (min-width: 641px)">
 	.btn {
-		font-size: 22px;
+		font-size: 20px;
 	}
 </style>
 
