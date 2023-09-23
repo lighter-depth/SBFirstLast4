@@ -451,9 +451,9 @@
 		var (type1, type2) = GetTypes();
 		var body = new Regex(SelectedSearchOptionItem switch
 		{
-			"前方後方一致" => $@"^{first}.*{last}ー*$",
-			"前方一致" => $@"^{first}.*[^ん]$",
-			"後方一致" => $@"^.*{first}ー*$",
+			"前方後方一致" => $@"^[{first}].*[{last}]ー*$",
+			"前方一致" => $@"^[{first}].*[^ん]$",
+			"後方一致" => $@"^.*[{last}]ー*$",
 			"すべて表示" => $@".*",
 			_ => $"{RegexPattern}"
 		});
@@ -475,15 +475,7 @@
 			};
 		SearchResult.IsTyped = true;
 		DownloadConfig.IsNotype = false;
-		DownloadConfig.DeclType = SelectedSearchOptionItem switch
-		{
-			"すべて表示" => ListDeclType.TypedOnly,
-			"前方後方一致" => ListDeclType.FirstLast,
-			"前方一致" => ListDeclType.First,
-			"後方一致" => ListDeclType.Last,
-			"正規表現" => ListDeclType.Regex,
-			_ => default
-		};
+		DownloadConfig.DeclType = ListDeclType.TypedOnly;
 		NavigationManager.NavigateTo("result");
 	}
 

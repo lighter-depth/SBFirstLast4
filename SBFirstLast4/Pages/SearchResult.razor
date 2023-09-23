@@ -39,7 +39,7 @@
 </div>
 
 <div class="indicators">
-	<div class="count-indicator">合計 @dataArr.Length 件</div>
+	<div class="count-indicator">合計 @(IsTyped ? wordDataArr.Length : dataArr.Length) 件</div>
 	<div class="page-indicator">@CurrentPage/@TotalPages</div>
 </div>
 
@@ -179,7 +179,7 @@
 		}
 		await Task.Delay(200);
 
-		if (IsTyped) wordDataArr = TypedSearcher.SearchTyped(TypedPredicate);
+		if (IsTyped) wordDataArr = TypedSearcher.SearchTyped(TypedPredicate, CustomLengthPredTyped);
 
 		else dataArr = RegexBody is null
 						? CustomLengthPred is null
