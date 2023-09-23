@@ -268,7 +268,7 @@
 </style>
 
 @code {
-	private static readonly Regex KanaRegex = new("^[ぁ-ゟー]+$");
+	private static readonly Regex KanaRegex = new("^[*＊ぁ-ゟー]+$");
 
 
 	private string FirstChar = string.Empty;

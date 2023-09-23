@@ -328,7 +328,7 @@
 </style>
 
 @code {
-	private static readonly Regex KanaRegex = new("^[ぁ-ゟー]+$");
+	private static readonly Regex KanaRegex = new("^[*＊ぁ-ゟー]+$");
 
 
 	private string FirstChar = string.Empty;
@@ -447,13 +447,15 @@
 		}
 		if (returnFlag) return;
 		var first = FirstChar.At(0);
+		if (first is '*' or '＊') first = '.';
 		var last = LastChar.At(0);
+		if (last is '*' or '＊') last = '.';
 		var (type1, type2) = GetTypes();
 		var body = new Regex(SelectedSearchOptionItem switch
 		{
-			"前方後方一致" => $@"^[{first}].*[{last}]ー*$",
-			"前方一致" => $@"^[{first}].*[^ん]$",
-			"後方一致" => $@"^.*[{last}]ー*$",
+			"前方後方一致" => $@"^{first}.*{last}ー*$",
+			"前方一致" => $@"^{first}.*[^ん]$",
+			"後方一致" => $@"^.*{last}ー*$",
 			"すべて表示" => $@".*",
 			_ => $"{RegexPattern}"
 		});
