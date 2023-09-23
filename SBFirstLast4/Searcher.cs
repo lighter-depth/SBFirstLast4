@@ -21,22 +21,24 @@ public class Searcher
         (null, null) when IsDoubleTypedOnly => x => x.IsDoubleType,
         _ => x => true
     };
-    public List<Word> Search(Func<Word, bool>? predicate = null) => WordDictionary.PerfectDic().Where(predicate ?? Predicate).Where(x => Body.IsMatch(x.Name)).ToList();
-    public static List<Word> SearchTyped(char startChar, Func<Word, bool> predicate) => WordDictionary.GetSplitList(startChar).Where(predicate).ToList();
-    public static List<string> SearchFirstLast(char firstChar, char lastChar)
+    public Word[] Search(Func<Word, bool>? predicate = null) => WordDictionary.PerfectDic.AsParallel().Where(predicate ?? Predicate).Where(x => Body.IsMatch(x.Name)).ToArray();
+    public static Word[] SearchTyped(char startChar, Func<Word, bool> predicate) => WordDictionary.GetSplitList(startChar).Where(predicate).ToArray();
+
+    public  Word[] SearchTyped(Func<Word, bool>? predicate = null, Func<Word, bool>? customLength = null) => WordDictionary.TypedWords.AsParallel().Where(predicate ?? Predicate).Where(customLength ?? (_ => true)).Where(x => Body.IsMatch(x.Name)).ToArray();
+	public static string[] SearchFirstLast(char firstChar, char lastChar)
     {
-        if (firstChar is '*' or '＊' && lastChar is '*' or '＊') return WordDictionary.PerfectNameDic().Where(x => x.At(^1) != 'ん').ToList();
-        if (firstChar is '*' or '＊') return WordDictionary.PerfectNameDic().Where(x => x.GetLastChar() == lastChar).ToList();
-        if (lastChar is '*' or '＊') return WordDictionary.PerfectNameDic().Where(x => x.At(0) == firstChar && x.At(^1) != 'ん').ToList();
-        return WordDictionary.PerfectNameDic().Where(x => x.At(0) == firstChar && x.GetLastChar() == lastChar).ToList();
+        if (firstChar is '*' or '＊' && lastChar is '*' or '＊') return WordDictionary.PerfectNameDic.AsParallel().Where(x => x.At(^1) != 'ん').ToArray();
+        if (firstChar is '*' or '＊') return WordDictionary.PerfectNameDic.AsParallel().Where(x => x.GetLastChar() == lastChar).ToArray();
+        if (lastChar is '*' or '＊') return WordDictionary.PerfectNameDic.AsParallel().Where(x => x.At(0) == firstChar && x.At(^1) != 'ん').ToArray();
+        return WordDictionary.PerfectNameDic.AsParallel().Where(x => x.At(0) == firstChar && x.GetLastChar() == lastChar).ToArray();
     }
-	public static List<string> SearchFirstLast(char firstChar, char lastChar, Func<string, bool> pred)
+	public static string[] SearchFirstLast(char firstChar, char lastChar, Func<string, bool> pred)
 	{
-		if (firstChar is '*' or '＊' && lastChar is '*' or '＊') return WordDictionary.PerfectNameDic().Where(x => x.At(^1) != 'ん' && pred(x)).ToList();
-		if (firstChar is '*' or '＊') return WordDictionary.PerfectNameDic().Where(x => x.GetLastChar() == lastChar && pred(x)).ToList();
-		if (lastChar is '*' or '＊') return WordDictionary.PerfectNameDic().Where(x => x.At(0) == firstChar && x.At(^1) != 'ん' && pred(x)).ToList();
-		return WordDictionary.PerfectNameDic().Where(x => x.At(0) == firstChar && x.GetLastChar() == lastChar && pred(x)).ToList();
+		if (firstChar is '*' or '＊' && lastChar is '*' or '＊') return WordDictionary.PerfectNameDic.AsParallel().Where(x => x.At(^1) != 'ん' && pred(x)).ToArray();
+		if (firstChar is '*' or '＊') return WordDictionary.PerfectNameDic.AsParallel().Where(x => x.GetLastChar() == lastChar && pred(x)).ToArray();
+		if (lastChar is '*' or '＊') return WordDictionary.PerfectNameDic.AsParallel().Where(x => x.At(0) == firstChar && x.At(^1) != 'ん' && pred(x)).ToArray();
+		return WordDictionary.PerfectNameDic.AsParallel().Where(x => x.At(0) == firstChar && x.GetLastChar() == lastChar && pred(x)).ToArray();
 	}
-    public static List<string> SearchRegex(Regex regex) => WordDictionary.PerfectNameDic().Where(x => regex.IsMatch(x)).ToList();
+    public static string[] SearchRegex(Regex regex) => WordDictionary.PerfectNameDic.AsParallel().Where(x => regex.IsMatch(x)).ToArray();
 }
 

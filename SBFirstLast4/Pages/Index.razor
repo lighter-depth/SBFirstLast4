@@ -1,29 +1,181 @@
 ﻿@page "/"
 @layout NoMenuLayout
-@inject NavigationManager NavigationManager;
-@inject Blazored.LocalStorage.ILocalStorageService LocalStorage;
-@inject IMagicDbFactory _MagicDb;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 <PageTitle>SBFirstLast4</PageTitle>
 
-@Content
-<br>
-@ErrorMsg
+@if (isLoading)
+{
+	@Content
+	<br>
+	@ErrorMsg
+	return;
+}
+<div class="container">
+	<div class="card-deck">
+		<div class="card" @onclick="LiteDictionaryBtn_Click">
+			<div class="card-body">
+				<button class="btn btn-lite" @onclick="LiteDictionaryBtn_Click">
+					<i class="oi oi-book"></i>
+					ライト版辞書　　　　　　　　　　
+				</button>
+				<p class="card-text">タイプ付き単語のみを含んだ、<br>シンプルな辞書です。</p>
+			</div>
+		</div>
+		<div class="card" @onclick="FullDictionaryBtn_Click">
+			<div class="card-body">
+				<button class="btn btn-full" @onclick="FullDictionaryBtn_Click">
+					<i class="oi oi-folder"></i>
+					完全版辞書　　　　　　　　　　
+				</button>
+				<p class="card-text">タイプ無しの単語も含んだ、<br>完全版の辞書です。</p>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="cache-button">
+	<button @onclick=CacheBtn_Click>キャッシュを消去する</button>
+</div>
+<style>
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f5f6f1;
+	}
+
+	.container {
+		margin-top: 20px;
+		font-family: Arial, Helvetica, sans-serif;
+	}
+
+	.card-deck {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-evenly;
+		align-items: stretch;
+		flex-wrap: wrap;
+	}
+
+	.card {
+		width: 300px;
+		min-height: 250px;
+		margin: 10px;
+		border-radius: 10px;
+		box-shadow: 0 0 10px rgba(0,0,0,0.1);
+		transition: 0.3s;
+		border-color: transparent;
+	}
+
+		.card:hover {
+			transform: scale(1.05);
+			box-shadow: 0 0 20px rgba(0,0,0,0.2);
+		}
+
+
+	.btn {
+		height: 80px;
+		margin: 10px,0px,10px,0;
+		border-radius: 10px;
+		box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+		transition: 0.3s;
+		border-color: transparent;
+		font-size: 22px;
+		font-weight: bold;
+	}
+
+	.btn-lite, .btn-lite:hover, .btn-lite:focus, .btn-lite:active:focus {
+		background-color: #E75C6C;
+		color: white;
+		border-color: transparent;
+		box-shadow: none;
+	}
+
+	.btn-full, .btn-full:hover, .btn-full:focus, .btn-full:active:focus {
+		background-color: #6C5CE7;
+		color: white;
+		border-color: transparent;
+		box-shadow: none;
+	}
+
+	i {
+		font-size: 40px;
+		margin-right: 10px;
+	}
+
+	.card-text {
+		margin-top: 30px;
+		font-size: 18px;
+		font-family: 'Yu Gothic';
+		text-align: center;
+		font-weight: 600;
+	}
+
+	.cache-button {
+		display: flex;
+		justify-content: end;
+		align-items: center;
+		position: absolute;
+		right: 20px;
+		bottom: 40px;
+	}
+
+	.cache-button button {
+		padding: 10px 20px;
+		border: none;
+		border-radius: 30px;
+		font-size: 16px;
+		cursor: pointer;
+		transition: background-color 0.3s, color 0.3s;
+		text-decoration: none;
+	}
+</style>
+
+
 
 @code {
+	private bool isLoading = false;
 	private string Content = string.Empty;
 	private string ErrorMsg = string.Empty;
-	protected override async Task OnInitializedAsync()
+	private readonly bool SkipFlag = false;
+	private async void LiteDictionaryBtn_Click()
 	{
+		isLoading = true;
+		StateHasChanged();
+		await Task.Delay(1);
+		await LoadDictionaryAsync(DictionaryInitializationToken.Lite);
+		NavigationManager.NavigateTo("typed", false);
+	}
+	private async void FullDictionaryBtn_Click()
+	{
+		isLoading = true;
+		StateHasChanged();
+		await Task.Delay(1);
+		await LoadDictionaryAsync(DictionaryInitializationToken.Full);
+		NavigationManager.NavigateTo("home", false);
+	}
+	private async void CacheBtn_Click()
+	{
+		if (!await JSRuntime.InvokeAsync<bool>("confirm", "タイプ付き単語のキャッシュを消去します。よろしいですか？")) return;
+		await LocalStorage.ClearAsync();
+		await JSRuntime.InvokeVoidAsync("alert", "キャッシュを消去しました。");
+	}
+
+
+	private async Task LoadDictionaryAsync(DictionaryInitializationToken token)
+	{
+		if (SkipFlag) token = DictionaryInitializationToken.Skip;
 		try
 		{
-			await foreach (var i in WordDictionary.Initialize(LocalStorage, _MagicDb))
+			await foreach (var i in WordDictionary.Initialize(LocalStorage, token))
 			{
 				Content = i;
 				StateHasChanged();
 				await Task.Delay(1);
 			}
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			Content = "読み込み中に例外が発生しました。ページをリロードしてください。";
 			ErrorMsg = $"エラーの内容：{e.InnerException?.Message ?? "null"}";
@@ -40,8 +192,7 @@
 		}
 		Content = "完了！";
 		StateHasChanged();
-		base.OnInitialized();
 		await Task.Delay(200);
-		NavigationManager.NavigateTo("home", false);
 	}
+
 }

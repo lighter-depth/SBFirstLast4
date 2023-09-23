@@ -1,8 +1,7 @@
-﻿@page "/home"
+﻿@page "/typed"
 @inject NavigationManager NavigationManager
 @using System.Text.RegularExpressions
-<PageTitle>しりとり単語検索</PageTitle>
-
+<PageTitle>しりバト単語検索</PageTitle>
 
 <div class="top-grid">
 	<div class="border">
@@ -10,9 +9,70 @@
 			<label class="label">つかいかた</label>
 			<label class="text-label">
 				検索オプションを指定して、必要な情報を入力すると、<br>
-				その条件に合った、しりとりで使用可能な単語を出力します。<br>
+				その条件に合った、タイプ付きの単語を出力します。<br>
 				「文字」欄には、ひらがな以外を入力することはできません。
 			</label>
+		</div>
+	</div>
+</div>
+<div class="grid">
+	<div class="border">
+		<div class="stack-panel">
+			<div class="inner-grid">
+				<label class="label">タイプ条件</label>
+				<div class="dropdown-container">
+					<select class="dropdown" @bind="SelectedTypeOptionItem">
+						@foreach (var item in TypeOptionItemList)
+						{
+							<option value="@item">@item</option>
+						}
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="grid">
+	<div class="border">
+		<div class="stack-panel">
+			@if (SelectedTypeOptionItem is "単純指定")
+			{
+				<div class="inner-grid">
+					<label class="label">タイプ１</label>
+					<div class="dropdown-container">
+						<select class="dropdown" @bind="SelectedType1Item">
+							@foreach (var item in new[]{
+						"指定なし", "ノーマル", "動物", "植物", "地名",
+						"感情", "芸術", "食べ物", "暴力", "医療",
+						"人体", "機械", "理科", "時間", "人物",
+						"工作", "服飾", "社会", "遊び", "虫",
+						"数学", "暴言", "宗教", "スポーツ", "天気",
+						"物語"})
+							{
+								<option value="@item">@item</option>
+							}
+						</select>
+					</div>
+				</div>
+				<div class="divider"></div>
+				<div class="inner-grid">
+					<label class="label">タイプ2</label>
+					<div class="dropdown-container">
+						<select class="dropdown" @bind="SelectedType2Item">
+							@foreach (var item in new[]{
+						"指定なし", "無属性", "ノーマル", "動物", "植物", "地名",
+						"感情", "芸術", "食べ物", "暴力", "医療",
+						"人体", "機械", "理科", "時間", "人物",
+						"工作", "服飾", "社会", "遊び", "虫",
+						"数学", "暴言", "宗教", "スポーツ", "天気",
+						"物語"})
+							{
+								<option value="@item">@item</option>
+							}
+						</select>
+					</div>
+				</div>
+			}
 		</div>
 	</div>
 </div>
@@ -169,10 +229,10 @@
 		text-align: center;
 		border: 2px solid gray;
 		border-radius: 10px;
-		font-size: 32px; 
+		font-size: 32px;
 		background-color: white;
 		box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-		white-space: nowrap; 
+		white-space: nowrap;
 		overflow: hidden; 
 		text-overflow: ellipsis;
 	}
@@ -294,15 +354,27 @@
 		"カスタム"
 	};
 
+	private string SelectedTypeOptionItem = "単純指定";
+	private List<string> TypeOptionItemList = new()
+	{
+		"単純指定",
+		"単タイプ",
+		"複合タイプ"
+	};
 
-	private string SelectedSearchOptionItem = "前方後方一致";
+	private string SelectedSearchOptionItem = "すべて表示";
 	private List<string> SearchOptionItemList = new()
 	{
+		"すべて表示",
 		"前方後方一致",
 		"前方一致",
 		"後方一致",
 		"正規表現"
 	};
+
+	private string SelectedType1Item = "指定なし";
+	private string SelectedType2Item = "指定なし";
+
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
@@ -316,8 +388,8 @@
 	{
 		var returnFlag = false;
 		var isRegex = SelectedSearchOptionItem == "正規表現";
-		if (SelectedSearchOptionItem == "前方一致") LastChar = "*";
-		if (SelectedSearchOptionItem == "後方一致") FirstChar = "*";
+		if (SelectedSearchOptionItem is not "後方一致" or "前方後方一致") LastChar = "*";
+		if (SelectedSearchOptionItem is not "前方一致" or "前方後方一致") FirstChar = "*";
 		if (!KanaRegex.IsMatch(FirstChar) && !isRegex)
 		{
 			FirstCharWarning = "ひらがなを入力してください";
@@ -357,7 +429,7 @@
 			ShowRegexWarning = false;
 			StateHasChanged();
 		}
-		Func<string, bool>? pred = null;
+		Func<Word, bool>? pred = null;
 		if (!isRegex && SelectedCustomLengthItem == "カスタム"
 			&& !WordLengthSyntax.TryParseInputToPredicate(CustomLength, out pred, out var errorMsg))
 		{
@@ -373,26 +445,48 @@
 			StateHasChanged();
 		}
 		if (returnFlag) return;
-		SearchResult.FirstChar = FirstChar.At(0);
-		SearchResult.LastChar = LastChar.At(0);
-		SearchResult.CustomLengthPred = SelectedCustomLengthItem switch
+		var first = FirstChar.At(0);
+		var last = LastChar.At(0);
+		var (type1, type2) = GetTypes();
+		var body = new Regex(SelectedSearchOptionItem switch
+		{
+			"前方後方一致" => $@"^{first}.*{last}ー*$",
+			"前方一致" => $@"^{first}.*[^ん]$",
+			"後方一致" => $@"^.*{first}ー*$",
+			"すべて表示" => $@".*",
+			_ => $"{RegexPattern}"
+		});
+		SearchResult.CustomLengthPredTyped = SelectedCustomLengthItem switch
 		{
 			"なし" => null,
-			"７文字以上" => word => word.Length >= 7,
-			"６文字以上" => word => word.Length >= 6,
+			"７文字以上" => word => word.Name.Length >= 7,
+			"６文字以上" => word => word.Name.Length >= 6,
 			_ => pred
 		};
-		SearchResult.RegexBody = isRegex ? new(RegexPattern) : null;
-		SearchResult.IsTyped = false;
+		SearchResult.TypedSearcher = new()
+			{
+				Type1 = type1,
+				Type2 = type2,
+				Body = body,
+				IsTypedOnly = true,
+				IsSingleTypedOnly = SelectedTypeOptionItem is "単タイプ",
+				IsDoubleTypedOnly = SelectedTypeOptionItem is "複合タイプ"
+			};
+		SearchResult.IsTyped = true;
+		DownloadConfig.IsNotype = false;
 		DownloadConfig.DeclType = SelectedSearchOptionItem switch
 		{
+			"すべて表示" => ListDeclType.TypedOnly,
 			"前方後方一致" => ListDeclType.FirstLast,
 			"前方一致" => ListDeclType.First,
 			"後方一致" => ListDeclType.Last,
 			"正規表現" => ListDeclType.Regex,
 			_ => default
 		};
-		DownloadConfig.IsNotype = true;
 		NavigationManager.NavigateTo("result");
 	}
+
+	private (WordType? Type1, WordType? Type2) GetTypes()
+	=> (SelectedType1Item is "指定なし" ? null : SelectedType1Item.StringToType(),
+		SelectedType2Item is "指定なし" ? null : SelectedType2Item.StringToType());
 }

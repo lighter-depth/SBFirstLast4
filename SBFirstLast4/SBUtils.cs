@@ -63,17 +63,36 @@ public static class SBUtils
         result.AddRange(words.Where(x => x.Length < 6).Select(x => $"({x})" ));
         return result;
     }
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? At<T>(this IEnumerable<T> source, int index) => source.ElementAtOrDefault(index);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static T? At<T>(this IEnumerable<T> source, Index index) => source.ElementAtOrDefault(index);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static char At(this string source, int index) => index < 0 || index >= source.Length ? default : source[index];
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static char At(this string source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];
 
 	public static char GetLastChar(this string str)
 	{
-		return (str.Length == 0
-		|| (str.Length == 1 && str.At(0) == 'ー')) ? default
-		: siritoriChar.ContainsKey(str.At(^1)) ? siritoriChar[str.At(^1)]
-		: str.At(^1) == 'ー' && siritoriChar.ContainsKey(str.At(^2)) ? siritoriChar[str.At(^2)]
-		: str.At(^1) == 'ー' ? str.At(^2)
-		: str.At(^1);
+		var length = str.Length;
+
+		if (length == 0)
+			return default;
+
+		var lastChar = str[length - 1];
+
+		if (siritoriChar.TryGetValue(lastChar, out var result))
+			return result;
+
+		var penultimateChar = length > 1 ? str[length - 2] : default;
+
+		if (lastChar == 'ー' && siritoriChar.TryGetValue(penultimateChar, out var result2))
+			return result2;
+
+		if (lastChar == 'ー')
+			return penultimateChar;
+
+		return lastChar;
 	}
 	static readonly Dictionary<char, char> siritoriChar = new()
 	{
@@ -92,7 +111,7 @@ public static class SBUtils
 	};
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static Span<T> AsSpan<T>(this List<T> self) => CollectionsMarshal.AsSpan(self);
+	public static Span<T> AsSpan<T>(this List<T> list) => CollectionsMarshal.AsSpan(list);
 	public static List<string[]> SplitToChunks(this List<string> source, int chunkSize)
 	{
 		const int chunksize = 10000;

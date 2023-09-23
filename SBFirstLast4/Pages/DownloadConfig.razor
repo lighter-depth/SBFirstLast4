@@ -1,5 +1,4 @@
 ﻿@page "/download-config"
-@layout NoMenuLayout
 @inject NavigationManager NavigationManager
 @inject BlazorDownloadFile.IBlazorDownloadFileService BlazorDownloadFileService
 @using System.Text
@@ -27,6 +26,30 @@
 	<div class="grid">
 		<div class="border">
 			<div class="stack-panel">
+				@if (!IsNotype)
+				{
+					<div class="inner-grid">
+						<label class="label">
+							オミット指定
+							<span class="tooltip-icon" data-tooltip="単語帳を出力する際に、表示せずに無視するタイプを指定します。&#10;タイプ別単語帳向けの機能です。">?</span>
+						</label>
+						<div class="dropdown-container">
+							<select class="dropdown" @bind="SelectedOmitTypeItem">
+								@foreach (var item in new[]{
+						"なし", "ノーマル", "動物", "植物", "地名",
+						"感情", "芸術", "食べ物", "暴力", "医療",
+						"人体", "機械", "理科", "時間", "人物",
+						"工作", "服飾", "社会", "遊び", "虫",
+						"数学", "暴言", "宗教", "スポーツ", "天気",
+						"物語"})
+								{
+									<option value="@item">@item</option>
+								}
+							</select>
+						</div>
+					</div>
+					<div class="divider"></div>
+				}
 				<div class="inner-grid">
 					<label class="label">単語の文字数</label>
 					<div class="dropdown-container">
@@ -88,7 +111,9 @@
 					</div>
 				</div>
 				<div class="divider"></div>
-				<a @onclick="DownloadFile" class="btn-download">ダウンロード</a>
+				<div class="inner-grid">
+					<a @onclick="DownloadFile" class="btn-download">ダウンロード</a>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -99,26 +124,20 @@ else
 }
 
 <style>
-	.app {
-		overflow: hidden;
-	}
 
-	.page {
-		display: grid;
-		justify-content: center;
-		align-items: center;
-		min-height: 100vh;
-		background-color: #F5F6F1;
-		box-sizing: border-box;
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f5f6f1;
 	}
-
 
 	.grid {
 		display: grid;
 		align-items: center;
 		align-self: center;
 		justify-content: normal;
-		width: 100%
+		width: 100%;
 	}
 
 	.border {
@@ -160,6 +179,15 @@ else
 		text-align: center;
 		font-size: 20px;
 		color: darkred;
+		padding: 0 0 10px 0;
+		margin-top: -10px;
+		margin-bottom: -10px;
+	}
+
+	.download-label {
+		text-align: center;
+		font-size: 20px;
+		color: dodgerblue;
 		padding: 0 0 10px 0;
 		margin-top: -10px;
 		margin-bottom: -10px;
@@ -247,16 +275,44 @@ else
 		margin: 0 auto;
 		margin-top: 20px;
 	}
+
+	.tooltip-icon {
+		font-size: 18px;
+		color: #999;
+		cursor: help;
+		margin-left: 5px;
+		position: relative;
+	}
+
+		.tooltip-icon:hover::after {
+			content: attr(data-tooltip);
+			position: absolute;
+			top: 100%;
+			left: 50%;
+			transform: translateX(-50%);
+			background-color: rgba(0, 0, 0, 0.8);
+			color: #fff;
+			font-weight: normal;
+			padding: 5px;
+			border-radius: 5px;
+			width: 400px;
+			text-align: left;
+			font-size: 14px;
+			white-space: pre-line;
+			z-index: 1;
+		}
 </style>
 
 @code {
-	public static List<string> DataListStr { get; set; } = new();
-	public static List<Word> DataListWord { get; set; } = new();
+	public static string[] DataListStr { get; set; } = Array.Empty<string>();
+	public static Word[] DataListWord { get; set; } = Array.Empty<Word>();
 	public static bool IsNotype { get; set; } = true;
 	public static ListDeclType DeclType { get; set; } = ListDeclType.None;
 	private bool isDownloading = false;
 
 	private string FileName = "新しい単語帳";
+
+	private string SelectedOmitTypeItem = "なし";
 
 	private List<string> SortArgItemList = new()
 	{
@@ -268,7 +324,7 @@ else
 	{
 		"カスタム", "すべて"
 	};
-	private string SelectedWordCountFormatItem = "カスタム";
+	private string SelectedWordCountFormatItem = IsNotype ? "カスタム" : "すべて";
 	private bool ShowWordCountFormatWarning = false;
 	private string CustomWordCount = string.Empty;
 
@@ -341,7 +397,12 @@ else
 			ShowWordCountFormatWarning = false;
 			CustomWordCount = wordCountFormat == WordCountFormat.Custom ? CustomWordCount : string.Empty;
 		}
+
 		isDownloading = true;
+		StateHasChanged();
+		await Task.Delay(1);
+
+
 		var content = listType == default
 		? ListBuilder.BuildSingle
 		(
@@ -364,7 +425,7 @@ else
 		: ListBuilder.Build
 		(
 			DataListWord,
-			WordType.Empty,
+			SelectedOmitTypeItem.StringToType(),
 			CustomWordCount,
 			listType,
 			sortArg,

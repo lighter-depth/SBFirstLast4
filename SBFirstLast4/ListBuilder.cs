@@ -5,7 +5,7 @@ namespace SBFirstLast4;
 
 public static class ListBuilder
 {
-	public static string Build(List<Word> words, WordType omitType, string wordCount, ListType listType, SortArg sortArg, ListFormat formatType, WordCountFormat wordCountFormat)
+	public static string Build(Word[] words, WordType omitType, string wordCount, ListType listType, SortArg sortArg, ListFormat formatType, WordCountFormat wordCountFormat)
 	{
 		var sb = new StringBuilder();
 		if (formatType != ListFormat.SimulatorCsv) sb.Append($"/*{Environment.NewLine} * このリストは、機械的に生成されたものです。{Environment.NewLine} * 実際のゲーム内容とは差異がある可能性があります。{Environment.NewLine} */{Environment.NewLine}{Environment.NewLine}");
@@ -31,7 +31,7 @@ public static class ListBuilder
 		}
 		return sb.ToString();
 	}
-	public static string Build(List<string> words, string wordCount, ListType listType, SortArg sortArg, ListFormat formatType, WordCountFormat wordCountFormat)
+	public static string Build(string[] words, string wordCount, ListType listType, SortArg sortArg, ListFormat formatType, WordCountFormat wordCountFormat)
 	{
 		var sb = new StringBuilder();
 		if (formatType != ListFormat.SimulatorCsv) sb.Append($"/*{Environment.NewLine} * このリストは、機械的に生成されたものです。{Environment.NewLine} * 実際のゲーム内容とは差異がある可能性があります。{Environment.NewLine} */{Environment.NewLine}{Environment.NewLine}");
@@ -57,7 +57,7 @@ public static class ListBuilder
 		}
 		return sb.ToString();
 	}
-	public static string BuildSingle(List<string> words, string wordCount, SortArg sortArg, ListFormat formatType, WordCountFormat wordCountFormat)
+	public static string BuildSingle(string[] words, string wordCount, SortArg sortArg, ListFormat formatType, WordCountFormat wordCountFormat)
 	{
 		var sb = new StringBuilder();
 		if (formatType != ListFormat.SimulatorCsv) sb.Append($"/*{Environment.NewLine} * このリストは、機械的に生成されたものです。{Environment.NewLine} * 実際のゲーム内容とは差異がある可能性があります。{Environment.NewLine} */{Environment.NewLine}{Environment.NewLine}");

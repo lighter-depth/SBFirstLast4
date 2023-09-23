@@ -1,5 +1,4 @@
 ﻿@page "/result"
-@layout NoMenuLayout
 @inject NavigationManager NavigationManager;
 @using System.Text.RegularExpressions;
 <PageTitle>検索結果</PageTitle>
@@ -40,7 +39,7 @@
 </div>
 
 <div class="indicators">
-	<div class="count-indicator">合計 @dataList.Count 件</div>
+	<div class="count-indicator">合計 @dataArr.Length 件</div>
 	<div class="page-indicator">@CurrentPage/@TotalPages</div>
 </div>
 
@@ -151,17 +150,25 @@
 	public static char FirstChar { get; set; }
 	public static char LastChar { get; set; }
 	public static Func<string, bool>? CustomLengthPred { get; set; }
-	public static
-	Regex? RegexBody
-	{ get; set; }
-	private List<string> dataList = new();
+	public static Func<Word, bool>? CustomLengthPredTyped{ get; set; }
+	public static Regex? RegexBody { get; set; }
+	public static bool IsTyped { get; set; } = false;
+	public static Searcher TypedSearcher { get; set; } = new();
+	public static Func<Word, bool>? TypedPredicate { get; set; }
+	private string[] dataArr = Array.Empty<string>();
+	private Word[] wordDataArr = Array.Empty<Word>();
 	private bool IsFirstPage => CurrentPage == 1;
 	private bool IsLastPage => CurrentPage == TotalPages;
 	private bool isSearching = true;
 	private const int ItemsPerPage = 20;
 	private int CurrentPage = 1;
-	private int TotalPages => (int)Math.Ceiling((double)dataList.Count / ItemsPerPage);
-	private List<string> VisibleItems => dataList.Skip((CurrentPage - 1) * ItemsPerPage).Take(ItemsPerPage).ToList();
+	private int TotalPages => (int)Math.Ceiling((double)(IsTyped ? wordDataArr.Length : dataArr.Length) / ItemsPerPage);
+	private List<string> VisibleItems
+	=> (IsTyped ? wordDataArr.Select(x => x.ToString()) : dataArr)
+		.Skip((CurrentPage - 1) * ItemsPerPage)
+		.Take(ItemsPerPage)
+		.ToList();
+
 	protected override async Task OnInitializedAsync()
 	{
 		await base.OnInitializedAsync();
@@ -171,11 +178,15 @@
 			return;
 		}
 		await Task.Delay(200);
-		dataList = RegexBody is null
-					? CustomLengthPred is null
-					? Searcher.SearchFirstLast(FirstChar, LastChar)
-					: Searcher.SearchFirstLast(FirstChar, LastChar, CustomLengthPred)
-					: Searcher.SearchRegex(RegexBody);
+
+		if (IsTyped) wordDataArr = TypedSearcher.SearchTyped(TypedPredicate);
+
+		else dataArr = RegexBody is null
+						? CustomLengthPred is null
+						? Searcher.SearchFirstLast(FirstChar, LastChar)
+						: Searcher.SearchFirstLast(FirstChar, LastChar, CustomLengthPred)
+						: Searcher.SearchRegex(RegexBody);
+
 		isSearching = false;
 		StateHasChanged();
 		await Task.Delay(1);
@@ -199,7 +210,8 @@
 	}
 	private void DownloadButton_OnClick()
 	{
-		DownloadConfig.DataListStr = dataList;
+		if (IsTyped) DownloadConfig.DataListWord = wordDataArr;
+		else DownloadConfig.DataListStr = dataArr;
 		NavigationManager.NavigateTo("download-config");
 	}
 }
