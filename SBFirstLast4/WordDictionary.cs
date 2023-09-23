@@ -80,7 +80,7 @@ public static class WordDictionary
 		await foreach (var i in LoadTypedWordsFromOnline(localStorage)) yield return i;
 
 		yield return "リストを分割しています...";
-		//await Task.Run(InitSplitList);
+		await Task.Run(InitSplitList);
 		yield return "タイプレス リストを分離しています...";
 		await Task.Run(() =>
 		{
@@ -153,7 +153,7 @@ public static class WordDictionary
 		foreach (var i in SBUtils.KanaListSpread) SplitList.Add(TypedWords.Where(x => x.Name.At(0) == i[0]).ToList());
 	}
 	public static List<Word> GetSplitList(int index) => SplitList[index];
-	public static List<Word> GetSplitList(char startChar) => SplitList[SBUtils.KanaListSpread.ToList().IndexOf(startChar.ToString())];
+	public static List<Word> GetSplitList(char startChar) => SplitList.At(SBUtils.KanaListSpread.ToList().IndexOf(startChar.ToString())) ?? Enumerable.Empty<Word>().ToList();
 
 	static async Task ReadNoTypeWords(HttpClient client, int arg)
 	{

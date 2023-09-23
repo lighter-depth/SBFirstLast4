@@ -20,7 +20,7 @@
 	<div class="border">
 		<div class="stack-panel">
 			<div class="inner-grid">
-				<input class="text-input" id="word-input" type="text"placeholder="単語名を入力..." @bind=WordText @onkeyup=TextInput_KeyUp/>
+				<input class="text-input" id="word-input" type="text" placeholder="単語名を入力..." @bind=WordText @onkeyup=TextInput_KeyUp />
 			</div>
 			<div class="divider"></div>
 			<div class="inner-grid">
@@ -97,9 +97,9 @@
 		margin-top: 8px;
 	}
 
-	.text-input::placeholder{
-		color: dimgray;
-	}
+		.text-input::placeholder {
+			color: dimgray;
+		}
 
 	.divider {
 		height: 2px;
@@ -142,39 +142,43 @@
 			await Task.Delay(1);
 			return;
 		}
-
-		WordResult = $"単語「{wordText}」は\n";
+		var result = $"単語「{wordText}」は\n";
 		if (wordText.At(^1) == 'ん')
 		{
-			WordResult += "んで終わっています。";
+			result += "んで終わっています。";
+			WordResult = result;
 			StateHasChanged();
 			await Task.Delay(1);
 			return;
 		}
 		if (!WordDictionary.IsLite && !WordDictionary.PerfectNameDic.Contains(wordText))
 		{
-			WordResult += "辞書にない単語です。";
+			result += "辞書にない単語です。";
+			WordResult = result;
 			StateHasChanged();
 			await Task.Delay(1);
 			return;
 		}
-		var resultWord = WordDictionary.IsLite ? WordDictionary.GetSplitList(keyChar).Find(x => x.Name == wordText) : default;
-		if(WordDictionary.IsLite && resultWord == default)
+		var resultWord = WordDictionary.GetSplitList(keyChar).Find(x => x.Name == wordText);
+		if (WordDictionary.IsLite && resultWord == default)
 		{
-			WordResult += "辞書にないか、無属性です。";
+			result += "辞書にないか、無属性です。";
+			WordResult = result;
 			StateHasChanged();
 			await Task.Delay(1);
 			return;
 		}
 		var (type1, type2) = (resultWord.Type1, resultWord.Type2);
-		WordResult += (type1, type2) switch
+		result += (type1, type2) switch
 		{
 			(WordType.Empty, WordType.Empty) => "無属性の単語です。",
 			(var type, WordType.Empty) => $"{type.TypeToString()}タイプです。",
 			(WordType.Empty, var type) => $"{type.TypeToString()}タイプです。",
 			(var typeA, var typeB) => $"{typeA.TypeToString()} / {typeB.TypeToString()} タイプです。"
 		};
+		WordResult = result;
 		StateHasChanged();
 		await Task.Delay(1);
+
 	}
 }
