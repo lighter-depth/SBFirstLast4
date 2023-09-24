@@ -144,6 +144,7 @@ public static class WordDictionary
 		}
 		yield return "タイプ付き ワードを読み込んでいます... (7/7)";
 		await Task.WhenAll(tasks);
+		TypedWords = TypedWords.Distinct().ToList();
 		yield return "キャッシュを保存しています...";
 		await localStorage.SetItemAsync(TYPED_WORDS, TypedWords);
 		await localStorage.SetItemAsync(HAS_LOADED, true);

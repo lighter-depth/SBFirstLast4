@@ -1,0 +1,308 @@
+﻿@page "/bestdamage"
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<div class="top-grid">
+	<div class="border">
+		<div class="stack-panel">
+			<label class="label">最高打点検索</label>
+			<label class="text-label">
+				単語を入力すると、その単語に対して高いダメージを出せる単語を、順番に５つ出力します。<br><br>
+				（動作が遅い場合はページをリロード後、ライト版辞書を選択すると改善するかもしれません。）
+			</label>
+		</div>
+	</div>
+</div>
+<div class="grid">
+	<div class="border">
+		<div class="stack-panel">
+			<div class="inner-grid">
+				<input class="text-input" id="word-input" type="text" placeholder="単語名を入力..." @bind=WordText @onkeyup=TextInput_KeyUp />
+				<label class="text-label">@TypeIndicator</label>
+			</div>
+			<div class="divider"></div>
+			<div class="inner-grid">
+				<label class="text-label" style="font-weight: 500; font-size: 20px;"> とくせいの使用</label>
+				<input type="checkbox" id="switch" class="checkbox" checked="true" 
+					@onchange="async e =>
+					{
+						AllowAbility = (bool)(e.Value ?? false); 
+						StateHasChanged();
+						await Task.Delay(1);
+					}" />
+				<label for="switch" class="toggle"></label>
+			</div>
+			<div class="divider"></div>
+			<div class="inner-grid">
+				@foreach (var i in WordResults)
+				{
+					<label class="text-label">@i</label>
+				}
+			</div>
+		</div>
+	</div>
+</div>
+<style>
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f5f6f1;
+	}
+
+	.top-grid {
+		display: block;
+	}
+
+	.grid {
+		display: grid;
+	}
+
+	.border {
+		margin: 20px;
+		border: 2px solid gray;
+		border-radius: 10px;
+		padding: 20px;
+		background-color: white;
+		box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+	}
+
+	.stack-panel {
+		display: flex;
+		flex-direction: column;
+		padding-left: 30px;
+		padding-right: 30px;
+		padding-top: 10px;
+		padding-bottom: 10px
+	}
+
+	.inner-grid {
+		display: grid;
+		grid-template-rows: auto auto;
+		row-gap: 15px;
+		margin-bottom: 10px;
+		justify-items: center;
+		align-items: center;
+	}
+
+	.label {
+		text-align: center;
+		font-weight: bold;
+		font-size: 30px;
+		color: black;
+	}
+
+	.text-label {
+		padding-top: 10px;
+		text-align: center;
+		font-size: 18px;
+		font-weight: 100;
+		color: black;
+	}
+
+	.text-input {
+		width: 80%;
+		padding: 12px;
+		font-size: 18px;
+		border: 2px solid gray;
+		border-radius: 5px;
+		margin-top: 8px;
+	}
+
+		.text-input::placeholder {
+			color: dimgray;
+		}
+
+	.divider {
+		height: 2px;
+		background-color: darkgray;
+		margin: 10px 0;
+	}
+
+
+	.checkbox {
+		display: none;
+	}
+
+	.toggle {
+		position: relative;
+		display: inline-block;
+		width: 60px;
+		height: 34px;
+		background-color: lightgray;
+		border-radius: 17px;
+	}
+
+		.toggle::after {
+			content: "";
+			position: absolute;
+			width: 26px;
+			height: 26px;
+			border-radius: 50%;
+			background-color: white;
+			top: 4px;
+			left: 4px;
+			transition: all 0.3s;
+		}
+
+	.checkbox:checked + .toggle::after {
+		left: 30px;
+	}
+
+	.checkbox:checked + .toggle {
+		background-color: green;
+	}
+
+</style>
+
+@code {
+
+	private string WordText = string.Empty;
+	private string TypeIndicator = string.Empty;
+	private bool AllowAbility = true;
+	private List<string> WordResults => AllowAbility ? AbilityResults : PureResults;
+	private List<string> PureResults = new();
+	private List<string> AbilityResults = new();
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		if (!WordDictionary.IsLoadedCorrectly)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+	}
+
+	private async void TextInput_KeyUp()
+	{
+		var wordText = await JSRuntime.InvokeAsync<string>("eval", "document.getElementById('word-input').value");
+		await Task.Delay(1);
+		var word = await InferWordTypeOrDefaultAsync(wordText);
+		if (word == default)
+		{
+			PureResults = new();
+			AbilityResults = new();
+			StateHasChanged();
+			await Task.Delay(1);
+			return;
+		}
+		var list = WordDictionary.GetSplitList(wordText.GetLastChar());
+		var randomLow = word.IsEmpty ? 1 : .85;
+		var randomHigh = word.IsEmpty ? 1 : .99;
+		var resultList = new List<AttackInfo>();
+		var noAbilityList = new List<AttackInfo>();
+		foreach (var i in list)
+		{
+			var lowDmgRaw = (int)(10 * i.CalcAmp(word) * randomLow);
+			var highDmgRaw = (int)(10 * i.CalcAmp(word) * randomHigh);
+			resultList.Add(new(i, WordType.Empty, highDmgRaw, lowDmgRaw));
+			noAbilityList.Add(new(i, WordType.Empty, highDmgRaw, lowDmgRaw));
+			if (i.Contains(WordType.Place))
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Place, highDmg, lowDmg));
+			}
+			if (i.Contains(WordType.Body))
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Body, highDmg, lowDmg));
+			}
+			if (i.Contains(WordType.Science))
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Science, highDmg, lowDmg));
+			}
+			if (i.Contains(WordType.Person))
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Person, highDmg, lowDmg));
+			}
+			if (i.Contains(WordType.Insult))
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Insult, highDmg, lowDmg));
+			}
+			if (i.Contains(WordType.Religion))
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Religion, highDmg, lowDmg));
+			}
+			if (i.Name.Length == 6)
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Tale, highDmg, lowDmg));
+			}
+			if (i.Name.Length > 6)
+			{
+				var (lowDmg, highDmg) = (lowDmgRaw * 2, highDmgRaw * 2);
+				resultList.Add(new(i, WordType.Tale, highDmg, lowDmg));
+			}
+		}
+		resultList.Sort();
+		noAbilityList.Sort();
+		AbilityResults = resultList.Take(5).Select(x => x.ToString()).ToList();
+		PureResults = noAbilityList.Take(5).Select(x => x.ToString()).ToList();
+		StateHasChanged();
+		await Task.Delay(1);
+
+	}
+
+	private async Task<Word> InferWordTypeOrDefaultAsync(string wordText)
+	{
+
+		if (string.IsNullOrWhiteSpace(wordText))
+		{
+			TypeIndicator = string.Empty;
+			StateHasChanged();
+			await Task.Delay(1);
+			return default;
+		}
+		var keyChar = wordText[0];
+		if (!SBUtils.KanaListSpread.Contains(keyChar.ToString()))
+		{
+			TypeIndicator = "無効な開始文字です。";
+			StateHasChanged();
+			await Task.Delay(1);
+			return default;
+		}
+		if (wordText.At(^1) == 'ん')
+		{
+			TypeIndicator = "んで終わっています。";
+			StateHasChanged();
+			await Task.Delay(1);
+			return default;
+		}
+		if (!WordDictionary.IsLite)
+		{
+			TypeIndicator = "Loading...";
+			StateHasChanged();
+			await Task.Delay(1);
+		}
+		if (!WordDictionary.IsLite && !WordDictionary.PerfectNameDic.Contains(wordText))
+		{
+			TypeIndicator = "辞書にない単語です。";
+			StateHasChanged();
+			await Task.Delay(1);
+			return default;
+		}
+
+		var resultWord = WordDictionary.GetSplitList(keyChar).Find(x => x.Name == wordText);
+
+		var typeIndicatorResult = "タイプ：";
+		var (type1, type2) = (resultWord.Type1, resultWord.Type2);
+		typeIndicatorResult += (type1, type2) switch
+		{
+			(WordType.Empty, WordType.Empty) when WordDictionary.IsLite && resultWord == default => "辞書にない、または無属性",
+			(WordType.Empty, WordType.Empty) => "無属性",
+			(var type, WordType.Empty) => $"{type.TypeToString()}",
+			(WordType.Empty, var type) => $"{type.TypeToString()}",
+			(var typeA, var typeB) => $"{typeA.TypeToString()} / {typeB.TypeToString()}"
+		};
+		TypeIndicator = typeIndicatorResult;
+		StateHasChanged();
+		await Task.Delay(1);
+		return new(wordText, type1, type2);
+	}
+
+}

@@ -151,6 +151,12 @@
 			await Task.Delay(1);
 			return;
 		}
+		if (!WordDictionary.IsLite)
+		{
+			WordResult = "Loading...";
+			StateHasChanged();
+			await Task.Delay(1);
+		}
 		if (!WordDictionary.IsLite && !WordDictionary.PerfectNameDic.Contains(wordText))
 		{
 			result += "辞書にない単語です。";
@@ -179,6 +185,5 @@
 		WordResult = result;
 		StateHasChanged();
 		await Task.Delay(1);
-
 	}
 }
