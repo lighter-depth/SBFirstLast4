@@ -109,7 +109,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-K5ludFx7EQYdI30ofN35q6B2+kwvVfHDNnqWIco4WGA=",
+      "hash": "sha256-flGOsIBIefdtnku1xyhhly+07kL9GAzM2DRf3z+0mtI=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -121,7 +121,7 @@
       "url": "_framework\/Blazored.LocalStorage.dll"
     },
     {
-      "hash": "sha256-jnVbUU6rVrgDywYvEbANY1acvAR1MKENnYVQVxcWfZ8=",
+      "hash": "sha256-\/S2MMf6oyD10sy5Xe7MwkVyjkUVVHM00zYjHGWEmzow=",
       "url": "_framework\/Microsoft.AspNetCore.Components.dll"
     },
     {
@@ -181,7 +181,7 @@
       "url": "_framework\/netstandard.dll"
     },
     {
-      "hash": "sha256-siLQbuZWQ3jqvVb\/N++kPv68PXXzLWGHGbv2jX2acW0=",
+      "hash": "sha256-ivF9dmkUyAV2KYXPmz9vpV354ezWdO2jCBCH8fyzwYA=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -197,7 +197,7 @@
       "url": "_framework\/System.ComponentModel.dll"
     },
     {
-      "hash": "sha256-hGj2WdoyYR7TQofISglNL9EWlfk0wi2WGwj7bCdcuj0=",
+      "hash": "sha256-CLB2k9nehU7XfbtEc7HLJDK4ZL5bpaqxgUJ7sk9s2u4=",
       "url": "_framework\/System.Linq.dll"
     },
     {
@@ -221,7 +221,7 @@
       "url": "_framework\/System.Net.Primitives.dll"
     },
     {
-      "hash": "sha256-EdLUNXMwdkolTv6iiNTXypmbm1s0+iF\/6xPsIYW5auQ=",
+      "hash": "sha256-yMB05KiMRqbsH4aOCWKHIxT3kcuh4hL2\/wXqE+z44Jg=",
       "url": "_framework\/System.Private.CoreLib.dll"
     },
     {
@@ -269,5 +269,5 @@
       "url": "_content\/BlazorDownloadFile\/BlazorDownloadFileScript.js"
     }
   ],
-  "version": "Wsb1Jwxx"
+  "version": "0D1Ad+11"
 };
