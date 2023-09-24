@@ -138,6 +138,7 @@ else
 		align-self: center;
 		justify-content: normal;
 		width: 100%;
+		grid-template-columns: minmax(0, 1fr);
 	}
 
 	.border {
@@ -258,9 +259,8 @@ else
 	}
 
 	.btn-download {
-		display: block;
 		text-align: center;
-		width: 300px;
+		width: 75%;
 		line-height: 60px;
 		font-weight: bold;
 		height: 60px;
@@ -272,8 +272,9 @@ else
 		color: white;
 		transition: background-color 0.3s, color 0.3s;
 		text-decoration: none;
-		margin: 0 auto;
 		margin-top: 20px;
+		padding-left: 30px;
+		padding-right: 30px;
 	}
 
 	.tooltip-icon {

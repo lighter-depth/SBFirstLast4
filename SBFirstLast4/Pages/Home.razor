@@ -107,6 +107,7 @@
 
 	.grid {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 	}
 
 	.border {
@@ -225,7 +226,7 @@
 	}
 
 	.search-button {
-		width: fit-content;
+		width: 75%;
 		align-self: center;
 		font-weight: bold;
 		font-size: 30px;
@@ -236,8 +237,6 @@
 		border-radius: 20px;
 		border: none;
 		cursor: pointer;
-		padding-left: 30px;
-		padding-right: 30px;
 	}
 
 	.tooltip-icon {
