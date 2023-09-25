@@ -1,16 +1,16 @@
 ﻿namespace SBFirstLast4;
 
-public record struct Word(string Name, WordType Type1, WordType Type2) : IComparable<Word>
+public readonly record struct Word(string Name, WordType Type1, WordType Type2) : IComparable<Word>
 {
-	public readonly bool Contains(WordType type) => Type1 == type || Type2 == type;
-	public readonly bool Contains(WordType type1, WordType type2) => Type1 == type1 || Type2 == type1 || Type1 == type2 || Type2 == type2;
-	public readonly bool IsEmpty => Type1 == WordType.Empty;
-	public readonly bool IsSingleType => Type1 != WordType.Empty && Type2 == WordType.Empty;
-	public readonly bool IsDoubleType => Type1 != WordType.Empty && Type2 != WordType.Empty;
+	public bool Contains(WordType type) => Type1 == type || Type2 == type;
+	public bool Contains(WordType type1, WordType type2) => Type1 == type1 || Type2 == type1 || Type1 == type2 || Type2 == type2;
+	public bool IsEmpty => Type1 == WordType.Empty;
+	public bool IsSingleType => Type1 != WordType.Empty && Type2 == WordType.Empty;
+	public bool IsDoubleType => Type1 != WordType.Empty && Type2 != WordType.Empty;
 	public static List<string> WordTypeNames { get; private set; } = new() { "無効", "指定なし", "無属性" };
 	private static readonly int[,] effList;
 	private static readonly WordType[] typeIndex;
-	public override readonly string ToString()
+	public override string ToString()
 	{
 		var type1 = Type1.TypeToString();
 		var type2 = Type2.TypeToString();
@@ -18,7 +18,7 @@ public record struct Word(string Name, WordType Type1, WordType Type2) : ICompar
 			 : IsSingleType ? $"{Name} ({type1})"
 			 : $"{Name} ({type1}/{type2})";
 	}
-	public readonly string ToFormat(ListFormat formatType, WordType omitType = WordType.Empty)
+	public string ToFormat(ListFormat formatType, WordType omitType = WordType.Empty)
 	{
 		var word = this with { };
 		if (omitType != WordType.Empty && formatType != ListFormat.SimulatorCsv)
@@ -33,8 +33,8 @@ public record struct Word(string Name, WordType Type1, WordType Type2) : ICompar
 		static string toSpace(WordType type) => type != WordType.Empty ? " " : string.Empty;
 	}
 
-	public readonly int CompareTo(Word other) => Name.CompareTo(other.Name);
-	public readonly double CalcAmp(Word other)
+	public int CompareTo(Word other) => Name.CompareTo(other.Name);
+	public double CalcAmp(Word other)
 	{
 		var result = CalcAmp(Type1, other.Type1) * CalcAmp(Type1, other.Type2) * CalcAmp(Type2, other.Type1) * CalcAmp(Type2, other.Type2);
 		return result;
@@ -105,10 +105,7 @@ public enum WordType
 {
 	Empty, Normal, Animal, Plant, Place, Emote, Art, Food, Violence, Health, Body, Mech, Science, Time, Person, Work, Cloth, Society, Play, Bug, Math, Insult, Religion, Sports, Weather, Tale
 }
-public enum WordFormat
-{
 
-}
 public static class WordTypeEx
 {
 	public static WordType StringToType(this string symbol) => symbol switch

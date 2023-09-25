@@ -1,6 +1,6 @@
 ﻿namespace SBFirstLast4;
 
-readonly record struct AttackInfo(Word Word, WordType Ability, int MaxDmg, int MinDmg) : IComparable<AttackInfo>
+public readonly record struct AttackInfo(Word Word, WordType Ability, int MaxDmg, int MinDmg) : IComparable<AttackInfo>
 {
 	public override string ToString()
 	{

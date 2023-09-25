@@ -17,12 +17,12 @@
 	<div class="border">
 		<div class="stack-panel">
 			<div class="inner-grid">
-				<input class="text-input" id="word-input" type="text" placeholder="単語名を入力..." @bind=WordText @onkeyup=TextInput_KeyUp />
+				<input class="text-input" id="word-input" type="text" placeholder="単語名を入力..." @onkeyup=TextInput_KeyUp />
 				<label class="text-label">@TypeIndicator</label>
 			</div>
 			<div class="divider"></div>
 			<div class="inner-grid">
-				<label class="text-label" style="font-weight: 500; font-size: 20px;"> とくせいの使用</label>
+				<label class="text-label" style="font-weight:600; font-size: 22px;"> とくせいの使用</label>
 				<input type="checkbox" id="switch" class="checkbox" checked="true" 
 					@onchange="async e =>
 					{
@@ -156,8 +156,6 @@
 </style>
 
 @code {
-
-	private string WordText = string.Empty;
 	private string TypeIndicator = string.Empty;
 	private bool AllowAbility = true;
 	private List<string> WordResults => AllowAbility ? AbilityResults : PureResults;
