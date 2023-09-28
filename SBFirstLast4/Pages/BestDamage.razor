@@ -226,12 +226,12 @@
 				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
 				resultList.Add(new(i, WordType.Religion, highDmg, lowDmg));
 			}
-			if (i.Name.Length == 6)
+			if (i.Name.Length == 6 && !i.IsHeal)
 			{
 				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
 				resultList.Add(new(i, WordType.Tale, highDmg, lowDmg));
 			}
-			if (i.Name.Length > 6)
+			if (i.Name.Length > 6 && !i.IsHeal)
 			{
 				var (lowDmg, highDmg) = (lowDmgRaw * 2, highDmgRaw * 2);
 				resultList.Add(new(i, WordType.Tale, highDmg, lowDmg));

@@ -7,6 +7,8 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	public bool IsEmpty => Type1 == WordType.Empty;
 	public bool IsSingleType => Type1 != WordType.Empty && Type2 == WordType.Empty;
 	public bool IsDoubleType => Type1 != WordType.Empty && Type2 != WordType.Empty;
+
+	public bool IsHeal => Contains(WordType.Food) || Contains(WordType.Health);
 	public static List<string> WordTypeNames { get; private set; } = new() { "無効", "指定なし", "無属性" };
 	private static readonly int[,] effList;
 	private static readonly WordType[] typeIndex;
@@ -37,6 +39,19 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	public double CalcAmp(Word other)
 	{
 		var result = CalcAmp(Type1, other.Type1) * CalcAmp(Type1, other.Type2) * CalcAmp(Type2, other.Type1) * CalcAmp(Type2, other.Type2);
+		
+		var type1_1 = CalcAmp(Type1, other.Type1);
+		var type1_2 = CalcAmp(Type1, other.Type2);
+		var type2_1 = CalcAmp(Type2, other.Type1);
+		var type2_2 = CalcAmp(Type2, other.Type2);
+		var type_result = 1.0;
+		type_result *= type1_1;
+		type_result *= type1_2;
+		type_result *= type2_1;
+		type_result *= type2_2;
+		Console.WriteLine(type_result);
+
+		
 		return result;
 	}
 	public static double CalcAmp(WordType t1, WordType t2)

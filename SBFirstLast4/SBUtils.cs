@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
@@ -124,4 +125,9 @@ public static class SBUtils
 		}
 		return chunks;
 	}
+}
+
+public class PasswordModel
+{
+	public string? Password { get; set; }
 }

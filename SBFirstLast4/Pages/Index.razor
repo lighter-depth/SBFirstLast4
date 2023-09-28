@@ -3,37 +3,55 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject HttpClient Http
+@using System.Security.Cryptography
 <PageTitle>SBFirstLast4</PageTitle>
 
-@if (isLoading)
+@if (IsAuthenticated)
 {
-	@Content
-	<br>
-	@ErrorMsg
-	return;
-}
-<div class="container">
-	<div class="card-deck">
-		<div class="card" @onclick="LiteDictionaryBtn_Click">
-			<div class="card-body">
-				<button class="btn btn-lite" @onclick="LiteDictionaryBtn_Click">
-					<i class="oi oi-book"></i>
-					ライト版辞書
-				</button>
-				<p class="card-text">タイプ付き単語のみを含んだ、<br>シンプルな辞書です。</p>
+	@if (isLoading)
+	{
+		@Content
+		<br>
+		@ErrorMsg
+		return;
+	}
+	<div class="container">
+		<div class="card-deck">
+			<div class="card" @onclick="LiteDictionaryBtn_Click">
+				<div class="card-body">
+					<button class="btn btn-lite" @onclick="LiteDictionaryBtn_Click">
+						<i class="oi oi-book"></i>
+						ライト版辞書
+					</button>
+					<p class="card-text">タイプ付き単語のみを含んだ、<br>シンプルな辞書です。</p>
+				</div>
 			</div>
-		</div>
-		<div class="card" @onclick="FullDictionaryBtn_Click">
-			<div class="card-body">
-				<button class="btn btn-full" @onclick="FullDictionaryBtn_Click">
-					<i class="oi oi-folder"></i>
-					完全版辞書
-				</button>
-				<p class="card-text">タイプ無しの単語も含んだ、<br>完全版の辞書です。</p>
+			<div class="card" @onclick="FullDictionaryBtn_Click">
+				<div class="card-body">
+					<button class="btn btn-full" @onclick="FullDictionaryBtn_Click">
+						<i class="oi oi-folder"></i>
+						完全版辞書
+					</button>
+					<p class="card-text">タイプ無しの単語も含んだ、<br>完全版の辞書です。</p>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
+}
+else
+{
+	<EditForm Model="@PasswordModel" OnSubmit="@OnSubmit">
+		<p id="desc">パスワードを入力</p>
+		<InputText id="password" type="password" @bind-Value="@PasswordModel.Password" />
+		<button type="submit" id="submit">送信</button>
+		<input name="__RequestVerificationToken" type="hidden" />
+	</EditForm>
+	@if (ErrorMessage != null)
+	{
+		<p id="passwordError">@ErrorMessage</p>
+	}
+}
 <div class="cache-button">
 	<button @onclick=CacheBtn_Click>キャッシュを消去する</button>
 </div>
@@ -137,12 +155,64 @@
 			transition: background-color 0.3s, color 0.3s;
 			text-decoration: none;
 		}
-</style>
 
+</style>
+<style>
+	#desc {
+		font-size: 22px;
+		color: #333;
+		text-align: center;
+		margin-top: 20px;
+		font-weight: 600
+	}
+
+	#password {
+		display: block;
+		width: 300px;
+		height: 40px;
+		border: 2px solid #ccc;
+		border-radius: 10px;
+		margin: 20px auto;
+		padding: 10px;
+		font-size: 16px;
+	}
+
+	#submit {
+		display: block;
+		width: 200px;
+		height: 50px;
+		background: linear-gradient(to right, #ff105f, #ffad06);
+		border: none;
+		border-radius: 10px;
+		color: white;
+		font-size: 18px;
+		font-weight: bold;
+		margin: 10px auto;
+		cursor: pointer;
+		box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+	}
+
+		#submit:hover {
+			transform: scale(1.1);
+		}
+
+		#submit:active {
+			transform: scale(0.9);
+		}
+
+
+	#passwordError {
+		margin-top: 20px;
+		text-align: center;
+		font-size: 16px;
+	}
+
+</style>
 <style type="text/css" media="screen and (max-width: 640.98px)">
 	.btn {
 		font-size: 20px;
 	}
+
 </style>
 <style type="text/css" media="screen and (min-width: 641px)">
 	.btn {
@@ -151,6 +221,79 @@
 </style>
 
 @code {
+	private bool IsAuthenticated = false;
+	private string Key = "PWnqFDRc+9yEdYByzDf8bhpf60EIHLgOqwoRcNpiZ7Y=";
+	private string IV = "8os+fHv31br0qAPTPgSXtw==";
+	private string EncryptedPassword = string.Empty;
+	private PasswordModel PasswordModel = new();
+	private string ErrorMessage = string.Empty;
+
+	private async Task GetEncryptedPassword()
+	{
+		var response = await Http.GetAsync("https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/binary/.appconfig.txt");
+		if (response.IsSuccessStatusCode)
+		{
+			EncryptedPassword = await response.Content.ReadAsStringAsync();
+
+		}
+		else
+			await JSRuntime.InvokeVoidAsync("alert", "通信に失敗しました。通信状況を確認して再度お試しください。");
+	}
+
+
+	private async void OnSubmit()
+	{
+		ErrorMessage = "Loading...";
+		StateHasChanged();
+		await Task.Delay(100);
+		try
+		{
+			var decryptedPassword = await JSRuntime.InvokeAsync<string>("decryptText", EncryptedPassword, Key, IV); ;
+			if (PasswordModel.Password == decryptedPassword)
+			{
+				IsAuthenticated = true;
+				await LocalStorage.SetItemAsync("isAuthenticated", true);
+			}
+			else
+				ErrorMessage = "パスワードが違います。もう一度お試しください。";
+
+			StateHasChanged();
+			await Task.Delay(1);
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.InvokeVoidAsync("alert", ex.Message);
+		}
+	}
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (await LocalStorage.GetItemAsync<bool>("isAuthenticated"))
+		{
+			await GetEncryptedPassword();
+			var passwordTmp = await LocalStorage.GetItemAsync<string>("encryptedPassword");
+			if (passwordTmp != EncryptedPassword) 
+			{
+				await LocalStorage.SetItemAsync("isAuthenticated", false);
+				return;
+			}
+			IsAuthenticated = true;
+			StateHasChanged();
+			return;
+		}
+		EncryptedPassword = await LocalStorage.GetItemAsync<string>("encryptedPassword");
+		if (string.IsNullOrEmpty(EncryptedPassword))
+		{ 
+			await GetEncryptedPassword(); 
+			await LocalStorage.SetItemAsync("encryptedPassword", EncryptedPassword);
+		}
+	}
+
+
+
+
+
 	private bool isLoading = false;
 	private string Content = string.Empty;
 	private string ErrorMsg = string.Empty;
@@ -173,7 +316,7 @@
 	}
 	private async void CacheBtn_Click()
 	{
-		if (!await JSRuntime.InvokeAsync<bool>("confirm", "タイプ付き単語のキャッシュを消去します。よろしいですか？")) return;
+		if (!await JSRuntime.InvokeAsync<bool>("confirm", "すべてのキャッシュを消去します。よろしいですか？")) return;
 		await LocalStorage.ClearAsync();
 		await JSRuntime.InvokeVoidAsync("alert", "キャッシュを消去しました。");
 	}

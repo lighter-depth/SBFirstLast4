@@ -1,0 +1,170 @@
+﻿@page "/simulator"
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+
+<div class="top-grid">
+	<div class="border">
+		<div class="stack-panel">
+			<label class="label">簡易シミュレーター</label>
+			<label class="text-label">
+				※ 実際のゲーム内容とは差異がある可能性があります
+			</label>
+		</div>
+	</div>
+</div>
+
+<div class="grid">
+	<div class="border">
+		<div class="stack-panel">
+			@if (!IsRunning)
+			{
+				<div class="inner-grid">
+					<label class="text-label" style="font-weight:600; font-size: 22px;">攻撃側のとくせい</label>
+					<div class="dropdown-container">
+						<select class="dropdown" @bind="SelectedAbilityItem">
+							@foreach (var item in new[] { "なし", "俺文字", "デバッガー", "グローバル", "じっけん", "きょじん", "しんこうしん", "からて", "ずぼし" })
+							{
+								<option value="@item">@item</option>
+							}
+						</select>
+					</div>
+				</div>
+			}
+			else
+			{
+				
+			}
+		</div>
+	</div>
+</div>
+
+<style>
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f5f6f1;
+	}
+
+	.top-grid {
+		display: block;
+	}
+
+	.grid {
+		display: grid;
+	}
+
+	.border {
+		margin: 20px;
+		border: 2px solid gray;
+		border-radius: 10px;
+		padding: 20px;
+		background-color: white;
+		box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+	}
+
+	.stack-panel {
+		display: flex;
+		flex-direction: column;
+		padding-left: 30px;
+		padding-right: 30px;
+		padding-top: 10px;
+		padding-bottom: 10px
+	}
+
+	.inner-grid {
+		display: grid;
+		grid-template-rows: auto auto;
+		row-gap: 15px;
+		margin-bottom: 10px;
+		justify-items: center;
+		align-items: center;
+	}
+
+	.label {
+		text-align: center;
+		font-weight: bold;
+		font-size: 30px;
+		color: black;
+	}
+
+	.text-label {
+		padding-top: 10px;
+		text-align: center;
+		font-size: 18px;
+		font-weight: 100;
+		color: black;
+	}
+
+	.text-input {
+		width: 80%;
+		padding: 12px;
+		font-size: 18px;
+		border: 2px solid gray;
+		border-radius: 5px;
+		margin-top: 8px;
+	}
+
+		.text-input::placeholder {
+			color: dimgray;
+		}
+
+	.divider {
+		height: 2px;
+		background-color: darkgray;
+		margin: 10px 0;
+	}
+
+
+	.checkbox {
+		display: none;
+	}
+
+	.toggle {
+		position: relative;
+		display: inline-block;
+		width: 60px;
+		height: 34px;
+		background-color: lightgray;
+		border-radius: 17px;
+	}
+
+		.toggle::after {
+			content: "";
+			position: absolute;
+			width: 26px;
+			height: 26px;
+			border-radius: 50%;
+			background-color: white;
+			top: 4px;
+			left: 4px;
+			transition: all 0.3s;
+		}
+
+	.checkbox:checked + .toggle::after {
+		left: 30px;
+	}
+
+	.checkbox:checked + .toggle {
+		background-color: green;
+	}
+
+</style>
+
+@code {
+
+	private bool IsRunning = false;
+
+	private string SelectedAbilityItem = string.Empty;
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		if (!WordDictionary.IsLoadedCorrectly)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+	}
+}
