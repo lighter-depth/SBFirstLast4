@@ -226,16 +226,12 @@ else
 	private PasswordModel PasswordModel = new();
 	private string ErrorMessage = string.Empty;
 
-	private async Task GetEncryptedPassword()
+	private async Task<string?> GetEncryptedPassword()
 	{
 		var response = await Http.GetAsync("https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/binary/.appconfig.txt");
-		if (response.IsSuccessStatusCode)
-		{
-			EncryptedPassword = await response.Content.ReadAsStringAsync();
-
-		}
-		else
-			await JSRuntime.InvokeVoidAsync("alert", "通信に失敗しました。通信状況を確認して再度お試しください。");
+		if (response.IsSuccessStatusCode) return await response.Content.ReadAsStringAsync();
+		await JSRuntime.InvokeVoidAsync("alert", "通信に失敗しました。通信状況を確認して再度お試しください。");
+		return null;
 	}
 
 
@@ -251,6 +247,7 @@ else
 			{
 				IsAuthenticated = true;
 				await LocalStorage.SetItemAsync("isAuthenticated", true);
+				await LocalStorage.SetItemAsync("encryptedPassword", EncryptedPassword);
 			}
 			else
 				ErrorMessage = "パスワードが違います。もう一度お試しください。";
@@ -267,24 +264,20 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
-		if (await LocalStorage.GetItemAsync<bool>("isAuthenticated"))
+		var password = await GetEncryptedPassword() ?? "nevergonnagiveyouup";
+		EncryptedPassword = password;
+		var passwordTmp = await LocalStorage.GetItemAsync<string>("encryptedPassword");
+		if (passwordTmp != password)
 		{
-			await GetEncryptedPassword();
-			var passwordTmp = await LocalStorage.GetItemAsync<string>("encryptedPassword");
-			if (passwordTmp != EncryptedPassword) 
-			{
-				await LocalStorage.SetItemAsync("isAuthenticated", false);
-				return;
-			}
-			IsAuthenticated = true;
-			StateHasChanged();
+			await LocalStorage.SetItemAsync("isAuthenticated", false);
 			return;
 		}
-		EncryptedPassword = await LocalStorage.GetItemAsync<string>("encryptedPassword");
-		if (string.IsNullOrEmpty(EncryptedPassword))
-		{ 
-			await GetEncryptedPassword(); 
-			await LocalStorage.SetItemAsync("encryptedPassword", EncryptedPassword);
+		if (await LocalStorage.GetItemAsync<bool>("isAuthenticated"))
+		{
+			IsAuthenticated = true;
+			StateHasChanged();
+			await Task.Delay(1);
+			return;
 		}
 	}
 
