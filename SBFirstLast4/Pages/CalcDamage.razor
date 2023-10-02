@@ -363,7 +363,7 @@
 		var crit = critFlag ? 1.5 : 1;
 		var atk = critFlag ? Math.Max(1, ValueA) : ValueA;
 		var def = critFlag ? Math.Min(1, ValueB) : ValueB;
-		var prop = Attacker.CalcAmp(Receiver);
+		var prop = Attacker.CalcEffectiveDmg(Receiver);
 		var amp = Attacker.Contains(WordType.Place) && Ability == WordType.Place ? 1.5
 				: Attacker.Contains(WordType.Science) && Ability == WordType.Mech ? 1.5
 				: Attacker.Contains(WordType.Person) && Ability == WordType.Person ? 1.5

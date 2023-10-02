@@ -1,7 +1,7 @@
 ﻿@page "/simulator"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
-
+@using SBFirstLast4.Simulator
 
 <div class="top-grid">
 	<div class="border">
@@ -20,24 +20,125 @@
 			@if (!IsRunning)
 			{
 				<div class="inner-grid">
-					<label class="text-label" style="font-weight:600; font-size: 22px;">攻撃側のとくせい</label>
+					<label class="text-label" style="font-weight:600; font-size: 22px;">先攻のとくせい</label>
 					<div class="dropdown-container">
-						<select class="dropdown" @bind="SelectedAbilityItem">
-							@foreach (var item in new[] { "なし", "俺文字", "デバッガー", "グローバル", "じっけん", "きょじん", "しんこうしん", "からて", "ずぼし" })
+						<select class="dropdown" @bind="SelectedInitialPlayer1AbilityItem">
+							@foreach (var item in AbilityNames)
 							{
 								<option value="@item">@item</option>
 							}
 						</select>
 					</div>
 				</div>
+				<div class="divider"></div>
+				<div class="inner-grid">
+					<label class="text-label" style="font-weight:600; font-size: 22px;">後攻のとくせい</label>
+					<div class="dropdown-container">
+						<select class="dropdown" @bind="SelectedInitialPlayer2AbilityItem">
+							@foreach (var item in AbilityNames)
+							{
+								<option value="@item">@item</option>
+							}
+						</select>
+					</div>
+				</div>
+				<div class="divider"></div>
+				<button class="start-button" @onclick="StartButton_Click">バトル開始</button>
 			}
 			else
 			{
-				
+				<div class="inner-grid">
+					<label class="text-label" style="font-weight:600; font-size: 24px;">先攻</label>
+					<div style="display: grid; grid-template-columns: auto auto; grid-column-gap: 20px;">
+						<HPBar CurrentHP="Battle.Player1.HP"></HPBar>
+						<div style="display: grid; grid-template-rows: auto auto;">
+							<label class="text-label">@($"とくせい：{Battle.Player1.Ability.ToString()}")</label>
+							<label class="text-label">@($"状態異常：{Battle.Player1.State.StateToString()}")</label>
+						</div>
+					</div>
+					<label class="text-label" style="font-weight:500; font-size: 25px;">@Battle.Player1.CurrentWord.ToString()</label>
+				</div>
+				<div class="divider"></div>
+				<div class="inner-grid">
+					<label class="text-label" style="font-weight:600; font-size: 24px;">後攻</label>
+					<div style="display: grid; grid-template-columns: auto auto; grid-column-gap: 20px;">
+						<HPBar CurrentHP="Battle.Player2.HP"></HPBar>
+						<div style="display: grid; grid-template-rows: auto auto;">
+							<label class="text-label">@($"とくせい：{Battle.Player2.Ability.ToString()}")</label>
+							<label class="text-label">@($"状態異常：{Battle.Player2.State.StateToString()}")</label>
+						</div>
+					</div>
+					<label class="text-label" style="font-weight:500; font-size: 25px;">@Battle.Player2.CurrentWord.ToString()</label>
+				</div>
 			}
 		</div>
 	</div>
 </div>
+
+@if (IsRunning)
+{
+	<div class="grid">
+		<div class="border">
+			<div class="stack-panel">
+				<div class="inner-grid">
+					<input class="text-input" id="order-input" type="text" placeholder="単語を入力..." @onkeydown=OrderInput_KeyDown>
+					<button class="btn-ability" @onclick=BtnAbility_Click>@($"{(ShowAbilityModal ? "▲" : "▼")} とくせいの変更")</button>
+				</div>
+				@if (ShowAbilityModal)
+				{
+					<div class="inner-grid">
+						<label class="text-label" style="font-weight:600; font-size: 22px;">変更するプレイヤー</label>
+						<div class="dropdown-container">
+							<select class="dropdown" @bind-value="SelectedPlayerSelectorItem" @bind-value:event="oninput" @onchange=PlayerSelector_Change>
+								@foreach (var item in new[] { "現在のプレイヤー", "先攻", "後攻" })
+								{
+									<option value="@item">@item</option>
+								}
+							</select>
+						</div>
+					</div>
+					<div class="divider"></div>
+					<div class="inner-grid">
+						<label class="text-label" style="font-weight:600; font-size: 22px;">変更後のとくせい</label>
+						<label class="text-label">@($"残り {SkillChangeRemain}回")</label>
+						<div class="dropdown-container">
+							<select class="dropdown" @bind="SelectedAbilityItem">
+								@foreach (var item in AbilityNames)
+								{
+									<option value="@item">@item</option>
+								}
+							</select>
+						</div>
+					</div>
+					<button class="btn-change" disabled="@(!IsChangeBtnEnabled)" @onclick=BtnChange_Click>変更する</button>
+				}
+				<div class="divider"></div>
+				<div class="inner-grid">
+					<div class="scrollable-list">
+						@foreach (var i in ShowLog ? BattleLogItems : BattleBufferItems)
+						{
+							<p>@i</p>
+						}
+					</div>
+				</div>
+				<div class="divider"></div>
+				<div class="inner-grid">
+					<label class="text-label" style="font-weight:600; font-size: 22px;">ログの表示</label>
+					<input type="checkbox" id="switch" class="checkbox"
+					@onchange="async e =>
+					{
+						ShowLog = (bool)(e.Value ?? false);
+						StateHasChanged();
+						await Task.Delay(1);
+					}" />
+					<label for="switch" class="toggle"></label>
+				</div>
+				<div class="divider"></div>
+				<button class="btn-reset" @onclick="BtnReset_Click">バトルをリセット</button>
+			</div>
+		</div>
+	</div>
+}
 
 <style>
 	body {
@@ -150,13 +251,127 @@
 		background-color: green;
 	}
 
+	.start-button {
+		text-align: center;
+		width: 95%;
+		line-height: 60px;
+		font-weight: bold;
+		height: 60px;
+		border: none;
+		border-radius: 30px;
+		font-size: 24px;
+		cursor: pointer;
+		background: linear-gradient(to right, #c02425, #f0cb35);
+		color: white;
+		transition: background-color 0.3s, color 0.3s;
+		text-decoration: none;
+		margin-top: 20px;
+	}
+
+	.btn-ability {
+		text-align: center;
+		width: 90%;
+		height: 50px;
+		background-color: #BBBBBB;
+		border-color: transparent;
+		border-radius: 20px;
+		margin-top: 10px;
+		font-size: 22px;
+	}
+
+	.btn-change {
+		text-align: center;
+		width: 80%;
+		font-weight: bold;
+		height: 50px;
+		border: none;
+		border-radius: 30px;
+		font-size: 20px;
+		cursor: pointer;
+		background: linear-gradient(to right, #c02524, #f035cb);
+		color: white;
+		transition: background-color 0.3s, color 0.3s;
+		text-decoration: none;
+		margin-top: 20px;
+		align-self: center;
+	}
+
+		.btn-change[disabled] {
+			background: #CCCCCC;
+		}
+
+	.btn-reset {
+		text-align: center;
+		width: 85%;
+		height: 50px;
+		border: none;
+		border-radius: 30px;
+		font-size: 19px;
+		cursor: pointer;
+		background-color: #DDDDDD;
+		transition: background-color 0.3s, color 0.3s;
+		text-decoration: none;
+		margin-top: 20px;
+		align-self: center;
+	}
+
+	.dropdown-container {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+	}
+
+	.dropdown {
+		width: 80%;
+		padding: 12px;
+		font-size: 18px;
+		border: 2px solid gray;
+		border-radius: 5px;
+	}
+
+	.scrollable-list {
+		height: 100px;
+		overflow-y: scroll;
+		width: 90%;
+		border: 2px solid #111111;
+		border-radius: 10px;
+		background-color: #F7F7F7;
+		margin-top: 9px;
+	}
+
+		.scrollable-list > p {
+			margin: 5px;
+			font-size: 18px;
+		}
 </style>
 
 @code {
 
 	private bool IsRunning = false;
 
-	private string SelectedAbilityItem = string.Empty;
+	private string SelectedPlayerSelectorItem = "現在のプレイヤー";
+	private string SelectedAbilityItem = "デバッガー";
+
+	private string[] AbilityNames = AbilityManager.Abilities.Select(x => x.ToString()).ToArray();
+
+	private string SelectedInitialPlayer1AbilityItem = "デバッガー";
+	private string SelectedInitialPlayer2AbilityItem = "デバッガー";
+
+	private Battle Battle = Battle.Empty;
+	private Stack<string> BattleBufferItems = new();
+	private Stack<string> BattleLogItems = new();
+
+	private TaskCompletionSource<Order> TaskCompletionSource = new();
+	private bool ShowAbilityModal = false;
+	private int SkillChangeRemain => SelectedPlayerSelectorItem switch
+	{
+		"現在のプレイヤー" => Battle.CurrentPlayer.SkillChangeRemain,
+		"先攻" => Battle.Player1.SkillChangeRemain,
+		_ => Battle.Player2.SkillChangeRemain
+	};
+
+	private bool IsChangeBtnEnabled => SkillChangeRemain > 0;
+	private bool ShowLog = false;
 
 	protected override void OnInitialized()
 	{
@@ -166,5 +381,104 @@
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
+	}
+
+	private async void StartButton_Click()
+	{
+		var emptyHandler = (Order _, CancellationTokenSource _) => { };
+		var player1Ability = AbilityManager.Create(SelectedInitialPlayer1AbilityItem, true) ?? new Debugger();
+		var player2Ability = AbilityManager.Create(SelectedInitialPlayer2AbilityItem, true) ?? new Debugger();
+		Battle = new
+		(
+			new(player1Ability)
+				{
+					Proceeding = Proceeds.True,
+					Name = "先攻"
+				},
+			new(player2Ability)
+				{
+					Proceeding = Proceeds.False,
+					Name = "後攻"
+				}
+		)
+			{
+				In = In,
+				Out = Out,
+				OnReset = cts => cts.Cancel()
+			};
+		IsRunning = true;
+		await Battle.Run();
+	}
+
+	private async Task<Order> In()
+	{
+		TaskCompletionSource = new();
+		return await TaskCompletionSource.Task;
+	}
+	private async Task Out(List<AnnotatedString> messages)
+	{
+		foreach (var i in messages)
+		{
+			if (!i.IsInvisible && !i.IsLog) BattleBufferItems.Push(i.Text);
+			BattleLogItems.Push(i.Text);
+		}
+		StateHasChanged();
+		await Task.Delay(1);
+	}
+
+	private async void OrderInput_KeyDown(KeyboardEventArgs e)
+	{
+		if (e.Key is "Process" or not "Enter") return;
+		var order = await JSRuntime.InvokeAsync<string>("eval", "document.getElementById('order-input').value");
+		await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('order-input').value = ''");
+		TaskCompletionSource.TrySetResult(Order.Parse(order.Trim().Split(), Battle));
+	}
+
+	private async void BtnAbility_Click()
+	{
+		ShowAbilityModal = !ShowAbilityModal;
+		StateHasChanged();
+		await Task.Delay(1);
+	}
+
+	private async void PlayerSelector_Change()
+	{
+		SelectedAbilityItem = SelectedPlayerSelectorItem switch
+		{
+			"現在のプレイヤー" => Battle.CurrentPlayer.Ability.ToString(),
+			"先攻" => Battle.Player1.Ability.ToString(),
+			_ => Battle.Player2.Ability.ToString()
+		};
+		StateHasChanged();
+		await Task.Delay(1);
+	}
+
+	private void BtnChange_Click()
+	{
+		var order = SelectedPlayerSelectorItem switch
+		{
+			"現在のプレイヤー" => $"change {SelectedAbilityItem}",
+			"先攻" => $"change p1 {SelectedAbilityItem}",
+			_ => $"change p2 {SelectedAbilityItem}"
+		};
+		TaskCompletionSource.TrySetResult(Order.Parse(order.Trim().Split(), Battle));
+	}
+
+	private async void BtnReset_Click()
+	{
+		if (!await JSRuntime.InvokeAsync<bool>("confirm", "バトルをリセットし、特性設定画面に戻ります。よろしいですか？"))
+			return;
+		Battle.Dispose();
+		IsRunning = false;
+		SelectedPlayerSelectorItem = "現在のプレイヤー";
+		SelectedAbilityItem = "デバッガー";
+		Battle = Battle.Empty;
+		BattleBufferItems = new();
+		BattleLogItems = new();
+		TaskCompletionSource = new();
+		ShowAbilityModal = false;
+		ShowLog = false;
+		StateHasChanged();
+		await Task.Delay(1);
 	}
 }

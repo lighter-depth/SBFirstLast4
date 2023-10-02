@@ -192,8 +192,8 @@
 		var noAbilityList = new List<AttackInfo>();
 		foreach (var i in list)
 		{
-			var lowDmgRaw = (int)(10 * i.CalcAmp(word) * randomLow);
-			var highDmgRaw = (int)(10 * i.CalcAmp(word) * randomHigh);
+			var lowDmgRaw = (int)(10 * i.CalcEffectiveDmg(word) * randomLow);
+			var highDmgRaw = (int)(10 * i.CalcEffectiveDmg(word) * randomHigh);
 			resultList.Add(new(i, WordType.Empty, highDmgRaw, lowDmgRaw));
 			noAbilityList.Add(new(i, WordType.Empty, highDmgRaw, lowDmgRaw));
 			if (i.Contains(WordType.Place))

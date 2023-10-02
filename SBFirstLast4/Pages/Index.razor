@@ -222,8 +222,6 @@ else
 
 @code {
 	private bool IsAuthenticated = false;
-	private string Key = "PWnqFDRc+9yEdYByzDf8bhpf60EIHLgOqwoRcNpiZ7Y=";
-	private string IV = "8os+fHv31br0qAPTPgSXtw==";
 	private string EncryptedPassword = string.Empty;
 	private PasswordModel PasswordModel = new();
 	private string ErrorMessage = string.Empty;
@@ -248,7 +246,7 @@ else
 		await Task.Delay(100);
 		try
 		{
-			var decryptedPassword = await JSRuntime.InvokeAsync<string>("decryptText", EncryptedPassword, Key, IV); ;
+			var decryptedPassword = await JSRuntime.InvokeAsync<string>("decryptText", EncryptedPassword, __config__.VALUE_A, __config__.VALUE_B); ;
 			if (PasswordModel.Password == decryptedPassword)
 			{
 				IsAuthenticated = true;
@@ -316,7 +314,7 @@ else
 	}
 	private async void CacheBtn_Click()
 	{
-		if (!await JSRuntime.InvokeAsync<bool>("confirm", "すべてのキャッシュを消去します。よろしいですか？")) return;
+		if (!await JSRuntime.InvokeAsync<bool>("confirm", "すべての キャッシュを消去します。よろしいですか？")) return;
 		await LocalStorage.ClearAsync();
 		await JSRuntime.InvokeVoidAsync("alert", "キャッシュを消去しました。");
 	}

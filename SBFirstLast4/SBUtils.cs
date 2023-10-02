@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SBFirstLast4.Simulator;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -7,7 +8,7 @@ namespace SBFirstLast4;
 
 public static class SBUtils
 {
-	public const string DB_NAME = "WordList";
+	public static Random Random = new();
 	public static string[][] KanaList => kanaList ??= new[]
 {
 		new[]{ "あ", "い", "う", "え", "お" },
@@ -124,6 +125,28 @@ public static class SBUtils
 			chunks.Add(sourceSpan.Slice(i, count).ToArray());
 		}
 		return chunks;
+	}
+
+	public static bool IsWild(this char c) => c is '*' or '＊';
+
+	public static bool IsWild(this string name) => name.Contains('*') || name.Contains('＊');
+
+	public static void Add(this List<AnnotatedString> list, string text, Notice notice)
+	{
+		list.Add(new(text, notice));
+	}
+	public static void Add(this List<AnnotatedString> list, string text, Notice notice, params int[] args)
+	{
+		list.Add(new(text, notice) { Params = args });
+	}
+	public static void Add(this List<AnnotatedString> list, Notice notice, int player1HP, int player2HP)
+	{
+		list.Add(new(string.Empty, notice) { Params = new[] { player1HP, player2HP } });
+	}
+	public static void AddMany(this List<AnnotatedString> list, IEnumerable<AnnotatedString> msgs)
+	{
+		foreach (var msg in msgs)
+			list.Add(msg);
 	}
 }
 

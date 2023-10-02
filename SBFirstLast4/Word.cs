@@ -1,15 +1,36 @@
-﻿namespace SBFirstLast4;
+﻿using SBFirstLast4.Simulator;
+
+namespace SBFirstLast4;
 
 public readonly record struct Word(string Name, WordType Type1, WordType Type2) : IComparable<Word>
 {
+	public char Start => Name.At(0);
+	public char End => Name.GetLastChar();
 	public bool Contains(WordType type) => Type1 == type || Type2 == type;
 	public bool Contains(WordType type1, WordType type2) => Type1 == type1 || Type2 == type1 || Type1 == type2 || Type2 == type2;
 	public bool IsEmpty => Type1 == WordType.Empty;
 	public bool IsSingleType => Type1 != WordType.Empty && Type2 == WordType.Empty;
 	public bool IsDoubleType => Type1 != WordType.Empty && Type2 != WordType.Empty;
 
-	public bool IsHeal => Contains(WordType.Food) || Contains(WordType.Health);
-	public static List<string> WordTypeNames { get; private set; } = new() { "無効", "指定なし", "無属性" };
+	//public bool IsHeal => Contains(WordType.Food) || Contains(WordType.Health);
+
+	public bool IsHeal
+	{
+		get
+		{
+			var isFood = Contains(WordType.Food);
+			var isCure = Contains(WordType.Health);
+			if (!isFood && !isCure) return false;
+			var isHeal = isFood || isCure;
+			return isHeal;
+		}
+	}
+	public bool IsViolence => !IsHeal && Contains(WordType.Violence);
+	public bool IsCritable => Contains(WordType.Body) || Contains(WordType.Insult);
+	public bool IsDefault => this == Default;
+	public static Word Default => _default;
+	private static readonly Word _default = new(string.Empty, WordType.Empty, WordType.Empty);
+
 	private static readonly int[,] effList;
 	private static readonly WordType[] typeIndex;
 	public override string ToString()
@@ -36,14 +57,14 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	}
 
 	public int CompareTo(Word other) => Name.CompareTo(other.Name);
-	public double CalcAmp(Word other)
+	public double CalcEffectiveDmg(Word other)
 	{
-		var result = CalcAmp(Type1, other.Type1) * CalcAmp(Type1, other.Type2) * CalcAmp(Type2, other.Type1) * CalcAmp(Type2, other.Type2);
-		
-		var type1_1 = CalcAmp(Type1, other.Type1);
-		var type1_2 = CalcAmp(Type1, other.Type2);
-		var type2_1 = CalcAmp(Type2, other.Type1);
-		var type2_2 = CalcAmp(Type2, other.Type2);
+		var result = CalcEffectiveDmg(Type1, other.Type1) * CalcEffectiveDmg(Type1, other.Type2) * CalcEffectiveDmg(Type2, other.Type1) * CalcEffectiveDmg(Type2, other.Type2);
+
+		var type1_1 = CalcEffectiveDmg(Type1, other.Type1);
+		var type1_2 = CalcEffectiveDmg(Type1, other.Type2);
+		var type2_1 = CalcEffectiveDmg(Type2, other.Type1);
+		var type2_2 = CalcEffectiveDmg(Type2, other.Type2);
 		var type_result = 1.0;
 		type_result *= type1_1;
 		type_result *= type1_2;
@@ -51,10 +72,10 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 		type_result *= type2_2;
 		Console.WriteLine(type_result);
 
-		
+
 		return result;
 	}
-	public static double CalcAmp(WordType t1, WordType t2)
+	public static double CalcEffectiveDmg(WordType t1, WordType t2)
 	{
 		if (t1 == WordType.Empty || t2 == WordType.Empty) return 1;
 		var t1Index = Array.IndexOf(typeIndex, t1);
@@ -69,12 +90,23 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 		};
 	}
 
+	public bool IsBuf(Ability ability) => ability is ISingleTypedBufAbility buf && Contains(buf.BufType);
+	public bool IsSeed(Ability ability) => ability is ISeedable seed && Contains(seed.SeedType);
+	public int IsSuitable(Word prev)
+	{
+		if (End == 'ん')
+			return -1;
+		if (string.IsNullOrWhiteSpace(prev.Name))
+			return 0;
+		if (Start.IsWild() || prev.End.IsWild())
+			return 0;
+		if (Start != prev.End)
+			return 1;
+		return 0;
+	}
+
 	static Word()
 	{
-		for (var i = 1; i < 26; i++)
-		{
-			WordTypeNames.Add(((WordType)i).TypeToString());
-		}
 		// 0: Normal, 1: Effective, 2: Non-Effective, 3: No Damage
 		effList = new[,]
 		{
@@ -214,5 +246,33 @@ public static class WordTypeEx
 		WordType.Tale => "俺文字",
 		_ => "天で話にならねぇよ..."
 	};
-
+	public static WordType CharToType(this char symbol) => symbol switch
+	{
+		'N' or 'n' => WordType.Normal,
+		'A' or 'a' => WordType.Animal,
+		'Y' or 'y' => WordType.Plant,
+		'G' or 'g' => WordType.Place,
+		'E' or 'e' => WordType.Emote,
+		'C' or 'c' => WordType.Art,
+		'F' or 'f' => WordType.Food,
+		'V' or 'v' => WordType.Violence,
+		'H' or 'h' => WordType.Health,
+		'B' or 'b' => WordType.Body,
+		'M' or 'm' => WordType.Mech,
+		'Q' or 'q' => WordType.Science,
+		'T' or 't' => WordType.Time,
+		'P' or 'p' => WordType.Person,
+		'K' or 'k' => WordType.Work,
+		'L' or 'l' => WordType.Cloth,
+		'S' or 's' => WordType.Society,
+		'J' or 'j' => WordType.Play,
+		'D' or 'd' => WordType.Bug,
+		'X' or 'x' => WordType.Math,
+		'Z' or 'z' => WordType.Insult,
+		'R' or 'r' => WordType.Religion,
+		'U' or 'u' => WordType.Sports,
+		'W' or 'w' => WordType.Weather,
+		'O' or 'o' => WordType.Tale,
+		_ => WordType.Empty // I is not used
+	};
 }
