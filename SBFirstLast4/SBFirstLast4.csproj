@@ -19,17 +19,4 @@
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="wwwroot\resources\SBFirstLast4.Configuration.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="SBFirstLast4.Configuration">
-      <HintPath>wwwroot\resources\SBFirstLast4.Configuration.dll</HintPath>
-		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Reference>
-  </ItemGroup>
-
 </Project>
