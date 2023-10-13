@@ -9,6 +9,9 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
+  
+            - name: Copy DLL to _framework directory
+              run: cp SBFirstLast4/Reference/SBFirstLast4.Configuration.dll release/wwwroot/_framework/SBFirstLast4.Configuration.dll
 
             - name: Setup .NET Core SDK
               uses: actions/setup-dotnet@v1
