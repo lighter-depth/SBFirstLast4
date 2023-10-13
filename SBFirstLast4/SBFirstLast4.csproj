@@ -16,20 +16,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="SBFirstLast4.Configuration">
-      <HintPath>Reference\SBFirstLast4.Configuration.dll</HintPath>
-      <Private></Private>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Reference\SBFirstLast4.Configuration.dll">
+    <None Include="wwwroot\resources\SBFirstLast4.Configuration.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="SBFirstLast4.Configuration">
+      <HintPath>wwwroot\resources\SBFirstLast4.Configuration.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
