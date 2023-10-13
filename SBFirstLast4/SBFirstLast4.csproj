@@ -28,6 +28,7 @@
   <ItemGroup>
     <Reference Include="SBFirstLast4.Configuration">
       <HintPath>wwwroot\resources\SBFirstLast4.Configuration.dll</HintPath>
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Reference>
   </ItemGroup>
 
