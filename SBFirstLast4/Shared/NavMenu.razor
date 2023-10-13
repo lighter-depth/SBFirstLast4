@@ -3,7 +3,7 @@
 
 <div class="top-row ps-3 navbar navbar-dark">
 	<div class="container-fluid">
-		<a class="navbar-brand" href="home">SBFirstLast4</a>
+		<a class="navbar-brand" @onclick=GoToHomeBtn_Click>SBFirstLast4</a>
 		<button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
 			<span class="navbar-toggler-icon"></span>
 		</button>
@@ -20,6 +20,11 @@
 		<div class="nav-item px-3">
 			<NavLink class="nav-link" href="typed">
 				<span class="oi oi-list-rich" aria-hidden="true"></span> しりバト単語検索
+			</NavLink>
+		</div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="safe">
+				<span class="oi oi-heart" aria-hidden="true"></span> 安全単語検索
 			</NavLink>
 		</div>
 		<div class="nav-item px-3">
@@ -42,6 +47,23 @@
 				<span class="oi oi-puzzle-piece" aria-hidden="true"></span> 簡易シミュレーター
 			</NavLink>
 		</div>
+		<!--
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="about">
+				<span class="oi oi-wrench" aria-hidden="true"></span> 設定
+			</NavLink>
+		</div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="about">
+				<span class="oi oi-eye" aria-hidden="true"></span> 当サイトについて
+			</NavLink>
+		</div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="debug">
+				<span class="oi oi-terminal" aria-hidden="true"></span> デバッグ モード
+			</NavLink>
+		</div>
+		-->
 	</nav>
 </div>
 
@@ -56,7 +78,7 @@
 	}
 	private async void GoToHomeBtn_Click()
 	{
-		if (WordDictionary.IsLite)
+		if (SBDictionary.IsLite)
 		{
 			if (await JSRuntime.InvokeAsync<bool>("confirm", "完全版の辞書が読み込まれていないため、辞書選択画面に戻ります。よろしいですか？"))
 				NavigationManager.NavigateTo("", false);

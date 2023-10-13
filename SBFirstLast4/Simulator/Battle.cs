@@ -205,10 +205,10 @@ public partial class Battle
 			word = new(name, WordType.Empty, WordType.Empty);
 			return true;
 		}
-		if ((word = WordDictionary.TypedWords.Find(word => word.Name == name)) != default)
+		if ((word = SBDictionary.TypedWords.Find(word => word.Name == name)) != default)
 			return true;
 
-		if (WordDictionary.IsLite || WordDictionary.NoTypeWords.Contains(name))
+		if (SBDictionary.IsLite || SBDictionary.NoTypeWords.Contains(name))
 		{
 			word = new(name, WordType.Empty, WordType.Empty);
 			return true;

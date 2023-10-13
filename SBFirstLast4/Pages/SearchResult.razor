@@ -172,7 +172,7 @@
 	protected override async Task OnInitializedAsync()
 	{
 		await base.OnInitializedAsync();
-		if (!WordDictionary.IsLoadedCorrectly)
+		if (!SBDictionary.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("", false);
 			return;

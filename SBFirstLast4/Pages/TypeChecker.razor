@@ -116,7 +116,7 @@
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
-		if (!WordDictionary.IsLoadedCorrectly)
+		if (!SBDictionary.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("", false);
 			return;
@@ -151,13 +151,13 @@
 			await Task.Delay(1);
 			return;
 		}
-		if (!WordDictionary.IsLite)
+		if (!SBDictionary.IsLite)
 		{
 			WordResult = "Loading...";
 			StateHasChanged();
 			await Task.Delay(1);
 		}
-		if (!WordDictionary.IsLite && !WordDictionary.PerfectNameDic.Contains(wordText))
+		if (!SBDictionary.IsLite && !SBDictionary.PerfectNameDic.Contains(wordText))
 		{
 			result += "辞書にない単語です。";
 			WordResult = result;
@@ -165,8 +165,8 @@
 			await Task.Delay(1);
 			return;
 		}
-		var resultWord = WordDictionary.GetSplitList(keyChar).Find(x => x.Name == wordText);
-		if (WordDictionary.IsLite && resultWord == default)
+		var resultWord = SBDictionary.GetSplitList(keyChar).Find(x => x.Name == wordText);
+		if (SBDictionary.IsLite && resultWord == default)
 		{
 			result += "辞書にないか、無属性です。";
 			WordResult = result;

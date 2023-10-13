@@ -1,0 +1,67 @@
+﻿@page "/debug"
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+
+<div class="container">
+	<button @onclick=DebugButton_Click></button>
+	<label>@UpdateText</label>
+	<label>@DebugContent</label>
+</div>
+
+@code {
+	private string UpdateText = string.Empty;
+	private string DebugContent = string.Empty;
+	private async void DebugButton_Click()
+	{
+		var words = SearchWords();
+		var resultText = string.Join(", ", words.Select(static x => $"\"{x.Name}\""));
+		DebugContent = resultText;
+		StateHasChanged();
+		await Task.Delay(1);
+	}
+
+	private async Task<List<Word>> SearchWords(Func<string, Task> callback)
+	{
+		var words = new List<Word>();
+		for (var i = 0; i < SBDictionary.TypedWords.Count; i++)
+		{
+			var receiver = SBDictionary.TypedWords[i];
+			var splitList = SBDictionary.GetSplitList(receiver.End);
+			for (var j = 0; j < splitList.Count; j++)
+			{
+				var attacker = splitList[j];
+				var eff = attacker.CalcEffectiveDmg(receiver);
+				if (attacker.Name.Length > 6) eff *= 2;
+				if (eff > 7)
+				{
+					words.Add(receiver);
+					break;
+				}
+			}
+			if (i % 100 == 0) await callback($"updating... count: {i}, word: {receiver.Name}");
+		}
+		return words;
+	}
+
+	private List<Word> SearchWords()
+	{
+		var words = new List<Word>();
+		var typedWordsSpan = SBDictionary.TypedWords.AsSpan();
+		foreach(var receiver in typedWordsSpan)
+		{
+			var splitList = SBDictionary.GetSplitList(receiver.End).AsSpan();
+			foreach(var attacker in splitList)
+			{
+				var eff = attacker.CalcEffectiveDmg(receiver);
+				if (attacker.Name.Length > 6) eff *= 2;
+				if (eff > 7)
+				{
+					words.Add(receiver);
+					break;
+				}
+			}
+		}
+		return words;
+	}
+}

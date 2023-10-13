@@ -5,6 +5,7 @@
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @inject HttpClient Http
 @using System.Security.Cryptography
+@using static SBFirstLast4.Configuration.__config__
 <PageTitle>SBFirstLast4</PageTitle>
 
 @if (IsAuthenticated)
@@ -221,6 +222,8 @@ else
 </style>
 
 @code {
+
+	#region authentication
 	private bool IsAuthenticated = false;
 	private string EncryptedPassword = string.Empty;
 	private PasswordModel PasswordModel = new();
@@ -234,7 +237,6 @@ else
 		return null;
 	}
 
-
 	private async void OnSubmit()
 	{
 		ErrorMessage = "Loading...";
@@ -242,7 +244,7 @@ else
 		await Task.Delay(100);
 		try
 		{
-			var decryptedPassword = await JSRuntime.InvokeAsync<string>("decryptText", EncryptedPassword, __config__.VALUE_A, __config__.VALUE_B); ;
+			var decryptedPassword = await JSRuntime.InvokeAsync<string>("decryptText", EncryptedPassword, FromStoredValue(), FromStoredValue()); ;
 			if (PasswordModel.Password == decryptedPassword)
 			{
 				IsAuthenticated = true;
@@ -280,15 +282,20 @@ else
 			return;
 		}
 	}
-
-
-
+	#endregion
 
 
 	private bool isLoading = false;
 	private string Content = string.Empty;
 	private string ErrorMsg = string.Empty;
-	private readonly bool SkipFlag = false;
+	private static readonly bool SkipFlag = Convert.ToBoolean
+	(
+#if DEBUG
+	0
+#else
+	0
+#endif
+	);
 	private async void LiteDictionaryBtn_Click()
 	{
 		isLoading = true;
@@ -318,7 +325,7 @@ else
 		if (SkipFlag) token = DictionaryInitializationToken.Skip;
 		try
 		{
-			await foreach (var i in WordDictionary.Initialize(LocalStorage, token))
+			await foreach (var i in SBDictionary.Initialize(LocalStorage, token))
 			{
 				Content = i;
 				StateHasChanged();

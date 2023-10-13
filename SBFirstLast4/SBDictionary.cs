@@ -4,7 +4,7 @@ using Blazored.LocalStorage;
 
 namespace SBFirstLast4;
 
-public static class WordDictionary
+public static class SBDictionary
 {
 	public static List<string> NoTypeWords { get; internal set; } = new(3_000_000);
 	public static List<Word> TypedWords { get; internal set; } = new(20_000);

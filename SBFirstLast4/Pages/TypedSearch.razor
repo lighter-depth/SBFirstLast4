@@ -234,7 +234,7 @@
 		background-color: white;
 		box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 		white-space: nowrap;
-		overflow: hidden; 
+		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
@@ -378,7 +378,7 @@
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
-		if (!WordDictionary.IsLoadedCorrectly)
+		if (!SBDictionary.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("", false);
 			return;
@@ -388,8 +388,8 @@
 	{
 		var returnFlag = false;
 		var isRegex = SelectedSearchOptionItem == "正規表現";
-		if (SelectedSearchOptionItem is not "後方一致" or "前方後方一致") LastChar = "*";
-		if (SelectedSearchOptionItem is not "前方一致" or "前方後方一致") FirstChar = "*";
+		if (SelectedSearchOptionItem is not ("後方一致" or "前方後方一致")) LastChar = "*";
+		if (SelectedSearchOptionItem is not ("前方一致" or "前方後方一致")) FirstChar = "*";
 		if (!KanaRegex.IsMatch(FirstChar) && !isRegex)
 		{
 			FirstCharWarning = "ひらがなを入力してください";
@@ -474,6 +474,7 @@
 				IsSingleTypedOnly = SelectedTypeOptionItem is "単タイプ",
 				IsDoubleTypedOnly = SelectedTypeOptionItem is "複合タイプ"
 			};
+		SearchResult.TypedPredicate = null;
 		SearchResult.IsTyped = true;
 		DownloadConfig.IsNotype = false;
 		DownloadConfig.DeclType = ListDeclType.TypedOnly;

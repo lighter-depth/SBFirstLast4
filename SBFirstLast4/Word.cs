@@ -12,19 +12,8 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	public bool IsSingleType => Type1 != WordType.Empty && Type2 == WordType.Empty;
 	public bool IsDoubleType => Type1 != WordType.Empty && Type2 != WordType.Empty;
 
-	//public bool IsHeal => Contains(WordType.Food) || Contains(WordType.Health);
+	public bool IsHeal => Contains(WordType.Food) || Contains(WordType.Health);
 
-	public bool IsHeal
-	{
-		get
-		{
-			var isFood = Contains(WordType.Food);
-			var isCure = Contains(WordType.Health);
-			if (!isFood && !isCure) return false;
-			var isHeal = isFood || isCure;
-			return isHeal;
-		}
-	}
 	public bool IsViolence => !IsHeal && Contains(WordType.Violence);
 	public bool IsCritable => Contains(WordType.Body) || Contains(WordType.Insult);
 	public bool IsDefault => this == Default;

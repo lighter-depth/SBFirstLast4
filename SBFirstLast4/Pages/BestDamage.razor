@@ -165,7 +165,7 @@
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
-		if (!WordDictionary.IsLoadedCorrectly)
+		if (!SBDictionary.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("", false);
 			return;
@@ -185,7 +185,7 @@
 			await Task.Delay(1);
 			return;
 		}
-		var list = WordDictionary.GetSplitList(wordText.GetLastChar());
+		var list = SBDictionary.GetSplitList(wordText.GetLastChar());
 		var randomLow = word.IsEmpty ? 1 : .85;
 		var randomHigh = word.IsEmpty ? 1 : .99;
 		var resultList = new List<AttackInfo>();
@@ -271,13 +271,13 @@
 			await Task.Delay(1);
 			return default;
 		}
-		if (!WordDictionary.IsLite)
+		if (!SBDictionary.IsLite)
 		{
 			TypeIndicator = "Loading...";
 			StateHasChanged();
 			await Task.Delay(1);
 		}
-		if (!WordDictionary.IsLite && !WordDictionary.PerfectNameDic.Contains(wordText))
+		if (!SBDictionary.IsLite && !SBDictionary.PerfectNameDic.Contains(wordText))
 		{
 			TypeIndicator = "辞書にない単語です。";
 			StateHasChanged();
@@ -285,13 +285,13 @@
 			return default;
 		}
 
-		var resultWord = WordDictionary.GetSplitList(keyChar).Find(x => x.Name == wordText);
+		var resultWord = SBDictionary.GetSplitList(keyChar).Find(x => x.Name == wordText);
 
 		var typeIndicatorResult = "タイプ：";
 		var (type1, type2) = (resultWord.Type1, resultWord.Type2);
 		typeIndicatorResult += (type1, type2) switch
 		{
-			(WordType.Empty, WordType.Empty) when WordDictionary.IsLite && resultWord == default => "辞書にない、または無属性",
+			(WordType.Empty, WordType.Empty) when SBDictionary.IsLite && resultWord == default => "辞書にない、または無属性",
 			(WordType.Empty, WordType.Empty) => "無属性",
 			(var type, WordType.Empty) => $"{type.TypeToString()}",
 			(WordType.Empty, var type) => $"{type.TypeToString()}",

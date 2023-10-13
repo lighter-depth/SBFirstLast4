@@ -81,8 +81,8 @@ public abstract class Contract
 			OnContractBegin,
 			OnActionBegin,
 			OnActionExecuted,
-			OnActionEnd,
 			OnReceive,
+			OnActionEnd,
 			OnContractEnd
 		};
 	}
@@ -337,8 +337,8 @@ internal class AttackContract : Contract
 			OnActionBegin,
 			OnActionExecuted,
 			OnViolenceUsed,
-			OnActionEnd,
 			OnReceive,
+			OnActionEnd,
 			OnContractEnd
 		};
 	}
@@ -404,7 +404,7 @@ internal class AttackContract : Contract
 		State = AbilityType.MtpCalced;
 		if (!Actor.Ability.Type.HasFlag(State) && !Receiver.Ability.Type.HasFlag(State))
 		{
-			MtpDmg = CritFlag ? Math.Max(Actor.ATK, 1) : Actor.ATK / Receiver.DEF;
+			MtpDmg = CritFlag ? Math.Max(Actor.ATK / Receiver.DEF, 1) : Actor.ATK / Receiver.DEF;
 			return;
 		}
 		if (Actor.Ability.Type.HasFlag(State))
@@ -517,8 +517,8 @@ internal class HealContract : Contract
 			OnDetermineCanHeal,
 			OnActionBegin,
 			OnActionExecuted,
-			OnActionEnd,
 			OnReceive,
+			OnActionEnd,
 			OnContractEnd
 		};
 	}

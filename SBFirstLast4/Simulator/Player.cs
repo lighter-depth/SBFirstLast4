@@ -80,9 +80,11 @@ public class Player
 	public bool TryChangeATK(int arg, Word word)
 	{
 		var resultIndex = ATKIndex + arg;
-		if (resultIndex < 0 || resultIndex == BufValues.Length - 1) return false;
-		else if (resultIndex >= BufValues.Length - 1) ATKIndex = BufValues.Length - 1;
-		else ATKIndex = resultIndex;
+		var maxIndex = BufValues.Length - 1;
+		if ((ATKIndex == maxIndex && resultIndex > maxIndex)
+			|| (ATKIndex == 0 && resultIndex < 0))
+			return false;
+		ATKIndex = Math.Max(0, Math.Min(resultIndex, maxIndex));
 		CurrentWord = word;
 		return true;
 	}
@@ -90,9 +92,11 @@ public class Player
 	public bool TryChangeDEF(int arg, Word word)
 	{
 		var resultIndex = DEFIndex + arg;
-		if (resultIndex < 0 || resultIndex == BufValues.Length - 1) return false;
-		else if (resultIndex >= BufValues.Length - 1) DEFIndex = BufValues.Length - 1;
-		else DEFIndex = resultIndex;
+		var maxIndex = BufValues.Length - 1;
+		if ((DEFIndex == maxIndex && resultIndex > maxIndex)
+			|| (DEFIndex == 0 && resultIndex < 0))
+			return false;
+		DEFIndex = Math.Max(0, Math.Min(resultIndex, maxIndex));
 		CurrentWord = word;
 		return true;
 	}
