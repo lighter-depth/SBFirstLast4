@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <None Update="Reference\SBFirstLast4.Configuration.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
