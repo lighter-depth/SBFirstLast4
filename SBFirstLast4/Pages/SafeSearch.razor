@@ -483,6 +483,16 @@
 	private string SelectedCharFilterItem = "なし";
 	private List<string> AppliedEndFilters = new();
 
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		if (!SBDictionary.IsLoadedCorrectly)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+	}
+
 
 	private async void EndCharInput_KeyDown(KeyboardEventArgs e)
 	{
@@ -508,33 +518,40 @@
 
 	private void SearchButton_Click()
 	{
-		var predicates = new List<Func<Word, bool>>();
-		var type1 = SelectedTypeItem.StringToType();
-		if (type1 is not WordType.Empty)
-			predicates.Add(word => word.Contains(type1));
-
-
-		foreach (var i in SelectedCategoryFilterItem switch
+		try
 		{
-			"おまかせ（弱）" => new() { "即死", "準即死", "強ロクロ", "強毒針" },
-			"おまかせ（中）" => new() { "即死", "準即死", "４注", "強ロクロ", "中ロクロ", "強毒針", "中毒針" },
-			"おまかせ（強）" => new() { "即死", "準即死", "４注", "４倍", "安全暴力", "強ロクロ", "中ロクロ", "強毒針", "中毒針", "強やどりぎ" },
-			"カスタム" => AppliedCategoryFilters,
-			_ => new()
-		})
-			predicates.Add(GetCategoryPredicate(i));
+			var predicates = new List<Func<Word, bool>> { _ => true };
+			var type1 = SelectedTypeItem.StringToType();
+			if (type1 is not WordType.Empty)
+				predicates.Add(word => word.Contains(type1));
 
-		foreach (var i in SelectedCharFilterItem == "なし" ? new() : AppliedEndFilters)
-			predicates.Add(word => word.End != i.At(0));
 
-		var predicate = predicates.Aggregate((p1, p2) => word => p1(word) && p2(word));
+			foreach (var i in SelectedCategoryFilterItem switch
+			{
+				"おまかせ（弱）" => new() { "即死", "準即死", "強ロクロ", "強毒針" },
+				"おまかせ（中）" => new() { "即死", "準即死", "４注", "強ロクロ", "中ロクロ", "強毒針", "中毒針" },
+				"おまかせ（強）" => new() { "即死", "準即死", "４注", "４倍", "安全暴力", "強ロクロ", "中ロクロ", "強毒針", "中毒針", "強やどりぎ" },
+				"カスタム" => AppliedCategoryFilters,
+				_ => new()
+			})
+				predicates.Add(GetCategoryPredicate(i));
 
-		SearchResult.TypedSearcher = new() { IsTypedOnly = true };
-		SearchResult.TypedPredicate = predicate;
-		SearchResult.IsTyped = true;
-		DownloadConfig.IsNotype = false;
-		DownloadConfig.DeclType = ListDeclType.TypedOnly;
-		NavigationManager.NavigateTo("result");
+			foreach (var i in SelectedCharFilterItem == "なし" ? new() : AppliedEndFilters)
+				predicates.Add(word => word.End != i.At(0));
+
+			var predicate = predicates.Aggregate((p1, p2) => word => p1(word) && p2(word));
+
+			SearchResult.TypedSearcher = new() { IsTypedOnly = true };
+			SearchResult.TypedPredicate = predicate;
+			SearchResult.IsTyped = true;
+			DownloadConfig.IsNotype = false;
+			DownloadConfig.DeclType = ListDeclType.TypedOnly;
+			NavigationManager.NavigateTo("result");
+		}
+		catch(Exception ex)
+		{
+			JSRuntime.InvokeVoidAsync("alert", ex.ToString() + "\n" + ex.Message);
+		}
 	}
 
 	private static Func<Word, bool> GetCategoryPredicate(string predName) => predName switch
