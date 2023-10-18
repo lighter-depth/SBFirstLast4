@@ -1,7 +1,7 @@
 ﻿@page "/simulator"
+@using SBFirstLast4.Simulator
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
-@using SBFirstLast4.Simulator
 
 <div class="top-grid">
 	<div class="border">
@@ -347,7 +347,7 @@
 
 @code {
 
-	private bool IsRunning = false;
+	private bool IsRunning;
 
 	private string SelectedPlayerSelectorItem = "現在のプレイヤー";
 	private string SelectedAbilityItem = "デバッガー";
@@ -362,7 +362,7 @@
 	private Stack<string> BattleLogItems = new();
 
 	private TaskCompletionSource<Order> TaskCompletionSource = new();
-	private bool ShowAbilityModal = false;
+	private bool ShowAbilityModal;
 	private int SkillChangeRemain => SelectedPlayerSelectorItem switch
 	{
 		"現在のプレイヤー" => Battle.CurrentPlayer.SkillChangeRemain,
@@ -371,7 +371,7 @@
 	};
 
 	private bool IsChangeBtnEnabled => SkillChangeRemain > 0;
-	private bool ShowLog = false;
+	private bool ShowLog;
 
 	protected override void OnInitialized()
 	{
@@ -379,7 +379,6 @@
 		if (!SBDictionary.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("", false);
-			return;
 		}
 	}
 

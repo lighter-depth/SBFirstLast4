@@ -232,7 +232,7 @@
 		"1.0 倍", "1.5 倍", "2.0 倍", "2.5 倍", "3.0 倍", "3.5 倍", "4.0 倍"
 	};
 	private string SelectedAbilityItem = "なし";
-	private bool CritIfPossible = false;
+	private bool CritIfPossible;
 	private string LblDamage = string.Empty;
 
 
@@ -261,7 +261,6 @@
 		if (!SBDictionary.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("", false);
-			return;
 		}
 	}
 

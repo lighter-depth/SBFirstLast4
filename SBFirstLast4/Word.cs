@@ -45,25 +45,13 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 		static string toSpace(WordType type) => type != WordType.Empty ? " " : string.Empty;
 	}
 
-	public int CompareTo(Word other) => Name.CompareTo(other.Name);
+	public int CompareTo(Word other) => string.Compare(Name, other.Name, StringComparison.Ordinal);
 	public double CalcEffectiveDmg(Word other)
-	{
-		var result = CalcEffectiveDmg(Type1, other.Type1) * CalcEffectiveDmg(Type1, other.Type2) * CalcEffectiveDmg(Type2, other.Type1) * CalcEffectiveDmg(Type2, other.Type2);
+		=> CalcEffectiveDmg(Type1, other.Type1)
+		   * CalcEffectiveDmg(Type1, other.Type2)
+		   * CalcEffectiveDmg(Type2, other.Type1)
+		   * CalcEffectiveDmg(Type2, other.Type2);
 
-		var type1_1 = CalcEffectiveDmg(Type1, other.Type1);
-		var type1_2 = CalcEffectiveDmg(Type1, other.Type2);
-		var type2_1 = CalcEffectiveDmg(Type2, other.Type1);
-		var type2_2 = CalcEffectiveDmg(Type2, other.Type2);
-		var type_result = 1.0;
-		type_result *= type1_1;
-		type_result *= type1_2;
-		type_result *= type2_1;
-		type_result *= type2_2;
-		Console.WriteLine(type_result);
-
-
-		return result;
-	}
 	public static double CalcEffectiveDmg(WordType t1, WordType t2)
 	{
 		if (t1 == WordType.Empty || t2 == WordType.Empty) return 1;

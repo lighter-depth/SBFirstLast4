@@ -50,7 +50,7 @@ public abstract class Contract
 	/// <summary>
 	/// プレイヤーが死んだかどうかを表すフラグ
 	/// </summary>
-	public bool DeadFlag { get; protected set; } = false;
+	public bool DeadFlag { get; protected set; }
 	/// <summary>
 	/// アクションが実行されたかどうかを表すフラグ
 	/// </summary>
@@ -315,7 +315,7 @@ internal class AttackContract : Contract
 	/// <summary>
 	/// 攻撃が急所に当たるかどうかを表すフラグ
 	/// </summary>
-	public bool CritFlag { get; internal set; } = false;
+	public bool CritFlag { get; internal set; }
 	/// <summary>
 	/// どく状態を付与したかを表すフラグ
 	/// </summary>
@@ -343,7 +343,8 @@ internal class AttackContract : Contract
 		};
 	}
 	[SetsRequiredMembers]
-	public AttackContract() : base() { }
+	public AttackContract()
+	{ }
 	#endregion
 	/// <summary>
 	/// 基礎ダメージを計算します。
@@ -483,7 +484,8 @@ internal class BufContract : Contract
 	[SetsRequiredMembers]
 	public BufContract(Player actor, Player receiver, Word word, Battle parent, ContractArgs args) : base(actor, receiver, word, parent, args) { }
 	[SetsRequiredMembers]
-	public BufContract() : base() { }
+	public BufContract()
+	{ }
 	#endregion
 	public override void OnActionBegin()
 	{
@@ -501,11 +503,11 @@ internal class HealContract : Contract
 	/// <summary>
 	/// 医療タイプによる回復であるかどうかを表すフラグ
 	/// </summary>
-	public bool IsCure { get; set; } = false;
+	public bool IsCure { get; set; }
 	/// <summary>
 	/// 回復が成功するかどうかを表すフラグ
 	/// </summary>
-	public bool CanHeal { get; set; } = false;
+	public bool CanHeal { get; set; }
 	#region constructors
 	[SetsRequiredMembers]
 	public HealContract(Player actor, Player receiver, Word word, Battle parent, ContractArgs args) : base(actor, receiver, word, parent, args)
@@ -523,7 +525,8 @@ internal class HealContract : Contract
 		};
 	}
 	[SetsRequiredMembers]
-	public HealContract() : base() { }
+	public HealContract()
+	{ }
 	#endregion
 	/// <summary>
 	/// 回復量を計算します。
@@ -614,6 +617,7 @@ internal class SeedContract : Contract
 	[SetsRequiredMembers]
 	public SeedContract(Player actor, Player receiver, Word word, Battle parent, ContractArgs args) : base(actor, receiver, word, parent, args) { }
 	[SetsRequiredMembers]
-	public SeedContract() : base() { }
+	public SeedContract()
+	{ }
 	#endregion
 }

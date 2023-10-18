@@ -1,6 +1,6 @@
 ﻿@page "/typed"
-@inject NavigationManager NavigationManager
 @using System.Text.RegularExpressions
+@inject NavigationManager NavigationManager
 <PageTitle>しりバト単語検索</PageTitle>
 
 <div class="top-grid">
@@ -331,20 +331,20 @@
 
 
 	private string FirstChar = string.Empty;
-	private bool ShowFirstCharWarning = false;
+	private bool ShowFirstCharWarning;
 	private string FirstCharWarning = string.Empty;
 
 	private string LastChar = string.Empty;
-	private bool ShowLastCharWarning = false;
+	private bool ShowLastCharWarning;
 	private string LastCharWarning = string.Empty;
 
 	private string RegexPattern = string.Empty;
-	private bool ShowRegexWarning = false;
+	private bool ShowRegexWarning;
 	private string RegexWarning = string.Empty;
 
 	private string SelectedCustomLengthItem = "なし";
 	private string CustomLength = string.Empty;
-	private bool ShowCustomLengthWarning = false;
+	private bool ShowCustomLengthWarning;
 	private string CustomLengthWarning = string.Empty;
 	private List<string> CustomLengthItemList = new()
 	{
@@ -381,7 +381,6 @@
 		if (!SBDictionary.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("", false);
-			return;
 		}
 	}
 	private void SearchButton_Click()
@@ -453,9 +452,9 @@
 		var body = new Regex(SelectedSearchOptionItem switch
 		{
 			"前方後方一致" => $@"^{first}.*{last}ー*$",
-			"前方一致" => $@"^{first}.*[^ん]$",
+			"前方一致" => $@"^{first}.*[^ん]*$",
 			"後方一致" => $@"^.*{last}ー*$",
-			"すべて表示" => $@".*",
+			"すべて表示" => @".*",
 			_ => $"{RegexPattern}"
 		});
 		SearchResult.CustomLengthPredTyped = SelectedCustomLengthItem switch

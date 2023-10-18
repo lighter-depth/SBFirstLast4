@@ -2,10 +2,10 @@
 @layout NoMenuLayout
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
-@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject ILocalStorageService LocalStorage
 @inject HttpClient Http
-@using System.Security.Cryptography
-@using static SBFirstLast4.Configuration.__config__
+@using static Configuration.__config__
+@using Blazored.LocalStorage
 <PageTitle>SBFirstLast4</PageTitle>
 
 @if (IsAuthenticated)
@@ -224,7 +224,7 @@ else
 @code {
 
 	#region authentication
-	private bool IsAuthenticated = false;
+	private bool IsAuthenticated;
 	private string EncryptedPassword = string.Empty;
 	private PasswordModel PasswordModel = new();
 	private string ErrorMessage = string.Empty;
@@ -279,13 +279,12 @@ else
 			IsAuthenticated = true;
 			StateHasChanged();
 			await Task.Delay(1);
-			return;
 		}
 	}
 	#endregion
 
 
-	private bool isLoading = false;
+	private bool isLoading;
 	private string Content = string.Empty;
 	private string ErrorMsg = string.Empty;
 	private static readonly bool SkipFlag = Convert.ToBoolean

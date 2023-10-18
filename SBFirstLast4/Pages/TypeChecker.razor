@@ -1,7 +1,6 @@
 ﻿@page "/typecheck"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
-@using System.Text.RegularExpressions
 <PageTitle>タイプ判定</PageTitle>
 
 <div class="top-grid">
@@ -119,7 +118,6 @@
 		if (!SBDictionary.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("", false);
-			return;
 		}
 	}
 	private async void TextInput_KeyUp()

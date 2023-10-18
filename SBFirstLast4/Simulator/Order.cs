@@ -80,7 +80,7 @@ public class Order
 	/// <summary>
 	/// 論理値のパラメーター
 	/// </summary>
-	public bool Enabler { get; set; } = false;
+	public bool Enabler { get; set; }
 	/// <summary>
 	/// 文字列のパラメーター
 	/// </summary>
@@ -88,7 +88,7 @@ public class Order
 	/// <summary>
 	/// <see cref="WordType"/>列挙型を表す文字列のパラメーター
 	/// </summary>
-	public string? TypeParam { get; set; } = null;
+	public string? TypeParam { get; set; }
 	/// <summary>
 	/// <see cref="double"/>のパラメーター
 	/// </summary>
@@ -96,7 +96,7 @@ public class Order
 	/// <summary>
 	/// エラーの情報を表す文字列
 	/// </summary>
-	public string? ErrorMessage { get; internal set; } = null;
+	public string? ErrorMessage { get; internal set; }
 	static readonly Order defaultError = new(OrderType.Error) { ErrorMessage = "なにかがおかしいよ" };
 	static readonly Dictionary<string, Options> OptionDic = new()
 	{

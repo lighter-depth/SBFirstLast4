@@ -106,6 +106,6 @@ public partial class WordLengthSyntax
 		return true;
 	}
 
-	[GeneratedRegex("^\\s*(\\d*)\\s*,?\\s*(\\d*)\\s*$")]
+	[GeneratedRegex(@"^\s*(\d*)\s*,?\s*(\d*)\s*$")]
     private static partial Regex SyntaxRegex();
 }

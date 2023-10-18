@@ -1,10 +1,8 @@
 ﻿@page "/download-config"
-@inject NavigationManager NavigationManager
-@inject BlazorDownloadFile.IBlazorDownloadFileService BlazorDownloadFileService
+@using BlazorDownloadFile
 @using System.Text
-@using System.Text.RegularExpressions
-
-
+@inject NavigationManager NavigationManager
+@inject IBlazorDownloadFileService BlazorDownloadFileService
 
 
 <div class="grid">
@@ -307,7 +305,7 @@ else
 	public static Word[] DataListWord { get; set; } = Array.Empty<Word>();
 	public static bool IsNotype { get; set; } = true;
 	public static ListDeclType DeclType { get; set; } = ListDeclType.None;
-	private bool isDownloading = false;
+	private bool isDownloading;
 
 	private string FileName = "新しい単語帳";
 
@@ -324,7 +322,7 @@ else
 		"カスタム", "すべて"
 	};
 	private string SelectedWordCountFormatItem = IsNotype ? "カスタム" : "すべて";
-	private bool ShowWordCountFormatWarning = false;
+	private bool ShowWordCountFormatWarning;
 	private string CustomWordCount = string.Empty;
 
 	private List<string> ListFormatItemList = new()
@@ -345,7 +343,6 @@ else
 		if (!SBDictionary.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("", false);
-			return;
 		}
 	}
 	private async Task DownloadFile()
@@ -391,11 +388,8 @@ else
 			StateHasChanged();
 			return;
 		}
-		else
-		{
-			ShowWordCountFormatWarning = false;
-			CustomWordCount = wordCountFormat == WordCountFormat.Custom ? CustomWordCount : string.Empty;
-		}
+		ShowWordCountFormatWarning = false;
+		CustomWordCount = wordCountFormat == WordCountFormat.Custom ? CustomWordCount : string.Empty;
 
 		isDownloading = true;
 		StateHasChanged();

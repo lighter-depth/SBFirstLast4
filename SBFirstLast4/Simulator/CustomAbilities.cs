@@ -83,7 +83,6 @@ internal class WonderGuard : CustomAbility
 		if (prop is < 2 && ac.Receiver.CurrentWord.Type1 != WordType.Empty)
 		{
 			ac.PropDmg = 0;
-			return;
 		}
 	}
 	public override string ToString() => "ふしぎなまもり";
@@ -98,7 +97,7 @@ internal class Ganjou : CustomAbility
 	public override List<string> CustomName => new() { "st", "ST", "がんじょう", "頑丈", "sturdy", "Sturdy", "STURDY" };
 	public override string Description => "HPが満タンのとき、技を受けても一撃で倒されることがない";
 	public override string ImgFile => "ganjou.gif";
-	bool _invokeFlag = false;
+	bool _invokeFlag;
 	public override void Execute(Contract c)
 	{
 		if (c is not AttackContract ac) return;
@@ -176,7 +175,7 @@ internal class Kakutei : CustomAbility
 	public override string Description => "人体タイプの言葉を使った時、「確定」することがある";
 	public override string ImgFile => "kakutei.gif";
 	const int KAKUTEI = 12140000;
-	bool _ketsunaanaFlag = false;
+	bool _ketsunaanaFlag;
 	public override void Execute(Contract c)
 	{
 		if (c is not AttackContract ac) return;

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace SBFirstLast4.Simulator;
+﻿namespace SBFirstLast4.Simulator;
 
 public class Player
 {
@@ -25,7 +23,7 @@ public class Player
 	public double DEF => BufValues[DEFIndex];
 
 	public int DEFIndex { get; private set; } = 6;
-	private static readonly double[] BufValues = new[] { 0.25, 0.28571429, 0.33333333, 0.4, 0.5, 0.66666666, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0 };
+	private static readonly double[] BufValues = { 0.25, 0.28571429, 0.33333333, 0.4, 0.5, 0.66666666, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0 };
 
 	public Word CurrentWord { get; internal set; } = Word.Default;
 
@@ -191,7 +189,7 @@ public class Player
 	public class BredString
 	{
 		public string Name { get; init; } = string.Empty;
-		public int Rep { get; private set; } = 0;
+		public int Rep { get; private set; }
 		public BredString(string name) => (Name, Rep) = (name, 0);
 		public void Increment() => Rep++;
 	}

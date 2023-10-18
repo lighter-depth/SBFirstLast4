@@ -10,7 +10,7 @@ public class Searcher
     public bool IsTypedOnly { get; init; } = false;
     public bool IsSingleTypedOnly { get; init; } = false;
     public bool IsDoubleTypedOnly { get; init; } = false;
-    Func<Word, bool> Predicate => (Type1, Type2) switch
+    private Func<Word, bool> Predicate => (Type1, Type2) switch
     {
         (WordType.Empty, WordType.Empty) => x => x.IsEmpty,
         (not null, not null) => x => x.Contains((WordType)Type1) && x.Contains((WordType)Type2),
@@ -19,7 +19,7 @@ public class Searcher
         (null, null) when IsTypedOnly => x => !x.IsEmpty,
         (null, null) when IsSingleTypedOnly => x => x.IsSingleType,
         (null, null) when IsDoubleTypedOnly => x => x.IsDoubleType,
-        _ => x => true
+        _ => _ => true
     };
     public Word[] Search(Func<Word, bool>? predicate = null) => SBDictionary.PerfectDic.AsParallel().Where(predicate ?? Predicate).Where(x => Body.IsMatch(x.Name)).ToArray();
     public static Word[] SearchTyped(char startChar, Func<Word, bool> predicate) => SBDictionary.GetSplitList(startChar).Where(predicate).ToArray();
