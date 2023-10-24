@@ -1,7 +1,9 @@
 ﻿using SBFirstLast4.Simulator;
+using System.Linq.Dynamic.Core.CustomTypeProviders;
 
 namespace SBFirstLast4;
 
+[DynamicLinqType]
 public readonly record struct Word(string Name, WordType Type1, WordType Type2) : IComparable<Word>
 {
 	public char Start => Name.At(0);
@@ -125,6 +127,8 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	}
 	public static explicit operator Word(string str) => new(str, WordType.Empty, WordType.Empty);
 }
+
+[DynamicLinqType]
 public enum WordType
 {
 	Empty, Normal, Animal, Plant, Place, Emote, Art, Food, Violence, Health, Body, Mech, Science, Time, Person, Work, Cloth, Society, Play, Bug, Math, Insult, Religion, Sports, Weather, Tale
@@ -251,5 +255,36 @@ public static class WordTypeEx
 		'W' or 'w' => WordType.Weather,
 		'O' or 'o' => WordType.Tale,
 		_ => WordType.Empty // I is not used
+	};
+
+	public static char TypeToChar(this WordType type) => type switch
+	{
+		WordType.Animal => 'A',
+		WordType.Body => 'B',
+		WordType.Art => 'C',
+		WordType.Bug => 'D',
+		WordType.Emote => 'E',
+		WordType.Food => 'F',
+		WordType.Place => 'G',
+		WordType.Health => 'H',
+		WordType.Empty => 'I',
+		WordType.Play => 'J',
+		WordType.Work => 'K',
+		WordType.Cloth => 'L',
+		WordType.Mech => 'M',
+		WordType.Normal => 'N',
+		WordType.Tale => 'O',
+		WordType.Person => 'P',
+		WordType.Science => 'Q',
+		WordType.Religion => 'R',
+		WordType.Society => 'S',
+		WordType.Time => 'T',
+		WordType.Sports => 'U',
+		WordType.Violence => 'V',
+		WordType.Weather => 'W',
+		WordType.Math => 'X',
+		WordType.Plant => 'Y',
+		WordType.Insult => 'Z',
+		_ => 'I'
 	};
 }

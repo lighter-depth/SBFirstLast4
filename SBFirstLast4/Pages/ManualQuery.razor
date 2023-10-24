@@ -1,0 +1,160 @@
+﻿@page "/manualquery"
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@using System.Linq.Expressions
+@using System.Linq.Dynamic.Core
+@using SBFirstLast4.Dynamic
+
+<div class="cmd">
+	@foreach (var item in outputBuffer)
+	{
+		<p style="color: @(item.Type == "Error" ? "red" : item.Type == "Cmd" ? "yellow" : "white");">@item.Content</p>
+	}
+	<div class="cmd-input" style="display: flex; flex-flow: row">
+		<soan>>&nbsp;</soan>
+		<input type="text" class="input" id="console-input" autocomplete="off" @onkeydown="HandleInput" />
+	</div>
+</div>
+<style>
+	.cmd {
+		background-color: black;
+		color: white;
+		font-family: Consolas, monospace;
+		padding: 10px;
+		width: 95%;
+		height: 300px;
+		overflow-y: scroll;
+	}
+
+	.input {
+		background-color: black;
+		color: yellow;
+		font-family: Consolas, monospace;
+		border: none;
+		outline: none;
+		width: 100%;
+	}
+
+		.input::placeholder {
+			color: white;
+		}
+
+</style>
+
+@code {
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		if (!SBDictionary.IsLoadedCorrectly)
+		{
+			NavigationManager.NavigateTo("", false);
+		}
+	}
+	private List<(string Content, string Type)> outputBuffer = new() { ("Welcome to manual query for SB.", string.Empty) };
+
+	private async void HandleInput(KeyboardEventArgs e)
+	{
+		try
+		{
+			if (e.Key is "Process" or not "Enter") return;
+			var input = await JSRuntime.InvokeAsync<string>("eval", "document.getElementById('console-input').value");
+			await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('console-input').value = ''");
+			outputBuffer.Add(($"> {input}", "Cmd"));
+			StateHasChanged();
+			await Task.Delay(1);
+			if(input.Trim().At(0) == '#')
+			{
+				if (!SBPreprocessor.TryPreprocess(input, out var status, out var errorMsgPreprocess))
+				{
+					outputBuffer.Add(($"Error: {errorMsgPreprocess}", "Error"));
+					StateHasChanged();
+					return;
+				}
+				outputBuffer.AddRange(status.Select(x => (x, string.Empty)));
+				StateHasChanged();
+				return;
+			}
+
+			if (!SBPreprocessor.TryProcess(input, out var translated, out var selector, out var errorMsg))
+			{
+				outputBuffer.Add(($"Error: {errorMsg}", "Error"));
+				StateHasChanged();
+				return;
+			}
+			var dicType = SelectorHelper.GetDictionaryType(selector);
+			var output = dicType switch
+			{
+				DictionaryType.String => QueryOverStringDictionary(translated, selector),
+				DictionaryType.Word => QueryOverWordDictionary(translated, selector),
+				_ => QueryOverSingleton(translated)
+			};
+			outputBuffer.Add((output, output.Contains("Error:") ? "Error" : string.Empty));
+			StateHasChanged();
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.InvokeVoidAsync("alert", $"{ex}");
+		}
+	}
+
+
+
+	private string QueryOverWordDictionary(string input, string selector)
+	{
+		try
+		{
+			var config = new ParsingConfig { CustomTypeProvider = new SBCustomTypeProvider() };
+			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<Word>, object>(config, false, input);
+
+			var result = expression.Compile().Invoke(SelectorHelper.ToWordEnumerable(selector));
+
+			if (result is System.Collections.IEnumerable enumerable)
+				return $"[{string.Join(", ", enumerable.Cast<object>())}]";
+
+			return result.ToString() ?? "null";
+		}
+		catch (Exception ex)
+		{
+			return $"Error: {ex.Message}";
+		}
+	}
+	private string QueryOverStringDictionary(string input, string selector)
+	{
+		try
+		{
+			var config = new ParsingConfig { CustomTypeProvider = new SBCustomTypeProvider() };
+			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<string>, object>(config, false, input);
+
+			var result = expression.Compile().Invoke(SelectorHelper.ToStringEnumerable(selector));
+
+			if (result is System.Collections.IEnumerable enumerable)
+				return $"[{string.Join(", ", enumerable.Cast<object>())}]";
+
+			return result.ToString() ?? "null";
+		}
+		catch (Exception ex)
+		{
+			return $"Error: {ex.Message}";
+		}
+	}
+	private string QueryOverSingleton(string input)
+	{
+		try
+		{
+			var config = new ParsingConfig { CustomTypeProvider = new SBCustomTypeProvider() };
+			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<int>, object>(config, false, input);
+
+			var result = expression.Compile().Invoke(_singletonEnumerable);
+
+			if (result is System.Collections.IEnumerable enumerable)
+				return $"[{string.Join(", ", enumerable.Cast<object>())}]";
+
+			return result.ToString() ?? "null";
+		}
+		catch (Exception ex)
+		{
+			return $"Error: {ex.Message}";
+		}
+	}
+	private static readonly int[] _singletonEnumerable = new[] { 0 };
+}

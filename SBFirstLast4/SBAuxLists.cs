@@ -1,5 +1,8 @@
-﻿namespace SBFirstLast4;
+﻿using System.Linq.Dynamic.Core.CustomTypeProviders;
 
+namespace SBFirstLast4;
+
+[DynamicLinqType]
 public static class SBAuxLists
 {
 	public static readonly string[] Killable = {

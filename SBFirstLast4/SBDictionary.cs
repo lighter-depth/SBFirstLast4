@@ -1,7 +1,9 @@
 ﻿using Blazored.LocalStorage;
+using System.Linq.Dynamic.Core.CustomTypeProviders;
 
 namespace SBFirstLast4;
 
+[DynamicLinqType]
 public static class SBDictionary
 {
 	public static List<string> NoTypeWords { get; internal set; } = new(3_000_000);
@@ -23,6 +25,13 @@ public static class SBDictionary
 		foreach (var i in NoTypeWords) yield return i;
 		foreach (var i in TypedWords) yield return i.Name;
 	}
+
+
+	public static Word[] WordNoTypeWords => _wordNoTypeWords ??= NoTypeWords.Select(x => (Word)x).ToArray();
+	private static Word[]? _wordNoTypeWords;
+
+	public static string[] TypedWordNames => _typedWordNames ??= TypedWords.Select(x => x.Name).ToArray();
+	private static string[]? _typedWordNames;
 
 	public static bool IsLoadedCorrectly => NoTypeWords.Count > 2_000_000 || TypedWords.Count > 10_000 || _loadSkip;
 	public static bool IsLite => NoTypeWords.Count < 2_000_000;
