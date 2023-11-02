@@ -156,7 +156,6 @@ public static class SBDictionary
 	{
 		foreach (var i in SBUtils.KanaListSpread) SplitList.Add(TypedWords.Where(x => x.Name.At(0) == i[0]).ToList());
 	}
-	public static List<Word> GetSplitList(int index) => SplitList[index];
 	public static List<Word> GetSplitList(char startChar) => SplitList.At(SBUtils.KanaListSpread.ToList().IndexOf(startChar.ToString())) ?? Enumerable.Empty<Word>().ToList();
 
 	private static async Task ReadNoTypeWords(int arg)

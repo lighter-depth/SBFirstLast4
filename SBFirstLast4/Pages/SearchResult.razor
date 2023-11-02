@@ -171,7 +171,6 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		await base.OnInitializedAsync();
 		if (!SBDictionary.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("", false);

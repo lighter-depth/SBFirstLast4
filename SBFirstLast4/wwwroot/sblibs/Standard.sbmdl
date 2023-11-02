@@ -1,0 +1,42 @@
+﻿module STANDARD;
+
+#define KILLEROF(X) @TW.Where(w => w.Start == "X".LastChar && w.CalcEffectiveDmg(/X/d) * (w.Name.Length > 6 ? 2 : 1) > 7)
+#define KILLEDBY(X) @TW.Where(w => w.End == "X".FirstChar && /X/d.CalcEffectiveDmg(w) * ("X".Length > 6 ? 2 : 1) > 7)
+
+#define __GENARATE_DICTIONARY__(X) @TW.Where(w => w.Contains($X)).Sort()
+
+#define @Animal __GENARATE_DICTIONARY__(A)
+#define @Body __GENARATE_DICTIONARY__(B)
+#define @Art __GENARATE_DICTIONARY__(C)
+#define @Bug __GENARATE_DICTIONARY__(D)
+#define @Emote __GENARATE_DICTIONARY__(E)
+#define @Food __GENARATE_DICTIONARY__(F)
+#define @Place __GENARATE_DICTIONARY__(G)
+#define @Health __GENARATE_DICTIONARY__(H)
+#define @Play __GENARATE_DICTIONARY__(J)
+#define @Work __GENARATE_DICTIONARY__(K)
+#define @Cloth __GENARATE_DICTIONARY__(L)
+#define @Mech __GENARATE_DICTIONARY__(M)
+#define @Normal __GENARATE_DICTIONARY__(N)
+#define @Tale __GENARATE_DICTIONARY__(O)
+#define @Person __GENARATE_DICTIONARY__(P)
+#define @Science __GENARATE_DICTIONARY__(Q)
+#define @Religion __GENARATE_DICTIONARY__(R)
+#define @Society __GENARATE_DICTIONARY__(S)
+#define @Time __GENARATE_DICTIONARY__(T)
+#define @Sports __GENARATE_DICTIONARY__(U)
+#define @Violence __GENARATE_DICTIONARY__(V)
+#define @Weather __GENARATE_DICTIONARY__(W)
+#define @Math __GENARATE_DICTIONARY__(X)
+#define @Plant __GENARATE_DICTIONARY__(Y)
+#define @Insult __GENARATE_DICTIONARY__(Z)
+
+#define GENERATE_TYPED_DICTIONARY__(X) @X.Select(s => s.Deduce()).Sort()
+
+
+#define @8XW GENERATE_TYPED_DICTIONARY__(8X)
+#define @6XW GENERATE_TYPED_DICTIONARY__(6X)
+#define @D4W GENERATE_TYPED_DICTIONARY__(D4)
+#define @4XW GENERATE_TYPED_DICTIONARY__(4X)
+
+#define __WZ__ "天で話にならねぇよ..."

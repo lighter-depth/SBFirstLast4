@@ -305,11 +305,8 @@
 	};
 	protected override void OnInitialized()
 	{
-		base.OnInitialized();
 		if (!SBDictionary.IsLoadedCorrectly)
-		{
 			NavigationManager.NavigateTo("", false);
-		}
 	}
 	private void SearchButton_Click()
 	{

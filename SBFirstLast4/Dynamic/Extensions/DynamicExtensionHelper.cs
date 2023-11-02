@@ -16,6 +16,8 @@ public static class DynamicExtensionHelper
 
 	public static Word ToWord(this string name, WordType type1, WordType type2) => new(name, type1, type2);
 
+	public static Word Deduce(this string name) => Word.FromString(name);
+
 	public static Regex ToRegex(this string pattern) => new(pattern);
 
 	public static Regex ToRegex(this string pattern, RegexOptions options) => new(pattern, options);

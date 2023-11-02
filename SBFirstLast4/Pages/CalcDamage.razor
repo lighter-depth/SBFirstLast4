@@ -257,11 +257,8 @@
 
 	protected override void OnInitialized()
 	{
-		base.OnInitialized();
 		if (!SBDictionary.IsLoadedCorrectly)
-		{
 			NavigationManager.NavigateTo("", false);
-		}
 	}
 
 	private async void AttackerInput_KeyUp()

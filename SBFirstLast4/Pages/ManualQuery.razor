@@ -11,10 +11,14 @@
 		<p style="color: @(item.Type == "Error" ? "red" : item.Type == "Cmd" ? "yellow" : "white");">@item.Content</p>
 	}
 	<div class="cmd-input" style="display: flex; flex-flow: row">
-		<soan>>&nbsp;</soan>
+		<span>>&nbsp;</span>
 		<input type="text" class="input" id="console-input" autocomplete="off" @onkeydown="HandleInput" />
 	</div>
 </div>
+@if (Index.IsDebug)
+{
+	<div class="translated-lbl">@translatedStr</div>
+}
 <style>
 	.cmd {
 		background-color: black;
@@ -39,12 +43,20 @@
 			color: white;
 		}
 
+	.translated-lbl {
+		border-color: gray;
+		padding: 20px;
+		overflow-y: scroll;
+		overflow: scroll;
+	}
 </style>
 
 @code {
+	private string translatedStr = string.Empty;
+
+
 	protected override void OnInitialized()
 	{
-		base.OnInitialized();
 		if (!SBDictionary.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("", false);
@@ -62,11 +74,11 @@
 			outputBuffer.Add(($"> {input}", "Cmd"));
 			StateHasChanged();
 			await Task.Delay(1);
-			if(input.Trim().At(0) == '#')
+			if (input.Trim().At(0) == '#')
 			{
 				if (!SBPreprocessor.TryPreprocess(input, out var status, out var errorMsgPreprocess))
 				{
-					outputBuffer.Add(($"Error: {errorMsgPreprocess}", "Error"));
+					outputBuffer.Add(($"Error: SBPreprocessException: {errorMsgPreprocess}", "Error"));
 					StateHasChanged();
 					return;
 				}
@@ -77,17 +89,18 @@
 
 			if (!SBPreprocessor.TryProcess(input, out var translated, out var selector, out var errorMsg))
 			{
-				outputBuffer.Add(($"Error: {errorMsg}", "Error"));
+				outputBuffer.Add(($"Error: SBProcessException: {errorMsg}", "Error"));
 				StateHasChanged();
 				return;
 			}
+			translatedStr = translated;
 			var dicType = SelectorHelper.GetDictionaryType(selector);
-			var output = dicType switch
+			var output = await Task.Run(() => dicType switch
 			{
 				DictionaryType.String => QueryOverStringDictionary(translated, selector),
 				DictionaryType.Word => QueryOverWordDictionary(translated, selector),
 				_ => QueryOverSingleton(translated)
-			};
+			});
 			outputBuffer.Add((output, output.Contains("Error:") ? "Error" : string.Empty));
 			StateHasChanged();
 		}
@@ -108,14 +121,11 @@
 
 			var result = expression.Compile().Invoke(SelectorHelper.ToWordEnumerable(selector));
 
-			if (result is System.Collections.IEnumerable enumerable)
-				return $"[{string.Join(", ", enumerable.Cast<object>())}]";
-
-			return result.ToString() ?? "null";
+			return ResultObjectToString(result);
 		}
 		catch (Exception ex)
 		{
-			return $"Error: {ex.Message}";
+			return $"Error: {ex.GetType().Name}: {ex.Message}";
 		}
 	}
 	private string QueryOverStringDictionary(string input, string selector)
@@ -127,14 +137,11 @@
 
 			var result = expression.Compile().Invoke(SelectorHelper.ToStringEnumerable(selector));
 
-			if (result is System.Collections.IEnumerable enumerable)
-				return $"[{string.Join(", ", enumerable.Cast<object>())}]";
-
-			return result.ToString() ?? "null";
+			return ResultObjectToString(result);
 		}
 		catch (Exception ex)
 		{
-			return $"Error: {ex.Message}";
+			return $"Error: {ex.GetType().Name}: {ex.Message}";
 		}
 	}
 	private string QueryOverSingleton(string input)
@@ -146,15 +153,20 @@
 
 			var result = expression.Compile().Invoke(_singletonEnumerable);
 
-			if (result is System.Collections.IEnumerable enumerable)
-				return $"[{string.Join(", ", enumerable.Cast<object>())}]";
-
-			return result.ToString() ?? "null";
+			return ResultObjectToString(result);
 		}
 		catch (Exception ex)
 		{
-			return $"Error: {ex.Message}";
+			return $"Error: {ex.GetType().Name}: {ex.Message}";
 		}
+	}
+
+	private static string ResultObjectToString(object result)
+	{
+		if (result is System.Collections.IEnumerable enumerable and not string)
+			return $"[{string.Join(", ", enumerable.Cast<object>().Select(x => ResultObjectToString(x)))}]";
+
+		return result.ToString() ?? "null";
 	}
 	private static readonly int[] _singletonEnumerable = new[] { 0 };
 }

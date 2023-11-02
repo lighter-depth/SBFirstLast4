@@ -485,12 +485,8 @@
 
 	protected override void OnInitialized()
 	{
-		base.OnInitialized();
 		if (!SBDictionary.IsLoadedCorrectly)
-		{
 			NavigationManager.NavigateTo("", false);
-			return;
-		}
 	}
 
 

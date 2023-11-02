@@ -6,7 +6,11 @@
     </div>
     <main>
         <article class="content px-4">
-            @Body
+            <ErrorBoundary>
+                <ChildContent>
+                    @Body
+                </ChildContent>
+            </ErrorBoundary>
         </article>
     </main>
 </div>

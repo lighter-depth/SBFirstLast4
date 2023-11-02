@@ -1,4 +1,5 @@
 ﻿using SBFirstLast4.Simulator;
+using System.Data;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
 
 namespace SBFirstLast4;
@@ -125,7 +126,14 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 			WordType.Empty
 		};
 	}
-	public static explicit operator Word(string str) => new(str, WordType.Empty, WordType.Empty);
+	public static explicit operator Word(string name) => new(name, WordType.Empty, WordType.Empty);
+
+	public static Word FromString(string name)
+	{
+		var resultWord = SBDictionary.GetSplitList(name[0]).Find(x => x.Name == name);
+		if(resultWord != default) return resultWord;
+		return (Word)name;
+	}
 }
 
 [DynamicLinqType]
@@ -134,6 +142,7 @@ public enum WordType
 	Empty, Normal, Animal, Plant, Place, Emote, Art, Food, Violence, Health, Body, Mech, Science, Time, Person, Work, Cloth, Society, Play, Bug, Math, Insult, Religion, Sports, Weather, Tale
 }
 
+[DynamicLinqType]
 public static class WordTypeEx
 {
 	public static WordType StringToType(this string symbol) => symbol switch
