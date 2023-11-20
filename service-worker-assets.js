@@ -117,7 +117,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-12PCuAbK62\/\/MYbrVcQyR7hWjj2gEZFHeS7UMXijV40=",
+      "hash": "sha256-vjFCoT0g0nsVv1s46k98U7ez+J\/QqRn+lJ62rofVs9Q=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -217,7 +217,7 @@
       "url": "_framework\/Newtonsoft.Json.dll"
     },
     {
-      "hash": "sha256-IL9PMvAPYIStwVNgbgpdRxso2vzKu3ZHhroScQgsCfw=",
+      "hash": "sha256-rSBE1BGaikGOVRAWu48jhXJMImeWshCeh+9szW4ZSgo=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -449,5 +449,5 @@
       "url": "_content\/BlazorDownloadFile\/BlazorDownloadFileScript.js"
     }
   ],
-  "version": "bdsA93XE"
+  "version": "3YCDHWo4"
 };
