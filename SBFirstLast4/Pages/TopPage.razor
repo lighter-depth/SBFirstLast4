@@ -160,6 +160,8 @@
 
 	protected override async Task OnInitializedAsync()
 	{
+		if (!AppSettings.IsLoggedIn)
+			NavigationManager.NavigateTo("", false);
 		await SBPreprocessor.Initialize(Http);
 	}
 
