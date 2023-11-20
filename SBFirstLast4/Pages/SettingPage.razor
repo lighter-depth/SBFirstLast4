@@ -134,6 +134,7 @@
         if (!await JSRuntime.Confirm("辞書のキャッシュを消去します。よろしいですか？"))
             return;
 
+        await LocalStorage.RemoveItemAsync(SBDictionary.HAS_LOADED);
         await LocalStorage.RemoveItemAsync(SBDictionary.TYPED_WORDS);
         await JSRuntime.Alert("辞書のキャッシュを消去しました。");
         NavigationManager.NavigateTo("top");

@@ -50,7 +50,7 @@ public class SBDictionary
 	private static readonly List<List<Word>> SplitList = new();
 	private static readonly HttpClient client = new();
 
-	const string HAS_LOADED = "hasLoaded";
+	internal const string HAS_LOADED = "hasLoaded";
 	internal const string TYPED_WORDS = "typedWords";
 	public static async IAsyncEnumerable<string> Initialize(ILocalStorageService localStorage, DictionaryInitializationToken token)
 	{
