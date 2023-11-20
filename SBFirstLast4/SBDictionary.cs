@@ -35,7 +35,7 @@ public class SBDictionary
 	public static string[] TypedWordNames => _typedWordNames ??= TypedWords.Select(x => x.Name).ToArray();
 	private static string[]? _typedWordNames;
 
-	public static bool IsLoadedCorrectly => (AppSettings.IsLoggedIn && (NoTypeWords.Count > 2_000_000 || TypedWords.Count > 10_000)) || _loadSkip;
+	public static bool IsLoadedCorrectly => NoTypeWords.Count > 2_000_000 || TypedWords.Count > 10_000 || _loadSkip;
 	public static bool IsLite => NoTypeWords.Count < 2_000_000;
 	private static bool _loadSkip;
 

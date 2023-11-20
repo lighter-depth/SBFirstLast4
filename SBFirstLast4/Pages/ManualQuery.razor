@@ -66,10 +66,14 @@
 
 	protected override void OnInitialized()
 	{
-		if (!SBDictionary.IsLoadedCorrectly)
+		if (!AppSettings.IsLoggedIn)
 		{
-			NavigationManager.NavigateTo("top", false);
+			NavigationManager.NavigateTo("", false);
+			return;
 		}
+		if (!SBDictionary.IsLoadedCorrectly)
+			NavigationManager.NavigateTo("top", false);
+
 	}
 	private List<(string Content, string Type)> outputBuffer = new() { ("Welcome to manual query for SB.", string.Empty) };
 

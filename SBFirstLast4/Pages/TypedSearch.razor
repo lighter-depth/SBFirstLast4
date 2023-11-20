@@ -436,6 +436,11 @@
 
 	protected override void OnInitialized()
 	{
+		if (!AppSettings.IsLoggedIn)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
 		if (!SBDictionary.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 	}
