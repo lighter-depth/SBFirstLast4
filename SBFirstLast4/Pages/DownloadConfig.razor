@@ -1,9 +1,10 @@
 ﻿@page "/download-config"
 @using BlazorDownloadFile
 @using System.Text
+@using SBFirstLast4.Logging
 @inject NavigationManager NavigationManager
 @inject IBlazorDownloadFileService BlazorDownloadFileService
-
+<PageTitle>ダウンロード</PageTitle>
 
 <div class="grid">
 	<div class="border">
@@ -340,9 +341,9 @@ else
 	protected override void OnInitialized()
 	{
 		if (!SBDictionary.IsLoadedCorrectly)
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.NavigateTo("top", false);
 	}
-	private async Task DownloadFile()
+	private async void DownloadFile()
 	{
 
 		var listType = DeclType switch
@@ -392,6 +393,19 @@ else
 		StateHasChanged();
 		await Task.Delay(1);
 
+		Server.Post(new
+		{
+			Type = "DOWNLOAD",
+			Peek = (listType == default || IsNotype ? DataListStr.At(0) : DataListWord.At(0).ToString()) ?? "NULL",
+			Name = FileName,
+			UserInfo = new
+			{
+				Name = AppSettings.UserName,
+				Guid = AppSettings.Guid,
+				Hash = AppSettings.Hash,
+			},
+			Date = DateTime.Now
+		});
 
 		var content = listType == default
 		? ListBuilder.BuildSingle

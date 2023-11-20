@@ -2,6 +2,10 @@
 
 <div class="page">
 	<div class="content px-4">
-		@Body
+        <ErrorBoundary>
+            <ChildContent>
+                @Body
+            </ChildContent>
+        </ErrorBoundary>
 	</div>
 </div>

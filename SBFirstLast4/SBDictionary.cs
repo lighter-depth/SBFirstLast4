@@ -1,10 +1,12 @@
 ﻿using Blazored.LocalStorage;
+using BlazorWorker.BackgroundServiceFactory;
+using BlazorWorker.Core;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
 
 namespace SBFirstLast4;
 
 [DynamicLinqType]
-public static class SBDictionary
+public class SBDictionary
 {
 	public static List<string> NoTypeWords { get; internal set; } = new(3_000_000);
 	public static List<Word> TypedWords { get; internal set; } = new(20_000);
@@ -49,7 +51,7 @@ public static class SBDictionary
 	private static readonly HttpClient client = new();
 
 	const string HAS_LOADED = "hasLoaded";
-	const string TYPED_WORDS = "typedWords";
+	internal const string TYPED_WORDS = "typedWords";
 	public static async IAsyncEnumerable<string> Initialize(ILocalStorageService localStorage, DictionaryInitializationToken token)
 	{
 		if(token is DictionaryInitializationToken.Skip)
@@ -63,7 +65,7 @@ public static class SBDictionary
 		await foreach (var i in LoadDataFromOnline(localStorage, token)) yield return i;
 		yield return "読み込みを完了しています...";
 	}
-	static async IAsyncEnumerable<string> LoadDataFromOnline(ILocalStorageService localStorage, DictionaryInitializationToken token)
+	private static async IAsyncEnumerable<string> LoadDataFromOnline(ILocalStorageService localStorage, DictionaryInitializationToken token)
 	{
 		if(token is DictionaryInitializationToken.Full)
 		{
@@ -152,6 +154,116 @@ public static class SBDictionary
 		await localStorage.SetItemAsync(TYPED_WORDS, TypedWords);
 		await localStorage.SetItemAsync(HAS_LOADED, true);
 	}
+
+	public static async Task Initialize(IProgress<string> progress, ILocalStorageService localStorage, DictionaryInitializationToken token)
+	{
+		if (token is DictionaryInitializationToken.Skip)
+		{
+			progress.Report("読み込みをスキップしています...");
+			_loadSkip = true;
+			NoTypeWords.AddRange(_dummyData);
+			return;
+		}
+
+		progress.Report("読み込みを開始しています...");
+
+		await LoadDataFromOnline(progress, localStorage, token);
+		progress.Report("読み込みを完了しています...");
+	}
+	private static async Task LoadDataFromOnline(IProgress<string> progress, ILocalStorageService localStorage, DictionaryInitializationToken token)
+	{
+		if (token is DictionaryInitializationToken.Full)
+		{
+			progress.Report("完全版辞書を読み込んでいます...");
+			await FullLoading(progress, localStorage);
+			return;
+		}
+
+		if (token is DictionaryInitializationToken.Lite)
+		{
+			progress.Report("ライト版辞書を読み込んでいます...");
+			await LoadTypedWordsFromOnline(progress, localStorage);
+			progress.Report("リストを分割しています...");
+
+			await Task.Run(InitSplitList);
+		}
+	}
+	private static async Task FullLoading(IProgress<string> progress, ILocalStorageService localStorage)
+	{
+		await LoadNoTypeWordsFromOnline(progress);
+
+		await LoadTypedWordsFromOnline(progress, localStorage);
+
+		progress.Report("リストを分割しています...");
+		await Task.Run(InitSplitList);
+		progress.Report("タイプレス リストを分離しています...");
+
+
+		await Task.Run(ExceptDictionaries);
+	}
+
+	private static async Task LoadNoTypeWordsFromOnline(IProgress<string> progress)
+	{
+		progress.Report("タイプレス ワードを読み込んでいます...");
+
+		var tasks = new List<Task>();
+
+		for (var i = 0; i < 240; i++)
+		{
+			var localParameter = i;
+			progress.Report($"タイプレス ワードを読み込んでいます... ({i}/240)");
+			tasks.Add(ReadNoTypeWords(localParameter));
+			if (i % 42 != 0 && i != 239) continue;
+			try
+			{
+				await Task.WhenAll(tasks);
+			}
+			catch
+			{
+				return;
+			}
+			tasks.Clear();
+		}
+	}
+	private static async Task LoadTypedWordsFromOnline(IProgress<string> progress, ILocalStorageService localStorage)
+	{
+
+		progress.Report("タイプ付き ワードを読み込んでいます...");
+		if (await localStorage.GetItemAsync<bool>(HAS_LOADED))
+		{
+			progress.Report("キャッシュを読み込んでいます...");
+			TypedWords = await localStorage.GetItemAsync<List<Word>>(TYPED_WORDS);
+			return;
+		}
+
+		var tasks = new List<Task>();
+		var typedCount = 0;
+		while (typedCount < SBUtils.KanaListSpread.Length) // 67
+		{
+			var localParameter = SBUtils.KanaListSpread[typedCount];
+			tasks.Add(ReadTypedWords(localParameter));
+			if (typedCount % 10 == 0)
+			{
+				progress.Report($"タイプ付き ワードを読み込んでいます... ({typedCount / 10}/7)");
+				try
+				{
+					await Task.WhenAll(tasks);
+				}
+				catch
+				{
+					return;
+				}
+				tasks.Clear();
+			}
+			typedCount++;
+		}
+		progress.Report("タイプ付き ワードを読み込んでいます... (7/7)");
+		await Task.WhenAll(tasks);
+		TypedWords = TypedWords.Distinct().ToList();
+		progress.Report("キャッシュを保存しています...");
+		await localStorage.SetItemAsync(TYPED_WORDS, TypedWords);
+		await localStorage.SetItemAsync(HAS_LOADED, true);
+	}
 	private static void InitSplitList()
 	{
 		foreach (var i in SBUtils.KanaListSpread) SplitList.Add(TypedWords.Where(x => x.Name.At(0) == i[0]).ToList());
@@ -181,11 +293,11 @@ public static class SBDictionary
 			.Select(x => x.Trim().Split())
 			.Select(x => new Word(x.At(0) ?? string.Empty, x.At(1)?.StringToType() ?? WordType.Empty, x.At(2)?.StringToType() ?? WordType.Empty)));
 	}
+
+	private static void ExceptDictionaries() => NoTypeWords = NoTypeWords.AsParallel().Except(TypedWords.AsParallel().Select(x => x.Name)).ToList();
 }
 
 public enum DictionaryInitializationToken
 {
 	Full, Lite, Skip
 }
-
-

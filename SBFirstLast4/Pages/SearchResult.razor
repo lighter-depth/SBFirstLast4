@@ -1,6 +1,6 @@
 ﻿@page "/result"
 @using System.Text.RegularExpressions
-@inject NavigationManager NavigationManager;
+@inject NavigationManager NavigationManager
 <PageTitle>検索結果</PageTitle>
 
 
@@ -173,7 +173,7 @@
 	{
 		if (!SBDictionary.IsLoadedCorrectly)
 		{
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.NavigateTo("top", false);
 			return;
 		}
 		await Task.Delay(200);

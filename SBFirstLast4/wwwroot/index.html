@@ -25,35 +25,18 @@
         <div class="loading-progress-text"></div>
     </div>
     <script>
-        function base64ToUint8Array(base64) {
-            var binary = atob(base64);
-            var length = binary.length;
-            var bytes = new Uint8Array(length);
-            for (var i = 0; i < length; i++) {
-                bytes[i] = binary.charCodeAt(i);
-            }
-            return bytes;
+        var unloadHandler = null;
+
+        function registerUnload(dotnetHelper) {
+            unloadHandler = function () {
+                dotnetHelper.invokeMethodAsync('CancelToken');
+            };
+            window.addEventListener('beforeunload', unloadHandler);
         }
 
-        async function decryptText(encryptedText, key, iv) {
-            try {
-                var keyBytes = base64ToUint8Array(key);
-                var ivBytes = base64ToUint8Array(iv);
-                var algorithm = { name: "AES-CBC", iv: ivBytes };
-                var keyUsage = ["decrypt"];
-                var cryptoKey = await window.crypto.subtle.importKey("raw", keyBytes, algorithm, false, keyUsage);
-                var encryptedBytes = base64ToUint8Array(encryptedText);
-                var result = await window.crypto.subtle.decrypt(algorithm, cryptoKey, encryptedBytes);
-                var decoder = new TextDecoder();
-                var decryptedText = decoder.decode(result);
-                return decryptedText;
-            }
-            catch (err) {
-                console.error(err);
-                return null;
-            }
+        function unregisterUnload(dotnetHelper) {
+            window.removeEventListener('beforeunload', unloadHandler);
         }
-        window.decryptText = decryptText;
     </script>
     <div id="blazor-error-ui">
         An unhandled error has occurred.

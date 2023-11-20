@@ -1,6 +1,8 @@
 ﻿@page "/home"
 @using System.Text.RegularExpressions
+@using SBFirstLast4.Logging
 @inject NavigationManager NavigationManager
+@inject HttpClient Http
 <PageTitle>しりとり単語検索</PageTitle>
 
 
@@ -170,11 +172,11 @@
 		text-align: center;
 		border: 2px solid gray;
 		border-radius: 10px;
-		font-size: 32px; 
+		font-size: 32px;
 		background-color: white;
 		box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-		white-space: nowrap; 
-		overflow: hidden; 
+		white-space: nowrap;
+		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
@@ -306,7 +308,7 @@
 	protected override void OnInitialized()
 	{
 		if (!SBDictionary.IsLoadedCorrectly)
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.NavigateTo("top", false);
 	}
 	private void SearchButton_Click()
 	{
@@ -389,6 +391,35 @@
 			_ => default
 		};
 		DownloadConfig.IsNotype = true;
+
+
+		Server.Post(new
+		{
+			Type = "SEARCH_TL",
+			Order = new
+			{
+				First = FirstChar,
+				Last = LastChar,
+				Length = SelectedCustomLengthItem switch
+				{
+					"なし" => "NULL",
+					"７文字以上" => "7+",
+					"６文字以上" => "6",
+					_ => CustomLength
+				},
+				Regex = RegexPattern
+			},
+			UserInfo = new
+			{
+				Name = AppSettings.UserName,
+				Guid = AppSettings.Guid,
+				Hash = AppSettings.Hash,
+			},
+			Date = DateTime.Now
+		});
+
+
+
 		NavigationManager.NavigateTo("result");
 	}
 }

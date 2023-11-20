@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using Microsoft.JSInterop;
 using SBFirstLast4.Simulator;
 
 namespace SBFirstLast4;
@@ -147,9 +148,8 @@ public static class SBUtils
 		foreach (var msg in msgs)
 			list.Add(msg);
 	}
-}
 
-public class PasswordModel
-{
-	public string? Password { get; set; }
+	public static ValueTask Alert(this IJSRuntime jsRuntime, string message) => jsRuntime.InvokeVoidAsync("alert", message);
+
+	public static ValueTask<bool> Confirm(this IJSRuntime jsRuntime, string message) => jsRuntime.InvokeAsync<bool>("confirm", message);
 }

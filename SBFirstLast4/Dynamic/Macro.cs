@@ -13,7 +13,8 @@ public class ObjectLikeMacro : Macro
 {
 	public override required string Name { get; init; }
 
-	public required string Body { get; init; }
+	public required string Body { get; set; }
+
 }
 
 public class FunctionLikeMacro : Macro
@@ -22,5 +23,5 @@ public class FunctionLikeMacro : Macro
 
 	public required List<string> Parameters { get; init; }
 
-	public required string Body { get; init; }
+	public required string Body { get; set; }
 }

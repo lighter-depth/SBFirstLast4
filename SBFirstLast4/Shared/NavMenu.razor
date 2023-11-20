@@ -50,11 +50,6 @@
 		<!--
 		<div class="nav-item px-3">
 			<NavLink class="nav-link" href="about">
-				<span class="oi oi-wrench" aria-hidden="true"></span> 設定
-			</NavLink>
-		</div>
-		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="about">
 				<span class="oi oi-eye" aria-hidden="true"></span> 当サイトについて
 			</NavLink>
 		</div>
@@ -62,6 +57,11 @@
 		<div class="nav-item px-3">
 			<NavLink class="nav-link" href="manualquery">
 				<span class="oi oi-terminal" aria-hidden="true"></span> 手動クエリ
+			</NavLink>
+		</div>
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="settings">
+				<span class="oi oi-wrench" aria-hidden="true"></span> 設定
 			</NavLink>
 		</div>
 		<!--
@@ -87,8 +87,8 @@
 	{
 		if (SBDictionary.IsLite)
 		{
-			if (await JSRuntime.InvokeAsync<bool>("confirm", "完全版の辞書が読み込まれていないため、辞書選択画面に戻ります。よろしいですか？"))
-				NavigationManager.NavigateTo("", false);
+			if (await JSRuntime.Confirm("完全版の辞書が読み込まれていないため、辞書選択画面に戻ります。よろしいですか？"))
+				NavigationManager.NavigateTo("top", false);
 
 			return;
 		}

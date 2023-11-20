@@ -1,7 +1,9 @@
 ﻿@page "/simulator"
 @using SBFirstLast4.Simulator
+@using SBFirstLast4.Logging
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+<PageTitle>簡易シミュレーター</PageTitle>
 
 <div class="top-grid">
 	<div class="border">
@@ -376,14 +378,30 @@
 	protected override void OnInitialized()
 	{
 		if (!SBDictionary.IsLoadedCorrectly)
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.NavigateTo("top", false);
 	}
 
 	private async void StartButton_Click()
 	{
-		var emptyHandler = (Order _, CancellationTokenSource _) => { };
+		var emptyHandler = static (Order _, CancellationTokenSource _) => { };
 		var player1Ability = AbilityManager.Create(SelectedInitialPlayer1AbilityItem, true) ?? new Debugger();
 		var player2Ability = AbilityManager.Create(SelectedInitialPlayer2AbilityItem, true) ?? new Debugger();
+		Server.Post(new
+		{
+			Type = "SIMULATOR",
+			Order = new
+			{
+				First = player1Ability.ToString(),
+				Last = player2Ability.ToString()
+			},
+			UserInfo = new
+			{
+				Name = AppSettings.UserName,
+				Guid = AppSettings.Guid,
+				Hash = AppSettings.Hash
+			},
+			Date = DateTime.Now
+		});
 		Battle = new
 		(
 			new(player1Ability)
@@ -462,7 +480,7 @@
 
 	private async void BtnReset_Click()
 	{
-		if (!await JSRuntime.InvokeAsync<bool>("confirm", "バトルをリセットし、特性設定画面に戻ります。よろしいですか？"))
+		if (!await JSRuntime.Confirm("バトルをリセットし、特性設定画面に戻ります。よろしいですか？"))
 			return;
 		Battle.Dispose();
 		IsRunning = false;

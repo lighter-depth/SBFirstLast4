@@ -1,8 +1,9 @@
 ﻿@page "/safe"
+@using SBFirstLast4.Logging
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
-
+<PageTitle>安全単語検索</PageTitle>
 <div class="top-grid">
 	<div class="border">
 		<div class="stack-panel">
@@ -486,7 +487,7 @@
 	protected override void OnInitialized()
 	{
 		if (!SBDictionary.IsLoadedCorrectly)
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.NavigateTo("top", false);
 	}
 
 
@@ -542,11 +543,37 @@
 			SearchResult.IsTyped = true;
 			DownloadConfig.IsNotype = false;
 			DownloadConfig.DeclType = ListDeclType.TypedOnly;
+
+			Server.Post(new
+			{
+				Type = "SEARCH_SAFE",
+				Order = new
+				{
+					Type = SelectedTypeItem,
+					Category = SelectedCategoryFilterItem switch
+					{
+						"おまかせ（弱）" => "WEAK",
+						"おまかせ（中）" => "MID",
+						"おまかせ（強）" => "HEAVY",
+						"カスタム" => $"[{string.Join(", ", AppliedCategoryFilters)}]",
+						_ => "EMPTY"
+					},
+					Char = SelectedCharFilterItem == "なし" ? "EMPTY" : $"[{string.Join(", ", AppliedEndFilters)}]"
+				},
+				UserInfo = new
+				{
+					Name = AppSettings.UserName,
+					Guid = AppSettings.Guid,
+					Hash = AppSettings.Hash,
+				},
+				Date = DateTime.Now
+			});
+
 			NavigationManager.NavigateTo("result");
 		}
 		catch(Exception ex)
 		{
-			JSRuntime.InvokeVoidAsync("alert", ex.ToString() + "\n" + ex.Message);
+			JSRuntime.InvokeVoidAsync("alert", ex.GetType().Name + " " + ex.Message);
 		}
 	}
 

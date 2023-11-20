@@ -2,6 +2,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
+<PageTitle>最高打点検索</PageTitle>
 <div class="top-grid">
 	<div class="border">
 		<div class="stack-panel">
@@ -165,7 +166,7 @@
 	protected override void OnInitialized()
 	{
 		if (!SBDictionary.IsLoadedCorrectly)
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.NavigateTo("top", false);
 	}
 
 	private async void TextInput_KeyUp()
