@@ -17,6 +17,14 @@ internal static class AppSettings
 
 	internal static bool IsLoggedIn { get; private set; } = false;
 
+	internal static bool SortResult { get; private set; } = false;
+
+	internal static async Task SetSortResult(ILocalStorageService localStorage, bool value) 
+	{
+		SortResult = value;
+		await localStorage.SetItemAsync("SORT_RESULT", value);
+	}
+
 	internal static async Task InitUserInfoAsync(ILocalStorageService localStorage)
 	{
 		IsLoggedIn = await localStorage.GetItemAsync<bool>("IS_LOGGED_IN");
@@ -25,6 +33,11 @@ internal static class AppSettings
 		UserName = await localStorage.GetItemAsync<string>("USER_NAME");
 		Guid = await localStorage.GetItemAsync<string>("USER_ID");
 		Hash = await localStorage.GetItemAsync<string>("HASH_ID");
+	}
+
+	internal static async Task SetupAsync(ILocalStorageService localStorage) 
+	{
+		SortResult = await localStorage.GetItemAsync<bool>("SORT_RESULT");
 	}
 
 	internal static async Task SetUserInfoAsync(ILocalStorageService localStorage, string userName, string guid, string hash)

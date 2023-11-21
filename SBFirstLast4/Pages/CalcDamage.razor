@@ -1,6 +1,7 @@
 ﻿@page "/calcdamage"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@using SBFirstLast4.Logging
 
 <PageTitle>ダメージ計算</PageTitle>
 <div class="top-grid">
@@ -265,6 +266,18 @@
 		}
 		if (!SBDictionary.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
+
+		Server.Post(new
+		{
+			Type = "CALC_DMG",
+			UserInfo = new
+			{
+				Name = AppSettings.UserName,
+				Guid = AppSettings.Guid,
+				Hash = AppSettings.Hash,
+			},
+			Date = DateTime.Now
+		});
 	}
 
 	private async void AttackerInput_KeyUp()

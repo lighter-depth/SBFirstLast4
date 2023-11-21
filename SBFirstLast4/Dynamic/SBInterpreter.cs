@@ -65,7 +65,9 @@ public partial class SBInterpreter
 		[".\\cl("] = $".{nameof(Word.CalcEffectiveDmg)}(",
 		[".\\t2c("] = $".{nameof(WordTypeEx.TypeToChar)}(",
 		[".\\t2s("] = $".{nameof(WordTypeEx.TypeToString)}(",
-		[".Sort()"] = ".OrderBy(it)"
+		[".Sort()"] = ".OrderBy(it)",
+		["\\$("] = "string.Format(",
+		[".\\~("] = ".IsMatch("
 	};
 
 	internal static bool IsAuto { get; set; } = true;
@@ -249,13 +251,6 @@ public partial class SBInterpreter
 		return builder.ToString();
 	}
 
-	private static string ReplaceInterpolatedString(string input)
-	{
-		var count = 0;
-		var result = InterpolationRegex().Replace(input, m => $"{{{count++}}}");
-		return $"string.Format(\"{result}\", {string.Join(", ", Enumerable.Range(0, count).Select(i => $"{{{i}}}"))})";
-	}
-
 
 	private static string ReplaceCollectionLiteral(string input)
 	{
@@ -348,6 +343,4 @@ public partial class SBInterpreter
 
 	[GeneratedRegex(@"static_cast<(?<type>.*?)>\((?<operand>.*?)\)")]
 	private static partial Regex StaticCastRegex();
-	[GeneratedRegex(@"{(\w+)}")]
-	private static partial Regex InterpolationRegex();
 }

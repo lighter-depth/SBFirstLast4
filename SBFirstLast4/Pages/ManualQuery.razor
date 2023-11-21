@@ -63,6 +63,8 @@
 @code {
 	private string translatedStr = string.Empty;
 
+	internal static bool IsReflect { get; set; }
+
 
 	protected override void OnInitialized()
 	{
@@ -142,33 +144,7 @@
 				}
 				outputBuffer.AddRange(status.Select(x => (x, string.Empty)));
 				StateHasChanged();
-				if (SBUtils.Random.Next(10) == 0)
-					Server.Post(new
-					{
-						Type = "QUERY",
-						Order = input.Trim(),
-						UserInfo = new
-						{
-							Name = AppSettings.UserName,
-							Guid = AppSettings.Guid,
-							Hash = AppSettings.Hash
-						},
-						Date = DateTime.Now
-					});
-				return;
-			}
 
-			if (!SBInterpreter.TryInterpret(input, out var translated, out var selector, out var errorMsg))
-			{
-				outputBuffer.Add(($"Error: SBProcessException: {errorMsg}", "Error"));
-				StateHasChanged();
-				return;
-			}
-			translatedStr = translated;
-			var output = await SBScriptExecutor.ExecuteAsync(translated, selector);
-			outputBuffer.Add((output, output.Contains("Error:") ? "Error" : string.Empty));
-			StateHasChanged();
-			if (SBUtils.Random.Next(10) == 0)
 				Server.Post(new
 				{
 					Type = "QUERY",
@@ -181,6 +157,36 @@
 					},
 					Date = DateTime.Now
 				});
+				return;
+			}
+
+			if (!SBInterpreter.TryInterpret(input, out var translated, out var selector, out var errorMsg))
+			{
+				outputBuffer.Add(($"Error: SBProcessException: {errorMsg}", "Error"));
+				StateHasChanged();
+				return;
+			}
+			translatedStr = translated;
+			var output = await SBScriptExecutor.ExecuteAsync(translated, selector);
+			outputBuffer.Add((output, output.Contains("Error:") ? "Error" : string.Empty));
+
+			if (IsReflect)
+				outputBuffer.Add((translated, "Monitor"));
+
+			StateHasChanged();
+
+			Server.Post(new
+			{
+				Type = "QUERY",
+				Order = input.Trim(),
+				UserInfo = new
+				{
+					Name = AppSettings.UserName,
+					Guid = AppSettings.Guid,
+					Hash = AppSettings.Hash
+				},
+				Date = DateTime.Now
+			});
 		}
 		catch (Exception ex)
 		{

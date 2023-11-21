@@ -183,17 +183,26 @@
 		}
 		await Task.Delay(200);
 
-		if (IsTyped) wordDataArr = TypedSearcher.SearchTyped(TypedPredicate, CustomLengthPredTyped);
+		if (IsTyped)
+		{
+			wordDataArr = TypedSearcher.SearchTyped(TypedPredicate, CustomLengthPredTyped);
+			if (AppSettings.SortResult)
+				Array.Sort(wordDataArr);
+		}
 
-		else dataArr = RegexBody is null
+		else
+		{
+			dataArr = RegexBody is null
 						? CustomLengthPred is null
 						? Searcher.SearchFirstLast(FirstChar, LastChar)
 						: Searcher.SearchFirstLast(FirstChar, LastChar, CustomLengthPred)
 						: Searcher.SearchRegex(RegexBody);
+			if (AppSettings.SortResult)
+				Array.Sort(dataArr);
+		}
 
 		isSearching = false;
 		StateHasChanged();
-		await Task.Delay(1);
 	}
 	private void GoToPreviousPage()
 	{

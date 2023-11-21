@@ -1,4 +1,5 @@
 ﻿using SBFirstLast4.Logging;
+using SBFirstLast4.Pages;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -11,7 +12,7 @@ public static partial class SBPreprocessor
     {
         foreach (var module in new[]
         {
-            "Standard", "Lists", "Tools"
+            "Standard", "Lists", "Killers", "Tools"
         })
             await LoadModule(module, client);
 
@@ -166,20 +167,20 @@ public static partial class SBPreprocessor
                 }
                 if (contents[2] == "enable")
                 {
-                    SBInterpreter.IsAuto = true;
+                    ManualQuery.IsReflect = true;
                     status = new[] { "Reflector enabled." };
                     return true;
                 }
                 if (contents[2] == "disable")
                 {
-                    SBInterpreter.IsAuto = false;
+					ManualQuery.IsReflect = false;
                     status = new[] { "Reflector disabled." };
                     return true;
                 }
                 if (contents[2] == "toggle")
                 {
-                    SBInterpreter.IsAuto = !SBInterpreter.IsAuto;
-                    status = new[] { $"Reflector {(SBInterpreter.IsAuto ? "enabled" : "disabled")}." };
+					ManualQuery.IsReflect = !ManualQuery.IsReflect;
+                    status = new[] { $"Reflector {(ManualQuery.IsReflect ? "enabled" : "disabled")}." };
                     return true;
                 }
                 errorMsg = "Invalid syntax: invalid argument for #pragma reflect directive.";

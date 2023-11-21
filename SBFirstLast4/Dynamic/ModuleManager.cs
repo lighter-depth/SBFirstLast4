@@ -6,7 +6,7 @@ public static class ModuleManager
 {
 	public static List<Module> Modules { get; private set; } = new();
 
-	public static Module UserDefined { get; private set; } = new() { Name = "USER_DEFINED" };
+	public static Module UserDefined { get; private set; } = new() { Name = "USER_DEFINED", Symbols = { "USER_DEFINED" } };
 
 	public static string[] ModuleNames => Modules.Select(x => x.Name).Except(ExcludedModules).ToArray();
 
@@ -91,6 +91,11 @@ public static class ModuleManager
 
         return true;
     }
+
+	public static bool Delete(string moduleName)
+	{
+		return true;
+	}
 }
 
 public partial class Module

@@ -156,6 +156,7 @@
 	protected override async Task OnInitializedAsync()
 	{
 		await AppSettings.InitUserInfoAsync(LocalStorage);
+		await AppSettings.SetupAsync(LocalStorage);
 
 		if (AppSettings.IsLoggedIn)
 		{

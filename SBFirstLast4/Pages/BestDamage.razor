@@ -1,6 +1,7 @@
 ﻿@page "/bestdamage"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@using SBFirstLast4.Logging
 
 <PageTitle>最高打点検索</PageTitle>
 <div class="top-grid">
@@ -172,6 +173,18 @@
 		}
 		if (!SBDictionary.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
+
+		Server.Post(new
+		{
+			Type = "BEST_DMG",
+			UserInfo = new
+			{
+				Name = AppSettings.UserName,
+				Guid = AppSettings.Guid,
+				Hash = AppSettings.Hash,
+			},
+			Date = DateTime.Now
+		});
 	}
 
 	private async void TextInput_KeyUp()

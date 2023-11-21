@@ -16,6 +16,17 @@
 </div>
 <div class="divider"></div>
 <div class="form">
+    <h1 class="settingname">結果のソート</h1>
+    <input type="checkbox" id="switch" class="checkbox"
+    @onchange="async e =>
+					{
+						await AppSettings.SetSortResult(LocalStorage, (bool)(e.Value ?? false));
+						StateHasChanged();
+					}" />
+    <label for="switch" class="toggle"></label>
+</div>
+<div class="divider"></div>
+<div class="form">
     <h1 class="settingname">キャッシュの消去</h1>
     <button class="button" @onclick=ClearDictionaryCache>辞書データの消去</button>
     <button class="button" @onclick=ClearAllCache>すべてのデータの消去</button>
@@ -28,7 +39,7 @@
         margin: 20px;
     }
     settingname{
-        font-size: 23px;
+        font-size: 22px;
     }
 
     .divider {
@@ -67,6 +78,39 @@
         font-size: 16px;
     }
 
+    .checkbox {
+        display: none;
+    }
+
+    .toggle {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+        background-color: lightgray;
+        border-radius: 17px;
+    }
+
+        .toggle::after {
+            content: "";
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: white;
+            top: 4px;
+            left: 4px;
+            transition: all 0.3s;
+        }
+
+    .checkbox:checked + .toggle::after {
+        left: 30px;
+    }
+
+    .checkbox:checked + .toggle {
+        background-color: green;
+    }
+
 </style>
 @code {
     private string UserName = string.Empty;
@@ -100,7 +144,7 @@
         if (!UserNameLengthRegex.IsMatch(userName))
         {
             ErrorMsgColor = "darkred";
-            ErrorMsg = "３文字以上１６文字以下のユーザー名を入力してください。";
+            ErrorMsg = "３文字以上１７文字以下のユーザー名を入力してください。";
             StateHasChanged();
             return;
         }
