@@ -45,7 +45,9 @@
 			</div>
 			<div id="file@(i.ToString())" class="progress-bar" style="width: @($"{progressPercentages[file.Name]}%");">
 			</div>
-			<label for="file@(i.ToString())" @onclick="async() => await RemoveFileAsync(file)">🗙</label>
+			<label for="file@(i.ToString())" @onclick="async() => await RemoveFileAsync(file)">
+				<span class="oi oi-x"></span>
+			</label>
 		}
 	</div>
 }
