@@ -73,6 +73,10 @@
       "url": "manifest.json"
     },
     {
+      "hash": "sha256-xfQNq3sWxeQtW4+ouNx\/y5cFi19XU0e9irriysSapAQ=",
+      "url": "sblibs\/Killers.sbmdl"
+    },
+    {
       "hash": "sha256-Cl1PPrc0fk24pTOfmSCPDOOLkH12Ooa+pak\/4gjcsAs=",
       "url": "sblibs\/Lists.sbmdl"
     },
@@ -81,7 +85,7 @@
       "url": "sblibs\/Standard.sbmdl"
     },
     {
-      "hash": "sha256-4O4SUfwcQ+R5zYDOUQIacOhBb+I9Jd2iIzUWmgSwEYs=",
+      "hash": "sha256-MASTpuVEkpAs1dQLmalNp92pmWTx6S4abzBb7Q9U1nQ=",
       "url": "sblibs\/Tools.sbmdl"
     },
     {
@@ -117,7 +121,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-OF6Q\/aaPyr1YLV4jxTDBEYDT8M+ZlzssoTx3zVya5Jo=",
+      "hash": "sha256-OVOG2HzQT4dsDRTETwGwWM4dDyoEY85fvZtV3oGEPn8=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -217,7 +221,7 @@
       "url": "_framework\/Newtonsoft.Json.dll"
     },
     {
-      "hash": "sha256-MSoCD1tq4zSQQIUuVRZ+wbOlEX9cozdhgViW8u1eMh4=",
+      "hash": "sha256-DF8Hsp8RvFTrkBGYo+G\/Ktj4tsiXdCrzVOrjNiYXwIw=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -449,5 +453,5 @@
       "url": "_content\/BlazorDownloadFile\/BlazorDownloadFileScript.js"
     }
   ],
-  "version": "rNpCw9d9"
+  "version": "41rMV7z1"
 };
