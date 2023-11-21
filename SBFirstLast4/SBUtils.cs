@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using SBFirstLast4.Simulator;
 
@@ -149,7 +150,23 @@ public static class SBUtils
 			list.Add(msg);
 	}
 
-	public static ValueTask Alert(this IJSRuntime jsRuntime, string message) => jsRuntime.InvokeVoidAsync("alert", message);
+	public static ValueTask Alert(this IJSRuntime jsRuntime, params object?[]? args) => jsRuntime.InvokeVoidAsync("alert", args);
 
-	public static ValueTask<bool> Confirm(this IJSRuntime jsRuntime, string message) => jsRuntime.InvokeAsync<bool>("confirm", message);
+	public static ValueTask AlertEx(this IJSRuntime jsRuntime, Exception ex) => jsRuntime.InvokeVoidAsync("alert", ex.Stringify());
+
+	public static ValueTask<bool> Confirm(this IJSRuntime jsRuntime, params object?[]? args) => jsRuntime.InvokeAsync<bool>("confirm", args);
+
+	public static string Stringify(this Exception ex) => $"{ex.GetType().Name}: {ex.Message}";
+
+	public static void ReplaceOrAdd<T>(this List<T> list, T value)
+		where T : IEquatable<T>
+	{
+		var index = list.FindIndex(i => i.Equals(value));
+		if(index < 0)
+		{
+			list.Add(value);
+			return;
+		}
+		list[index] = value;
+	}
 }

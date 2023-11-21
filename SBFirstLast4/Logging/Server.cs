@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Diagnostics;
+using System.Net.Http.Json;
 
 namespace SBFirstLast4.Logging;
 
@@ -9,7 +10,11 @@ public static class Server
 
 	internal static async void Post<T>(T value)
 	{
+#if DEBUG
+		await Task.CompletedTask;
+#else
 		await client.PostAsJsonAsync(SERVER_URL, value);
+#endif
 	}
 
 	public static async Task<string> GetAsync()

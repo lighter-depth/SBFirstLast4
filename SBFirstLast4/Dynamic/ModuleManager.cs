@@ -18,12 +18,35 @@ public static class ModuleManager
 
 	public static List<string> ExcludedModules { get; private set; } = new();
 
+	public static Module[] RuntimeModules => Modules.Where(m => m.IsRuntime).ToArray();
+
 
 	private static readonly List<Module> WaitingQueue = new();
 
 	public static Module? GetModule(string? moduleName) => Modules.Where(m => m.Name == moduleName).FirstOrDefault();
 
-	public static void AddModule(Module? module)
+	public static bool Import(Module? module, out string status)
+	{
+		if (module is null)
+		{
+			status = "Invalid module format.";
+			return false;
+		}
+
+		if (module.Requires.Length == 0 || module.Requires.All(r => Modules.Select(m => m.Name).Contains(r)))
+		{
+			Modules.ReplaceOrAdd(module);
+			EvaluateWaitingQueue();
+			status = $"Successfully added module {module.Name}.";
+			return true;
+		}
+
+		WaitingQueue.ReplaceOrAdd(module);
+		status = $"Added module {module.Name} to waiting queue. requires: [{string.Join(", ", module.Requires)}], requiring: [{string.Join(", ", module.Requires.Except(ModuleNames))}]";
+		return true;
+	}
+
+	internal static void AddModule(Module? module)
 	{
 		if (module is null) return;
 
@@ -39,19 +62,21 @@ public static class ModuleManager
 
 	private static void EvaluateWaitingQueue()
 	{
+		var addedModules = new List<string>();
 		foreach (var module in WaitingQueue)
 		{
 			if (!module.Requires.All(r => Modules.Select(m => m.Name).Contains(r)))
 				continue;
 
 			Modules.Add(module);
-			WaitingQueue.Remove(module);
+			addedModules.Add(module.Name);
 		}
+		WaitingQueue.RemoveAll(m => addedModules.Contains(m.Name));
 	}
 
 	public static bool Exclude(string moduleName)
 	{
-		if(moduleName is "$ALL")
+		if (moduleName is "$ALL")
 		{
 			ExcludedModules.AddRange(ModuleNames);
 			return true;
@@ -69,36 +94,97 @@ public static class ModuleManager
 		return true;
 	}
 
-    public static bool Include(string moduleName)
-    {
-        if (moduleName is "$ALL")
-        {
-            ExcludedModules.Clear();
-            return true;
-        }
-
-        if (!ExcludedModules.Remove(moduleName))
-            return false;
-
-        var namesToInclude = new List<string>();
-
-        foreach (var excludedName in ExcludedModules)
-            if (Modules.FirstOrDefault(m => m.Name == excludedName)?.Requires.All(r => ModuleNames.Contains(r)) ?? false)
-                namesToInclude.Add(excludedName);
-
-        foreach (var name in namesToInclude)
-            Include(name);
-
-        return true;
-    }
-
-	public static bool Delete(string moduleName)
+	public static bool Include(string moduleName)
 	{
+		if (moduleName is "$ALL")
+		{
+			ExcludedModules.Clear();
+			return true;
+		}
+
+		if (!ExcludedModules.Remove(moduleName))
+			return false;
+
+		var namesToInclude = new List<string>();
+
+		foreach (var excludedName in ExcludedModules)
+			if (Modules.FirstOrDefault(m => m.Name == excludedName)?.Requires.All(r => ModuleNames.Contains(r)) ?? false)
+				namesToInclude.Add(excludedName);
+
+		foreach (var name in namesToInclude)
+			Include(name);
+
 		return true;
+	}
+
+	public static bool Delete(string moduleName, out string status)
+	{
+		var moduleNames = RuntimeModules.Concat(WaitingQueue.Where(m => m.IsRuntime)).Select(m => m.Name);
+
+		if (moduleName == "$ALL")
+		{
+			foreach (var m in moduleNames)
+				Delete(m, out _);
+
+			status = "Successfully deleted all runtime modules.";
+			return true;
+		}
+		if (!moduleNames.Contains(moduleName))
+		{
+			status = $"Specified runtime module {moduleName} does not exist.";
+			return false;
+		}
+
+		var queueIndex = WaitingQueue.FindIndex(m => m.Name == moduleName);
+		if (queueIndex != -1)
+		{
+			WaitingQueue.RemoveAt(queueIndex);
+			status = $"Successfully deleted module {moduleName} from waiting queue.";
+			return true;
+		}
+
+		var modulesToDelete = new List<string> { moduleName };
+
+		foreach (var module in RuntimeModules)
+			if (module.Requires.Contains(moduleName))
+				modulesToDelete.Add(module.Name);
+
+		Modules = Modules.Where(m => m.Name != moduleName).ToList();
+
+		foreach (var m in modulesToDelete)
+			Delete(m, out _);
+
+		status = $"Successfully deleted module {moduleName} and all dependent modules.";
+		return true;
+	}
+
+	public static bool DeleteByRuntimeName(string runtimeName, out string status)
+	{
+		var moduleName = RuntimeModules
+			.Concat(WaitingQueue)
+			.Where(m => m.RuntimeName == runtimeName)
+			.FirstOrDefault()
+			?.Name;
+
+		if (moduleName is null)
+		{
+			status = $"Specified runtime module {moduleName} does not exist.";
+			return false;
+		}
+
+		var queueIndex = WaitingQueue.FindIndex(m => m.Name == moduleName);
+		if (queueIndex != -1)
+		{
+			WaitingQueue.RemoveAt(queueIndex);
+			status = $"Successfully deleted module {moduleName} from waiting queue.";
+			return true;
+		}
+
+		return Delete(moduleName, out status);
 	}
 }
 
-public partial class Module
+public partial class Module : IEquatable<Module>
 {
 	public required string Name { get; init; }
 
@@ -108,8 +194,17 @@ public partial class Module
 
 	public List<Macro> Macros { get; init; } = new();
 
+	public bool IsRuntime { get; init; }
 
-	public static Module? Compile(string moduleContent)
+	public string? RuntimeName { get; init; }
+
+    public override bool Equals(object? obj) => Equals(obj as Module);
+
+	public override int GetHashCode() => Name.GetHashCode();
+
+    public bool Equals(Module? other) => Name == other?.Name;
+
+    public static Module? Compile(string moduleContent, bool isRuntime = false, string? runtimeName = null)
 	{
 		var match = ModuleRegex().Match(moduleContent);
 		if (!match.Success) return null;
@@ -135,7 +230,9 @@ public partial class Module
 						? Array.Empty<string>()
 						: requires.Trim().Split(",").Select(s => s.Trim()).ToArray(),
 			Symbols = contentReader.Symbols,
-			Macros = contentReader.Macros
+			Macros = contentReader.Macros,
+			IsRuntime = isRuntime,
+			RuntimeName = runtimeName
 		};
 	}
 
@@ -163,7 +260,7 @@ file class ContentReader
 	private readonly Stack<bool> IsDisabled;
 	private readonly Stack<bool> IfDefStack = new();
 
-	internal  List<string> Symbols { get; private set; } = new();
+	internal List<string> Symbols { get; private set; } = new();
 	internal List<Macro> Macros { get; private set; } = new();
 
 	private readonly List<Macro> Transients = new();

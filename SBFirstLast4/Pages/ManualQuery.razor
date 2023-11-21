@@ -1,6 +1,8 @@
 ﻿@page "/manualquery"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject ILocalStorageService LocalStorage
+@using Blazored.LocalStorage
 @using System.Linq.Expressions
 @using System.Linq.Dynamic.Core
 @using SBFirstLast4.Dynamic
@@ -27,6 +29,25 @@
 @if (AppSettings.IsDebug)
 {
 	<div class="translated-lbl">@translatedStr</div>
+}
+<div class="file-input">
+	<InputFile OnChange="HandleFileSelected" multiple />
+</div>
+
+@if (moduleFiles != null)
+{
+	<div style="display: flex; flex-flow: column;">
+		@foreach (var (file, i) in moduleFiles.Select((f, i) => (f, i)))
+		{
+			<div>
+				<span class="file-name">@file.Name</span>
+				<span class="file-size">(@file.Size) bytes</span>
+			</div>
+			<div id="file@(i.ToString())" class="progress-bar" style="width: @($"{progressPercentages[file.Name]}%");">
+			</div>
+			<label for="file@(i.ToString())" @onclick="async() => await RemoveFileAsync(file)">🗙</label>
+		}
+	</div>
 }
 <style>
 	.cmd {
@@ -58,6 +79,31 @@
 		overflow-y: scroll;
 		overflow: scroll;
 	}
+
+	.file-input {
+		border: 2px dashed lightgray;
+		background-color: white;
+		color: black;
+		cursor: pointer;
+		padding: 10px;
+		margin: 10px;
+	}
+
+	.file-name {
+		font-weight: bold;
+		margin-left: 10px;
+	}
+
+	.file-size {
+		font-style: italic;
+		margin-left: 10px;
+	}
+
+	.progress-bar {
+		height: 20px;
+		background-color: lightblue;
+	}
+
 </style>
 
 @code {
@@ -65,8 +111,14 @@
 
 	internal static bool IsReflect { get; set; }
 
+	private List<FileModel> moduleFiles = new();
 
-	protected override void OnInitialized()
+
+	private Dictionary<string, int> progressPercentages = new Dictionary<string, int>();
+
+
+
+	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
@@ -76,7 +128,36 @@
 		if (!SBDictionary.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 
+		await ImportStoredModules();
+		StateHasChanged();
 	}
+
+	private async Task ImportStoredModules()
+	{
+		var storedFiles = await LocalStorage.GetItemAsync<List<FileModel>>("MODULE_FILES");
+
+		if (storedFiles?.Count > 0)
+		{
+			foreach (var file in storedFiles)
+				progressPercentages[file.Name] = 100;
+
+			moduleFiles = storedFiles;
+		}
+		foreach (var file in moduleFiles)
+		{
+			if (!ModuleManager.Import(Module.Compile(file.Content, true, file.Name), out var status))
+			{
+				outputBuffer.Add((status, "Error"));
+				moduleFiles.Remove(file);
+				StateHasChanged();
+				continue;
+			}
+			outputBuffer.Add((status, "Safe"));
+			StateHasChanged();
+		}
+	}
+
+
 	private List<(string Content, string Type)> outputBuffer = new() { ("Welcome to manual query for SB.", string.Empty) };
 
 	private async void HandleInput(KeyboardEventArgs e)
@@ -157,6 +238,10 @@
 					},
 					Date = DateTime.Now
 				});
+
+				if (input.Trim().StartsWith("#delete"))
+					await HandleDeletedFiles();
+
 				return;
 			}
 
@@ -194,63 +279,82 @@
 		}
 	}
 
-
-
-	private string QueryOverWordDictionary(string input, string selector)
+	private async Task HandleFileSelected(InputFileChangeEventArgs e)
 	{
-		try
-		{
-			var config = new ParsingConfig { CustomTypeProvider = new SBCustomTypeProvider() };
-			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<Word>, object>(config, false, input);
+		foreach (var file in e.GetMultipleFiles())
+			if (moduleFiles.Any(f => f.Name == file.Name))
+			{
+				moduleFiles = moduleFiles.Where(f => f.Name != file.Name).ToList();
+				progressPercentages.Remove(file.Name);
+			}
 
-			var result = expression.Compile().Invoke(SelectorHelper.ToWordEnumerable(selector));
 
-			return ResultObjectToString(result);
-		}
-		catch (Exception ex)
+		foreach (var file in e.GetMultipleFiles())
 		{
-			return $"Error: {ex.GetType().Name}: {ex.Message}";
-		}
-	}
-	private string QueryOverStringDictionary(string input, string selector)
-	{
-		try
-		{
-			var config = new ParsingConfig { CustomTypeProvider = new SBCustomTypeProvider() };
-			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<string>, object>(config, false, input);
+			progressPercentages[file.Name] = 0;
 
-			var result = expression.Compile().Invoke(SelectorHelper.ToStringEnumerable(selector));
+			using var stream = file.OpenReadStream();
 
-			return ResultObjectToString(result);
-		}
-		catch (Exception ex)
-		{
-			return $"Error: {ex.GetType().Name}: {ex.Message}";
-		}
-	}
-	private string QueryOverSingleton(string input)
-	{
-		try
-		{
-			var config = new ParsingConfig { CustomTypeProvider = new SBCustomTypeProvider() };
-			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<int>, object>(config, false, input);
+			using var reader = new StreamReader(stream);
 
-			var result = expression.Compile().Invoke(_singletonEnumerable);
+			var fileContent = await reader.ReadToEndAsync();
+			var fileModel = new FileModel(file.Name, fileContent, file.Size);
+			moduleFiles.Add(fileModel);
+			StateHasChanged();
+			await Task.Delay(1);
 
-			return ResultObjectToString(result);
+			for (var i = 0; i < 100; i += 2)
+			{
+				progressPercentages[file.Name] += 2;
+				StateHasChanged();
+				await Task.Delay(1);
+			}
+
+			StateHasChanged();
+			await Task.Delay(100);
+
+			if (!ModuleManager.Import(Module.Compile(fileContent, true, file.Name), out var status))
+			{
+				outputBuffer.Add((status, "Error"));
+				moduleFiles.Remove(fileModel);
+				StateHasChanged();
+				continue;
+			}
+			outputBuffer.Add((status, "Safe"));
+			StateHasChanged();
 		}
-		catch (Exception ex)
-		{
-			return $"Error: {ex.GetType().Name}: {ex.Message}";
-		}
+		await LocalStorage.SetItemAsync("MODULE_FILES", moduleFiles);
 	}
 
-	private static string ResultObjectToString(object result)
+	private async Task RemoveFileAsync(FileModel file)
 	{
-		if (result is System.Collections.IEnumerable enumerable and not string)
-			return $"[{string.Join(", ", enumerable.Cast<object>().Select(x => ResultObjectToString(x)))}]";
+		if (!ModuleManager.DeleteByRuntimeName(file.Name, out var status))
+		{
+			outputBuffer.Add((status, "Error"));
+			StateHasChanged();
+			return;
+		}
+		outputBuffer.Add((status, "Safe"));
 
-		return result.ToString() ?? "null";
+		await HandleDeletedFiles();
 	}
-	private static readonly int[] _singletonEnumerable = new[] { 0 };
+
+	private async Task HandleDeletedFiles()
+	{
+
+		var filesToRemove = new List<FileModel>();
+
+		foreach (var m in moduleFiles)
+			if (!ModuleManager.RuntimeModules.Any(r => r.RuntimeName == m.Name))
+			{
+				filesToRemove.Add(m);
+				progressPercentages.Remove(m.Name);
+			}
+		moduleFiles = moduleFiles.Except(filesToRemove).ToList();
+
+		await LocalStorage.SetItemAsync("MODULE_FILES", moduleFiles);
+		StateHasChanged();
+	}
+
+	private record FileModel(string Name, string Content, long Size);
 }

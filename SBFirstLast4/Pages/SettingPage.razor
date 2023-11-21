@@ -17,7 +17,7 @@
 <div class="divider"></div>
 <div class="form">
     <h1 class="settingname">結果のソート</h1>
-    <input type="checkbox" id="switch" class="checkbox"
+    <input type="checkbox" id="switch" class="checkbox" checked="@AppSettings.SortResult"
     @onchange="async e =>
 					{
 						await AppSettings.SetSortResult(LocalStorage, (bool)(e.Value ?? false));
@@ -29,6 +29,7 @@
 <div class="form">
     <h1 class="settingname">キャッシュの消去</h1>
     <button class="button" @onclick=ClearDictionaryCache>辞書データの消去</button>
+    <button class="button" @onclick=ClearModuleCache>モジュールデータの消去</button>
     <button class="button" @onclick=ClearAllCache>すべてのデータの消去</button>
 </div>
 <style>
@@ -64,7 +65,7 @@
         border: none;
         border-radius: 10px;
         margin: 10px;
-        font-size: 16px;
+        font-size: 17px;
     }
 
         .button:hover {
@@ -183,6 +184,15 @@
         await JSRuntime.Alert("辞書のキャッシュを消去しました。");
         NavigationManager.NavigateTo("top");
     }
+    private async void ClearModuleCache()
+    {
+        if (!await JSRuntime.Confirm("モジュールのキャッシュを消去します。よろしいですか？"))
+            return;
+
+        await LocalStorage.RemoveItemAsync("MODULE_FILES");
+        await JSRuntime.Alert("モジュールのキャッシュを消去しました。");
+    }
+
     private async void ClearAllCache()
     {
         if (!await JSRuntime.Confirm("すべてのキャッシュを消去します。よろしいですか？"))

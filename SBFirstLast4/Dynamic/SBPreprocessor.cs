@@ -1,13 +1,16 @@
-﻿using SBFirstLast4.Logging;
-using SBFirstLast4.Pages;
+﻿using SBFirstLast4.Pages;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 
 namespace SBFirstLast4.Dynamic;
 
 public static partial class SBPreprocessor
 {
     public static bool IsInitialized { get; private set; } = false;
+
+    private static readonly string[] ValidDirectives =
+    {
+		"define", "undef", "show", "clear", "pragma", "include", "exclude", "ifdef", "ifndef", "delete"
+	};
     public static async Task Initialize(HttpClient client)
     {
         foreach (var module in new[]
@@ -46,7 +49,7 @@ public static partial class SBPreprocessor
             return false;
         }
 
-        if (symbol is not ("define" or "undef" or "show" or "clear" or "pragma" or "include" or "exclude" or "#ifdef" or "#ifndef"))
+        if (!ValidDirectives.Contains(symbol))
         {
             errorMsg = "Couldn't recognize the specified directive type.";
             return false;
@@ -78,7 +81,13 @@ public static partial class SBPreprocessor
 
             if(selector is "$EXCLUDED" or "$EXC")
             {
-                status = ModuleManager.ExcludedModules.Append("USER_DEFINED").ToArray();
+                status = ModuleManager.ExcludedModules.ToArray();
+                return true;
+            }
+
+            if(selector is "$IMPORTED" or "$IMP")
+            {
+                status = ModuleManager.RuntimeModules.Select(m => m.Name).ToArray();
                 return true;
             }
 
@@ -111,8 +120,9 @@ public static partial class SBPreprocessor
                     : x is FunctionLikeMacro f
                     ? $"Sign: {f.Name}({string.Join(", ", f.Parameters)}), Body: {f.Body}"
                     : "NULL"))
-                    .Concat(ModuleManager.Symbols.Select(x => $"Symbol: {x}"))
+                    .Concat(module.Symbols.Select(x => $"Symbol: {x}"))
                     .ToArray();
+            return true;
         }
         if (symbol is "clear")
         {
@@ -225,8 +235,19 @@ public static partial class SBPreprocessor
             return false;
         }
 
+		if (symbol is "delete")
+		{
+			if (ModuleManager.Delete(contents.At(1) ?? string.Empty, out var deleteStatus))
+			{
+				status = new[] { deleteStatus };
+				return true;
+			}
+			errorMsg = deleteStatus;
+			return false;
+		}
 
-        if (symbol is "undef")
+
+		if (symbol is "undef")
         {
             if (contents.Length != 2)
             {

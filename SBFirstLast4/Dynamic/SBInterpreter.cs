@@ -5,7 +5,7 @@ using static SBFirstLast4.Dynamic.SelectorConstants;
 
 namespace SBFirstLast4.Dynamic;
 
-public partial class SBInterpreter
+public static partial class SBInterpreter
 {
 
 	private static readonly Dictionary<char, char> EscapeCharacters = new()
@@ -114,7 +114,7 @@ public partial class SBInterpreter
 							   || (lastBracketIndex >= 8 && input[(lastBracketIndex - 8)..lastBracketIndex] == "Contains")
 							   || (lastBracketIndex >= 5 && input[(lastBracketIndex - 5)..lastBracketIndex] == "Count")
 							   || (lastBracketIndex >= 9 && input[(lastBracketIndex - 9)..lastBracketIndex] == "LongCount")
-							   || lastOpenIndex >= 1 && lastOpenIndex < lastCloseIndex && !input[lastOpenIndex..lastCloseIndex].Contains(",");
+							   || (lastOpenIndex >= 1 && lastOpenIndex < lastCloseIndex && !input[lastOpenIndex..lastCloseIndex].Contains(','));
 
 			input = !input.Contains('[') || isNotCollection
 				? $"@SO.Select(x => {input}).First()"

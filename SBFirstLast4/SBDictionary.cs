@@ -1,6 +1,4 @@
 ﻿using Blazored.LocalStorage;
-using BlazorWorker.BackgroundServiceFactory;
-using BlazorWorker.Core;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
 
 namespace SBFirstLast4;
