@@ -3,7 +3,7 @@ using Blazored.LocalStorage;
 using System.Text;
 using System.Text.Json;
 using System.Security.Cryptography;
-using System;
+using SBFirstLast4.Logging;
 
 namespace SBFirstLast4;
 
@@ -19,6 +19,8 @@ internal static class AppSettings
 
 	internal static bool SortResult { get; private set; } = false;
 
+	internal static bool IsAdmin { get; private set; } = false;
+
 	internal static async Task SetSortResult(ILocalStorageService localStorage, bool value) 
 	{
 		SortResult = value;
@@ -33,7 +35,11 @@ internal static class AppSettings
 		UserName = await localStorage.GetItemAsync<string>("USER_NAME");
 		Guid = await localStorage.GetItemAsync<string>("USER_ID");
 		Hash = await localStorage.GetItemAsync<string>("HASH_ID");
+
+		await SetIsAdminAsync();
 	}
+
+	internal static async Task SetIsAdminAsync() => IsAdmin = await Server.CheckAsync(UserName);
 
 	internal static async Task SetupAsync(ILocalStorageService localStorage) 
 	{

@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using SBFirstLast4.Simulator;
 
@@ -157,6 +156,8 @@ public static class SBUtils
 	public static ValueTask<bool> Confirm(this IJSRuntime jsRuntime, params object?[]? args) => jsRuntime.InvokeAsync<bool>("confirm", args);
 
 	public static string Stringify(this Exception ex) => $"{ex.GetType().Name}: {ex.Message}";
+
+	public static void RemoveRange<T>(this List<T> list, IEnumerable<T> values) => list = list.Except(values).ToList();
 
 	public static void ReplaceOrAdd<T>(this List<T> list, T value)
 		where T : IEquatable<T>

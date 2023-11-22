@@ -157,6 +157,8 @@
         var oldName = AppSettings.UserName;
         await AppSettings.SetNameAsync(LocalStorage, userName);
 
+        await AppSettings.SetIsAdminAsync();
+
         Server.Post(new
         {
             Type = "USERNAME",

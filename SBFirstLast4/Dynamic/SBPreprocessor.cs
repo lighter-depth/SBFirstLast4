@@ -9,17 +9,21 @@ public static partial class SBPreprocessor
 
     private static readonly string[] ValidDirectives =
     {
-		"define", "undef", "show", "clear", "pragma", "include", "exclude", "ifdef", "ifndef", "delete"
-	};
+        "define", "undef", "show", "clear", "pragma", "include", "exclude", "ifdef", "ifndef", "delete"
+    };
     public static async Task Initialize(HttpClient client)
     {
-        foreach (var module in new[]
+        try
         {
-            "Standard", "Lists", "Killers", "Tools"
-        })
-            await LoadModule(module, client);
+            foreach (var module in new[]
+            {
+                "Standard", "Lists", "Killers", "Tools"
+            })
+                await LoadModule(module, client);
 
-        IsInitialized = true;
+            IsInitialized = true;
+        }
+        catch { }
     }
 
     private static async Task LoadModule(string moduleName, HttpClient client)
@@ -43,7 +47,7 @@ public static partial class SBPreprocessor
         var contents = input.Split();
         var symbol = contents.At(0);
 
-        if(symbol is "elifdef" or "elifndef" or "else" or "endif" or "transient")
+        if (symbol is "elifdef" or "elifndef" or "else" or "endif" or "transient")
         {
             errorMsg = "Invalid directive in this context.";
             return false;
@@ -73,19 +77,19 @@ public static partial class SBPreprocessor
                 return true;
             }
 
-            if(selector is "$MODULE" or "$MDL")
+            if (selector is "$MODULE" or "$MDL")
             {
                 status = ModuleManager.ModuleNames.Append("USER_DEFINED").ToArray();
                 return true;
             }
 
-            if(selector is "$EXCLUDED" or "$EXC")
+            if (selector is "$EXCLUDED" or "$EXC")
             {
                 status = ModuleManager.ExcludedModules.ToArray();
                 return true;
             }
 
-            if(selector is "$IMPORTED" or "$IMP")
+            if (selector is "$IMPORTED" or "$IMP")
             {
                 status = ModuleManager.RuntimeModules.Select(m => m.Name).ToArray();
                 return true;
@@ -107,7 +111,7 @@ public static partial class SBPreprocessor
 
             var module = ModuleManager.GetModule(selector);
 
-            if(module is null)
+            if (module is null)
             {
                 errorMsg = $"Specified module {selector} does not exist in module manager.";
                 return false;
@@ -135,7 +139,7 @@ public static partial class SBPreprocessor
         if (symbol is "pragma")
         {
             var pragma = contents.At(1);
-            if(pragma is not ("auto" or "reflect" or "monitor"))
+            if (pragma is not ("auto" or "reflect" or "monitor"))
             {
                 errorMsg = "Invalid syntax: No applicable pragma found.";
                 return false;
@@ -168,7 +172,7 @@ public static partial class SBPreprocessor
                 errorMsg = "Invalid syntax: invalid argument for #pragma auto directive.";
                 return false;
             }
-            if(pragma is "reflect")
+            if (pragma is "reflect")
             {
                 if (contents.Length != 3)
                 {
@@ -183,13 +187,13 @@ public static partial class SBPreprocessor
                 }
                 if (contents[2] == "disable")
                 {
-					ManualQuery.IsReflect = false;
+                    ManualQuery.IsReflect = false;
                     status = new[] { "Reflector disabled." };
                     return true;
                 }
                 if (contents[2] == "toggle")
                 {
-					ManualQuery.IsReflect = !ManualQuery.IsReflect;
+                    ManualQuery.IsReflect = !ManualQuery.IsReflect;
                     status = new[] { $"Reflector {(ManualQuery.IsReflect ? "enabled" : "disabled")}." };
                     return true;
                 }
@@ -200,23 +204,23 @@ public static partial class SBPreprocessor
             return false;
         }
 
-        if(symbol is "ifdef")
+        if (symbol is "ifdef")
         {
             status = new[] { ModuleManager.ContentNames.Contains(contents.At(1)) ? "TRUE" : "FALSE" };
             return true;
         }
 
-        if(symbol is "ifndef")
+        if (symbol is "ifndef")
         {
             status = new[] { !ModuleManager.ContentNames.Contains(contents.At(1)) ? "TRUE" : "FALSE" };
             return true;
         }
 
-        if(symbol is "include")
+        if (symbol is "include")
         {
-            if(ModuleManager.Include(contents.At(1) ?? string.Empty))
+            if (ModuleManager.Include(contents.At(1) ?? string.Empty))
             {
-                status = new[] { $"Successfully included {(contents.At(1) == "$ALL" ? "all modules" : $"module {contents.At(1)}")}."};
+                status = new[] { $"Successfully included {(contents.At(1) == "$ALL" ? "all modules" : $"module {contents.At(1)}")}." };
                 return true;
             }
             errorMsg = $"No includable module {contents.At(1)} found.";
@@ -224,7 +228,7 @@ public static partial class SBPreprocessor
         }
 
 
-        if(symbol is "exclude")
+        if (symbol is "exclude")
         {
             if (ModuleManager.Exclude(contents.At(1) ?? string.Empty))
             {
@@ -235,19 +239,19 @@ public static partial class SBPreprocessor
             return false;
         }
 
-		if (symbol is "delete")
-		{
-			if (ModuleManager.Delete(contents.At(1) ?? string.Empty, out var deleteStatus))
-			{
-				status = new[] { deleteStatus };
-				return true;
-			}
-			errorMsg = deleteStatus;
-			return false;
-		}
+        if (symbol is "delete")
+        {
+            if (ModuleManager.Delete(contents.At(1) ?? string.Empty, out var deleteStatus))
+            {
+                status = new[] { deleteStatus };
+                return true;
+            }
+            errorMsg = deleteStatus;
+            return false;
+        }
 
 
-		if (symbol is "undef")
+        if (symbol is "undef")
         {
             if (contents.Length != 2)
             {
@@ -281,7 +285,7 @@ public static partial class SBPreprocessor
             return false;
         }
 
-        if(contents.Length == 2)
+        if (contents.Length == 2)
         {
             ModuleManager.UserDefined.Symbols.Add(contents[1]);
             status = new[] { $"Successfully added symbol {contents[1]} to the dictionary." };

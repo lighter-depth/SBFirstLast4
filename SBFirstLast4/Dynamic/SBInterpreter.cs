@@ -59,15 +59,15 @@ public static partial class SBInterpreter
 	{
 		[nameof(Extensions.DynamicExtensionHelper.FirstChar)] = $"{nameof(Extensions.DynamicExtensionHelper.FirstChar)}()",
 		[nameof(Extensions.DynamicExtensionHelper.LastChar)] = $"{nameof(Extensions.DynamicExtensionHelper.LastChar)}()",
-		[".\\fc"] = $"{nameof(Extensions.DynamicExtensionHelper.FirstChar)}()",
-		[".\\lc"] = $"{nameof(Extensions.DynamicExtensionHelper.LastChar)}()",
-		[".\\c("] = $".{nameof(Word.Contains)}(",
-		[".\\cl("] = $".{nameof(Word.CalcEffectiveDmg)}(",
-		[".\\t2c("] = $".{nameof(WordTypeEx.TypeToChar)}(",
-		[".\\t2s("] = $".{nameof(WordTypeEx.TypeToString)}(",
-		[".Sort()"] = ".OrderBy(it)",
+		["\\fc"] = $"{nameof(Extensions.DynamicExtensionHelper.FirstChar)}()",
+		["\\lc"] = $"{nameof(Extensions.DynamicExtensionHelper.LastChar)}()",
+		["\\c("] = $"{nameof(Word.Contains)}(",
+		["\\cl("] = $"{nameof(Word.CalcEffectiveDmg)}(",
+		["\\t2c("] = $"{nameof(WordTypeEx.TypeToChar)}(",
+		["\\t2s("] = $"{nameof(WordTypeEx.TypeToString)}(",
+		["Sort()"] = "OrderBy(it)",
 		["\\$("] = "string.Format(",
-		[".\\~("] = ".IsMatch("
+		["\\~("] = "IsMatch("
 	};
 
 	internal static bool IsAuto { get; set; } = true;
