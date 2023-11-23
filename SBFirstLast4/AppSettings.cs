@@ -116,20 +116,27 @@ internal static class AppSettings
 			0b01110000
 			);
 
-		var response = await client.GetStringAsync(config);
-		var json = JsonDocument.Parse(response);
+		try
+		{
+			var response = await client.GetStringAsync(config);
+			var json = JsonDocument.Parse(response);
 
-		var hashRootStr = json.RootElement.GetProperty(key).GetString();
+			var hashRootStr = json.RootElement.GetProperty(key).GetString();
 
-		if (hashRootStr is null) return "UNKNOWN_HASH";
+			if (hashRootStr is null) return "UNKNOWN_HASH";
 
-		var hashRoot = Encoding.UTF8.GetBytes(hashRootStr);
+			var hashRoot = Encoding.UTF8.GetBytes(hashRootStr);
 
-		var hash = SHA256.HashData(hashRoot);
+			var hash = SHA256.HashData(hashRoot);
 
-		if (hash is null) return "UNKNOWN_HASH";
+			if (hash is null) return "UNKNOWN_HASH";
 
-		return string.Join(string.Empty, hash.Select(b => b.ToString("x2")));
+			return string.Join(string.Empty, hash.Select(b => b.ToString("x2")));
+		}
+		catch
+		{
+			return "UNKOWN_HASH";
+		}
 	}
 
 
