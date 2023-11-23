@@ -282,14 +282,14 @@
 
 	private async void AttackerInput_KeyUp()
 	{
-		var wordText = await JSRuntime.InvokeAsync<string>("eval", "document.getElementById('attacker-word-input').value");
+		var wordText = await JSRuntime.GetElementValueById<string>("attacker-word-input");
 		Attacker = await InferWordTypeOrDefaultAsync(wordText, text => AttackerTypeIndicator = text);
 		UpdateLblDamage();
 	}
 
 	private async void ReceiverInput_KeyUp()
 	{
-		var wordText = await JSRuntime.InvokeAsync<string>("eval", "document.getElementById('receiver-word-input').value");
+		var wordText = await JSRuntime.GetElementValueById<string>("receiver-word-input");
 		Receiver = await InferWordTypeOrDefaultAsync(wordText, text => ReceiverTypeIndicator = text);
 		UpdateLblDamage();
 	}
@@ -300,7 +300,6 @@
 		{
 			update(string.Empty);
 			StateHasChanged();
-			await Task.Delay(1);
 			return default;
 		}
 		var keyChar = wordText[0];
@@ -308,14 +307,12 @@
 		{
 			update("無効な開始文字です。");
 			StateHasChanged();
-			await Task.Delay(1);
 			return default;
 		}
 		if (wordText.At(^1) == 'ん')
 		{
 			update("んで終わっています。");
 			StateHasChanged();
-			await Task.Delay(1);
 			return default;
 		}
 		if (!SBDictionary.IsLite)
@@ -328,7 +325,6 @@
 		{
 			update("辞書にない単語です。");
 			StateHasChanged();
-			await Task.Delay(1);
 			return default;
 		}
 
@@ -346,7 +342,6 @@
 		};
 		update(typeIndicatorResult);
 		StateHasChanged();
-		await Task.Delay(1);
 		return new(wordText, type1, type2);
 	}
 
@@ -364,7 +359,6 @@
 		{
 			LblDamage = string.Empty;
 			StateHasChanged();
-			await Task.Delay(1);
 			return;
 		}
 		var resultStr = string.Empty;
@@ -394,6 +388,5 @@
 		resultStr += $" {{ {ability}({ValueA:0.0#}/{ValueB:0.0#}) }}";
 		LblDamage = resultStr;
 		StateHasChanged();
-		await Task.Delay(1);
 	}
 }

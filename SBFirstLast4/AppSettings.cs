@@ -32,9 +32,9 @@ internal static class AppSettings
 		IsLoggedIn = await localStorage.GetItemAsync<bool>("IS_LOGGED_IN");
 		if (!IsLoggedIn) return;
 
-		UserName = await localStorage.GetItemAsync<string>("USER_NAME");
-		Guid = await localStorage.GetItemAsync<string>("USER_ID");
-		Hash = await localStorage.GetItemAsync<string>("HASH_ID");
+		UserName = await localStorage.GetItemAsync<string?>("USER_NAME") ?? "ILLEGAL_LOGIN";
+		Guid = await localStorage.GetItemAsync<string?>("USER_ID") ?? "ILLEGAL_LOGIN";
+		Hash = await localStorage.GetItemAsync<string?>("HASH_ID") ?? "ILLEGAL_LOGIN";
 
 		await SetIsAdminAsync();
 	}
@@ -135,7 +135,7 @@ internal static class AppSettings
 
 	internal static bool SkipFlag { get; private set; } =
 #if DEBUG
-	false
+	true
 #else
 	false
 #endif

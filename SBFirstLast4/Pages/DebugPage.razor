@@ -1,19 +1,220 @@
 ﻿@page "/debug"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@using SBFirstLast4.Simulator
 
 
-<div class="container">
-	<button @onclick=DebugButton_Click>DEBUG</button>
-	<label>@UpdateText</label>
-	<label>@DebugContent</label>
-</div>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, maximum-scale=1.0, initial-scale=1">
+	<link rel="stylesheet" href="css/simulator.css" />
+	<link rel="stylesheet" href="https://indestructibletype-fonthosting.github.io/renner.css" type="text/css">
+	<link rel="shortcut icon" type="image/vnd.microsoft.icon" href="../icons/favicon.ico">
+	<link rel="icon" type="image/vnd.microsoft.icon" href="../icons/favicon.ico">
+</head>
+<body>
+	<div id="bg"></div>
+	<div id="main">
+		<div id="modal-message"></div>
+		<div id="next"><a>つぎへ</a></div>
+		<div id="game" style="background-color: forestgreen">
+			<div id="foe-status">
+				<span id="foe-name">@Battle.Player2.Name</span><span class="poison" id="foe-poison">どく</span>
+				<div id="left-HP">
+					<div id="left-HP-remain"></div>
+				</div>
+				<div id="foeHPnum">@($"{Battle.Player2.HP}/{Player.MaxHP}")</div>
+				<div class="tri"></div>
+			</div>
 
+			<div id="ally-status">
+				<span id="ally-name">@Battle.Player1.Name</span><span class="poison" id="ally-poison">どく</span>
+				<div id="right-HP">
+					<div id="right-HP-remain"></div>
+				</div>
+				<div id="allyHPnum">@($"{Battle.Player1.HP}/{Player.MaxHP}")</div>
+				<div class="tri"></div>
+			</div>
+
+			<div id="foe-word" style="">
+				<div class="first">
+					<p>
+						ゆ
+					</p>
+				</div>
+			</div>
+			<div class="field-shadow-wrapper">
+				<div class="field-shadow" id="foe-shadow"></div>
+			</div>
+			<svg id="foe-up" class="foe-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+				<defs>
+					<filter id="filter">
+						<feGaussianBlur stdDeviation="5"></feGaussianBlur>
+					</filter>
+					<mask id="mask">
+						<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter)"></ellipse>
+					</mask>
+				</defs>
+
+				<image xlink:href="images/red.gif" width="100%" height="100%" mask="url(#mask)"></image>
+			</svg>
+			<svg id="foe-down" class="foe-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+				<defs>
+					<filter id="filter2">
+						<feGaussianBlur stdDeviation="5"></feGaussianBlur>
+					</filter>
+					<mask id="mask2">
+						<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter2)"></ellipse>
+					</mask>
+				</defs>
+
+				<image xlink:href="images/blue.gif" width="100%" height="100%" mask="url(#mask2)"></image>
+			</svg>
+			<svg id="foe-heal" class="foe-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+				<defs>
+					<filter id="filter6">
+						<feGaussianBlur stdDeviation="5"></feGaussianBlur>
+					</filter>
+					<mask id="mask6">
+						<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter6)"></ellipse>
+					</mask>
+				</defs>
+
+				<image xlink:href="images/heal.gif" width="100%" height="100%" mask="url(#mask6)"></image>
+			</svg>
+
+			<div id="ally-word"></div>
+			<div class="field-shadow-wrapper">
+				<div class="field-shadow" id="ally-shadow"></div>
+			</div>
+			<svg id="ally-up" class="ally-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+				<defs>
+					<filter id="filter3">
+						<feGaussianBlur stdDeviation="5"></feGaussianBlur>
+					</filter>
+					<mask id="mask3">
+						<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter3)"></ellipse>
+					</mask>
+				</defs>
+
+				<image xlink:href="images/red.gif" width="100%" height="100%" mask="url(#mask3)"></image>
+			</svg>
+			<svg id="ally-down" class="ally-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+				<defs>
+					<filter id="filter4">
+						<feGaussianBlur stdDeviation="5"></feGaussianBlur>
+					</filter>
+					<mask id="mask4">
+						<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter4)"></ellipse>
+					</mask>
+				</defs>
+
+				<image xlink:href="images/blue.gif" width="100%" height="100%" mask="url(#mask4)"></image>
+			</svg>
+			<svg id="ally-heal" class="ally-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+				<defs>
+					<filter id="filter5">
+						<feGaussianBlur stdDeviation="5"></feGaussianBlur>
+					</filter>
+					<mask id="mask5">
+						<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter5)"></ellipse>
+					</mask>
+				</defs>
+
+				<image xlink:href="images/heal.gif" width="100%" height="100%" mask="url(#mask5)"></image>
+			</svg>
+
+			<div id="timer"></div>
+		</div>
+
+		<div id="message" style=@(IsProcessing ? string.Empty : "display: none;")>
+			<div id="message-text"></div>
+		</div>
+
+		<form id="form">
+			<div id="text" style=@(IsProcessing ? string.Empty : "display: block;")>
+				<input type="text" id="input" autocomplete="off" placeholder="「ゆ」からはじまることば">
+				<button type="submit" id="btn-submit"></button>
+			</div>
+			<p id="types"></p>
+		</form>
+		<div id="situation" class="sb-button" style="display: block;">
+			<p>じょうきょう</p>
+		</div>
+		<div id="skill" class="sb-button" style="display: block;">
+			<p>とくせい</p>
+		</div>
+		<div id="exit" class="sb-button">
+			<p>おわる</p>
+		</div>
+
+		<div id="wait-message"></div>
+		<div id="hint"></div>
+		<div id="situation-modal">
+			<div id="s-foe-info">
+				<h3>あいて<span id="foe-rank"></span></h3>
+				<p>こうげき<br><span id="foe-A">1.0倍</span></p>
+				<p>ぼうぎょ<br><span id="foe-B">1.0倍</span></p>
+				<!--<span>とくせい</span>
+				<div id="foe-tokusei"></div>--->
+			</div>
+			<div id="s-ally-info">
+				<h3>じぶん<span id="ally-rank"></span></h3>
+				<p>こうげき<br><span id="ally-A">1.0倍</span></p>
+				<p>ぼうぎょ<br><span id="ally-B">1.0倍</span></p>
+				<!--<span>とくせい</span>
+				<div id="ally-tokusei"></div>--->
+			</div>
+
+			<div id="last-foe-word"></div>
+			<div class="types"></div>
+			<div class="will-damaged"></div>
+			<div class="close-modal">とじる</div>
+		</div>
+		<div id="skill-modal">
+			<div id="ally-tokusei">
+				<span>自分</span>
+				<div class="tokusei-name">やどりぎ</div>
+				<div class="tokusei-desc">植物タイプの言葉を使うとダメージを与える代わりに相手にやどりぎを植え付ける</div>
+			</div>
+			<div id="foe-tokusei">
+				<span>相手</span>
+				<div class="tokusei-name">むきむき</div>
+				<div class="tokusei-desc">暴力タイプの言葉を使っても攻撃力がすこししか下がらなくなる</div>
+			</div>
+			<div id="middle">
+				<span class="tapto">タップしてとくせいを変える<span id="counter" style="display: none;">(あと<span id="remain">2</span>回)</span></span>
+				<div id="skills"><div id="動物"><img class="skill-icon" src="../images/animal.gif"><br><span>はんしょく</span></div><div id="ノーマル"><img class="skill-icon" src="../icons/normal.GIF"><br><span>デバッガー</span></div><div id="感情"><img class="skill-icon" src="../icons/heart.GIF"><br><span>じょうねつ</span></div><div id="人物"><img class="skill-icon" src="../icons/person.GIF"><br><span>きょじん</span></div><div id="食べ物"><img class="skill-icon" src="../icons/food.GIF"><br><span>いかすい</span></div><div id="芸術"><img class="skill-icon" src="../icons/art.GIF"><br><span>ロックンロール</span></div><div id="暴力"><img class="skill-icon" src="../icons/violence.GIF"><br><span>むきむき</span></div><div id="スポーツ"><img class="skill-icon" src="../icons/sports.GIF"><br><span>トレーニング</span></div><div id="社会"><img class="skill-icon" src="../icons/social.GIF"><br><span>ほけん</span></div><div id="時間"><img class="skill-icon" src="../icons/time.GIF"><br><span>さきのばし</span></div><div id="人体"><img class="skill-icon" src="../icons/body.GIF"><br><span>からて</span></div><div id="暴言"><img class="skill-icon" src="../icons/abuse.GIF"><br><span>ずぼし</span></div><div id="医療"><img class="skill-icon" src="../icons/medical.GIF"><br><span>いしょくどうげん</span></div><div id="機械"><img class="skill-icon" src="../icons/machine.GIF"><br><span>かちこち</span></div><div id="虫"><img class="skill-icon" src="../icons/insect.GIF"><br><span>どくばり</span></div><div id="天気"><img class="skill-icon" src="../icons/weather.GIF"><br><span>たいふういっか</span></div><div id="植物" style="border: 1px solid black;"><img class="skill-icon" src="../images/plant.gif"><br><span>やどりぎ</span></div><div id="理科"><img class="skill-icon" src="../icons/science.GIF"><br><span>じっけん</span></div><div id="地名"><img class="skill-icon" src="../icons/place.GIF"><br><span>グローバル</span></div><div id="宗教"><img class="skill-icon" src="../icons/religion.GIF"><br><span>しんこうしん</span></div><div id="遊び"><img class="skill-icon" src="../icons/play.GIF"><br><span>かくめい</span></div><div id="数学"><img class="skill-icon" src="../icons/math.GIF"><br><span>けいさん</span></div><div id="服飾"><img class="skill-icon" src="../icons/cloth.GIF"><br><span>かさねぎ</span></div><div id="工作"><img class="skill-icon" src="../icons/craft.GIF"><br><span>ぶそう</span></div><div id="物語"><img class="skill-icon" src="../icons/story.GIF"><br><span>おれのことばのもじすうがおおいほどいりょくがおおきくなるけんについて</span></div></div>
+			</div>
+			<div class="close-modal">とじる</div>
+		</div>
+	</div>
+</body>
+</html>
 @code {
-	private string UpdateText = string.Empty;
-	private string DebugContent = string.Empty;
-	private void DebugButton_Click()
+	private Battle Battle = Battle.Empty;
+	private bool IsProcessing = false;
+
+	protected override void OnInitialized()
 	{
-		throw new Exception("Example exception");
+		Battle = new
+	(
+	new(AbilityManager.GetAbility(nameof(Debugger)))
+		{
+			Proceeding = Proceeds.True,
+			Name = "先攻"
+		},
+	new(AbilityManager.GetAbility(nameof(Debugger)))
+		{
+			Proceeding = Proceeds.False,
+			Name = "後攻"
+		}
+	)
+			{
+				In = null!,
+				Out = null!,
+				OnReset = cts => cts.Cancel()
+			};
 	}
 }

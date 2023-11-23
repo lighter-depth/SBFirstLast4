@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using Blazored.LocalStorage;
 using Microsoft.JSInterop;
 using SBFirstLast4.Simulator;
 
@@ -44,37 +45,7 @@ public static class SBUtils
 			return false;
 		}
 	}
-	public static IEnumerable<Word> SortByLength(this IEnumerable<Word> words, SortArg arg)
-	{
-		var result = new List<Word>();
-		if (arg == SortArg.NoConstraint) return words;
-		for (var i = 7; i < 12; i++) result.AddRange(words.Where(x => x.Name.Length == i));
-		result.AddRange(words.Where(x => x.Name.Length >= 12));
-		if (arg == SortArg.OnlyMoreThanSeven) return result;
-		result.AddRange(words.Where(x => x.Name.Length == 6).Select(x => x with { Name = $"({x.Name})" }));
-		result.AddRange(words.Where(x => x.Name.Length < 6).Select(x => x with { Name = $"({x.Name})" }));
-		return result;
-	}
-	public static IEnumerable<string> SortByLength(this IEnumerable<string> words, SortArg arg)
-	{
-		var result = new List<string>();
-		if (arg == SortArg.NoConstraint) return words;
-		for (var i = 7; i < 12; i++) result.AddRange(words.Where(x => x.Length == i));
-		result.AddRange(words.Where(x => x.Length >= 12));
-		if (arg == SortArg.OnlyMoreThanSeven) return result;
-		result.AddRange(words.Where(x => x.Length == 6).Select(x => $"({x})"));
-		result.AddRange(words.Where(x => x.Length < 6).Select(x => $"({x})"));
-		return result;
-	}
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static T? At<T>(this IEnumerable<T> source, int index) => source.ElementAtOrDefault(index);
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static T? At<T>(this IEnumerable<T> source, Index index) => source.ElementAtOrDefault(index);
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static char At(this string source, int index) => index < 0 || index >= source.Length ? default : source[index];
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static char At(this string source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];
-
+	
 	public static char GetLastChar(this string str)
 	{
 		var length = str.Length;
@@ -112,24 +83,39 @@ public static class SBUtils
 		['づ'] = 'ず'
 	};
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static Span<T> AsSpan<T>(this List<T> list) => CollectionsMarshal.AsSpan(list);
-	public static List<string[]> SplitToChunks(this List<string> source, int chunkSize)
-	{
-		const int chunksize = 10000;
-		var sourceSpan = source.AsSpan();
-		var chunks = new List<string[]>((int)Math.Ceiling((double)source.Count / chunkSize));
-		for (var i = 0; i < source.Count; i += chunksize)
-		{
-			var count = Math.Min(chunksize, source.Count - i);
-			chunks.Add(sourceSpan.Slice(i, count).ToArray());
-		}
-		return chunks;
-	}
-
 	public static bool IsWild(this char c) => c is '*' or '＊';
 
 	public static bool IsWild(this string name) => name.Contains('*') || name.Contains('＊');
+	public static string Stringify(this Exception ex) => $"{ex.GetType().Name}: {ex.Message}";
+}
+
+public static class JSHelper
+{
+	public static ValueTask Alert(this IJSRuntime jsRuntime, params object?[]? args) => jsRuntime.InvokeVoidAsync("alert", args);
+
+	public static ValueTask AlertEx(this IJSRuntime jsRuntime, Exception ex) => jsRuntime.InvokeVoidAsync("alert", ex.Stringify());
+
+	public static ValueTask<bool> Confirm(this IJSRuntime jsRuntime, params object?[]? args) => jsRuntime.InvokeAsync<bool>("confirm", args);
+
+	public static ValueTask<TResult> GetElementValueById<T, TResult>(this IJSRuntime jsRuntime, T id) => jsRuntime.InvokeAsync<TResult>("eval", $"document.getElementById('{id}').value");
+
+}
+
+public static class CollectionHelper
+{
+	public static void RemoveRange<T>(this List<T> list, IEnumerable<T> values) => list = list.Except(values).ToList();
+
+	public static void ReplaceOrAdd<T>(this List<T> list, T value)
+		where T : IEquatable<T>
+	{
+		var index = list.FindIndex(i => i.Equals(value));
+		if (index < 0)
+		{
+			list.Add(value);
+			return;
+		}
+		list[index] = value;
+	}
 
 	public static void Add(this List<AnnotatedString> list, string text, Notice notice)
 	{
@@ -149,25 +135,50 @@ public static class SBUtils
 			list.Add(msg);
 	}
 
-	public static ValueTask Alert(this IJSRuntime jsRuntime, params object?[]? args) => jsRuntime.InvokeVoidAsync("alert", args);
-
-	public static ValueTask AlertEx(this IJSRuntime jsRuntime, Exception ex) => jsRuntime.InvokeVoidAsync("alert", ex.Stringify());
-
-	public static ValueTask<bool> Confirm(this IJSRuntime jsRuntime, params object?[]? args) => jsRuntime.InvokeAsync<bool>("confirm", args);
-
-	public static string Stringify(this Exception ex) => $"{ex.GetType().Name}: {ex.Message}";
-
-	public static void RemoveRange<T>(this List<T> list, IEnumerable<T> values) => list = list.Except(values).ToList();
-
-	public static void ReplaceOrAdd<T>(this List<T> list, T value)
-		where T : IEquatable<T>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static Span<T> AsSpan<T>(this List<T> list) => CollectionsMarshal.AsSpan(list);
+	public static List<string[]> SplitToChunks(this List<string> source, int chunkSize)
 	{
-		var index = list.FindIndex(i => i.Equals(value));
-		if(index < 0)
+		const int chunksize = 10000;
+		var sourceSpan = source.AsSpan();
+		var chunks = new List<string[]>((int)Math.Ceiling((double)source.Count / chunkSize));
+		for (var i = 0; i < source.Count; i += chunksize)
 		{
-			list.Add(value);
-			return;
+			var count = Math.Min(chunksize, source.Count - i);
+			chunks.Add(sourceSpan.Slice(i, count).ToArray());
 		}
-		list[index] = value;
+		return chunks;
 	}
+
+	public static IEnumerable<Word> SortByLength(this IEnumerable<Word> words, SortArg arg)
+	{
+		var result = new List<Word>();
+		if (arg == SortArg.NoConstraint) return words;
+		for (var i = 7; i < 12; i++) result.AddRange(words.Where(x => x.Name.Length == i));
+		result.AddRange(words.Where(x => x.Name.Length >= 12));
+		if (arg == SortArg.OnlyMoreThanSeven) return result;
+		result.AddRange(words.Where(x => x.Name.Length == 6).Select(x => x with { Name = $"({x.Name})" }));
+		result.AddRange(words.Where(x => x.Name.Length < 6).Select(x => x with { Name = $"({x.Name})" }));
+		return result;
+	}
+	public static IEnumerable<string> SortByLength(this IEnumerable<string> words, SortArg arg)
+	{
+		var result = new List<string>();
+		if (arg == SortArg.NoConstraint) return words;
+		for (var i = 7; i < 12; i++) result.AddRange(words.Where(x => x.Length == i));
+		result.AddRange(words.Where(x => x.Length >= 12));
+		if (arg == SortArg.OnlyMoreThanSeven) return result;
+		result.AddRange(words.Where(x => x.Length == 6).Select(x => $"({x})"));
+		result.AddRange(words.Where(x => x.Length < 6).Select(x => $"({x})"));
+		return result;
+	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static T? At<T>(this IEnumerable<T> source, int index) => source.ElementAtOrDefault(index);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static T? At<T>(this IEnumerable<T> source, Index index) => source.ElementAtOrDefault(index);
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static char At(this string source, int index) => index < 0 || index >= source.Length ? default : source[index];
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static char At(this string source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];
+
 }

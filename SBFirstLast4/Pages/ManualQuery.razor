@@ -136,7 +136,7 @@
 
 	private async Task ImportStoredModules()
 	{
-		var storedFiles = await LocalStorage.GetItemAsync<List<FileModel>>("MODULE_FILES");
+		var storedFiles = await LocalStorage.GetItemAsync<List<FileModel>?>("MODULE_FILES");
 
 		if (storedFiles?.Count > 0)
 		{
