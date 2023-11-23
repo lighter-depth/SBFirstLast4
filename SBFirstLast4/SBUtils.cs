@@ -103,7 +103,7 @@ public static class JSHelper
 
 public static class CollectionHelper
 {
-	public static void RemoveRange<T>(this List<T> list, IEnumerable<T> values) => list = list.Except(values).ToList();
+	public static List<T> RemoveRange<T>(this List<T> list, IEnumerable<T> values) => list.Except(values).ToList();
 
 	public static void ReplaceOrAdd<T>(this List<T> list, T value)
 		where T : IEquatable<T>

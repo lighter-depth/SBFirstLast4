@@ -43,9 +43,19 @@
 				<span class="file-name">@file.Name</span>
 				<span class="file-size">(@file.Size) bytes</span>
 			</div>
-			<div id="file@(i.ToString())" class="progress-bar" style="width: @($"{progressPercentages[file.Name]}%");">
+			<div id="file@($"{file.Name}")" class="progress-bar" style="width: @($"{(progressPercentages.TryGetValue(file.Name, out var percentage) ? percentage : 100)}%");">
 			</div>
-			<label for="file@(i.ToString())" @onclick="async() => await RemoveFileAsync(file)">
+			<label for="file@($"{file.Name}")" @onclick="async() =>
+				{
+					try
+					{
+						await RemoveFileAsync(file);
+					}
+					catch(Exception ex)
+					{
+						await JSRuntime.AlertEx(ex);
+					}
+				}">
 				<span class="oi oi-x"></span>
 			</label>
 		}
@@ -330,32 +340,45 @@
 
 	private async Task RemoveFileAsync(FileModel file)
 	{
-		if (!ModuleManager.DeleteByRuntimeName(file.Name, out var status))
+		try
 		{
-			outputBuffer.Add((status, "Error"));
-			StateHasChanged();
-			return;
-		}
-		outputBuffer.Add((status, "Safe"));
+			if (!ModuleManager.DeleteByRuntimeName(file.Name, out var status))
+			{
+				outputBuffer.Add((status, "Error"));
+				StateHasChanged();
+				return;
+			}
+			outputBuffer.Add((status, "Safe"));
 
-		await HandleDeletedFiles();
+			await HandleDeletedFiles();
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+		}
 	}
 
 	private async Task HandleDeletedFiles()
 	{
+		try
+		{
+			var filesToRemove = new List<FileModel>();
 
-		var filesToRemove = new List<FileModel>();
+			foreach (var m in moduleFiles)
+				if (!ModuleManager.RuntimeModules.Any(r => r.RuntimeName == m.Name))
+				{
+					filesToRemove.Add(m);
+					progressPercentages.Remove(m.Name);
+				}
+			moduleFiles = moduleFiles.RemoveRange(filesToRemove);
 
-		foreach (var m in moduleFiles)
-			if (!ModuleManager.RuntimeModules.Any(r => r.RuntimeName == m.Name))
-			{
-				filesToRemove.Add(m);
-				progressPercentages.Remove(m.Name);
-			}
-		moduleFiles.RemoveRange(filesToRemove);
-
-		await LocalStorage.SetItemAsync("MODULE_FILES", moduleFiles);
-		StateHasChanged();
+			await LocalStorage.SetItemAsync("MODULE_FILES", moduleFiles);
+			StateHasChanged();
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+		}
 	}
 
 	private record FileModel(string Name, string Content, long Size);
