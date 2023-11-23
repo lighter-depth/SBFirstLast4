@@ -53,8 +53,20 @@
       "url": "css\/open-iconic\/README.md"
     },
     {
+      "hash": "sha256-Q5L6lC7mq1Led0UcwFcIvhXMAOpT3YA6CY+NO8Tu0Og=",
+      "url": "css\/simulator.css"
+    },
+    {
       "hash": "sha256-4mWsDy3aHl36ZbGt8zByK7Pvd4kRUoNgTYzRnwmPHwg=",
       "url": "favicon.png"
+    },
+    {
+      "hash": "sha256-yix8PDuH1kQZ8Qnd94tTmstztFwgmhEbj1sQT8Ah03Q=",
+      "url": "font\/subset-mplus-1p-bold.ttf"
+    },
+    {
+      "hash": "sha256-MiLZhZwmXzqvwM2yPYI4u\/1sWFr6lYyXKJnL2D6ozG8=",
+      "url": "font\/subset-mplus-1p-regular.ttf"
     },
     {
       "hash": "sha256-DbpQaq68ZSb5IoPosBErM1QWBfsbTxpJqhU0REi6wP4=",
@@ -63,6 +75,190 @@
     {
       "hash": "sha256-oEo6d+KqX5fjxTiZk\/w9NB3Mi0+ycS5yLwCKwr4IkbA=",
       "url": "icon-512.png"
+    },
+    {
+      "hash": "sha256-KNHdnZf6fXwGHXOnoE3t8JWQ8kK2Hgu1NXeV7lqqjE0=",
+      "url": "images\/animal.gif"
+    },
+    {
+      "hash": "sha256-zlTFGF9HeSKqPzgnLkGvjji8CcA34fIWbOqVzDyzyt8=",
+      "url": "images\/art.gif"
+    },
+    {
+      "hash": "sha256-i\/S+NA+TrQOSrj9LNl3hpmz2wzCBjCZXv2dJWJe6hJA=",
+      "url": "images\/autoaim.gif"
+    },
+    {
+      "hash": "sha256-mh+aOg0ZKf43M640ByGbgy1+OcqDlNNBDpKJQlgXpIE=",
+      "url": "images\/blue.gif"
+    },
+    {
+      "hash": "sha256-dvlQZHWK16I+915gwWJWla1vlxgFLMuKkYvBlAW09x0=",
+      "url": "images\/body.gif"
+    },
+    {
+      "hash": "sha256-XFq9ootnnZsTBIdzjSj63C\/+rVJkyYjmPtw\/eeFQ1y0=",
+      "url": "images\/bug.gif"
+    },
+    {
+      "hash": "sha256-RabTk7x4wdwXkkL1DEPwkvTCNNv3mjqmTUuPDtwls5U=",
+      "url": "images\/cloth.gif"
+    },
+    {
+      "hash": "sha256-P24\/24X6bukdz48ia278taMnOGINxQbZ4Fd4kEMSYpU=",
+      "url": "images\/emote.gif"
+    },
+    {
+      "hash": "sha256-mYv7bu4VuHWmg\/8g2ajLpgfXH\/tM7+EUD0fiQaD9WmI=",
+      "url": "images\/extern.png"
+    },
+    {
+      "hash": "sha256-F2KyTmdaf2C0iKHZvJwp65wRREOmlYzGSjKnFoeU1JU=",
+      "url": "images\/food.gif"
+    },
+    {
+      "hash": "sha256-Pe2IFqmlVrLO8KTtAB2PbfVO\/oD6AutctBdJXkLfCgw=",
+      "url": "images\/ganjou.gif"
+    },
+    {
+      "hash": "sha256-ojMmlAMTyhZtP4eSn1uHjhvc3XLz8eUsj2sOkhSP7D0=",
+      "url": "images\/god.gif"
+    },
+    {
+      "hash": "sha256-RQOIMheT70tqbKmoBcRmuF1VFkPYiSk9XHZochVljyA=",
+      "url": "images\/ground.jpg"
+    },
+    {
+      "hash": "sha256-CD5O8772blSzcYzF7seqdJpyIeg0P88AVKEGsbkINOI=",
+      "url": "images\/heal.gif"
+    },
+    {
+      "hash": "sha256-rYfW3cJN8HGKMyD0EIPb8VKTDSso0lZw4f5wP5wEiE0=",
+      "url": "images\/health.gif"
+    },
+    {
+      "hash": "sha256-+zqrArN+zRRP66nNy2tELDj6nI6cNvmH6NZkpCT+ZRI=",
+      "url": "images\/insult.gif"
+    },
+    {
+      "hash": "sha256-0rDp7ZQ6YM5gltbca12BS22mi61nREV5b2kRmm5lmhk=",
+      "url": "images\/kakutei.gif"
+    },
+    {
+      "hash": "sha256-xGGplJYo17Il\/E3a+fnxOd5v8zfbeSKSpEcBgz9K4UE=",
+      "url": "images\/lighter.jpg"
+    },
+    {
+      "hash": "sha256-zqhjmx48vKukFKHjuCMn1baXA\/Sv+aLfXFdoRzlICG4=",
+      "url": "images\/math.gif"
+    },
+    {
+      "hash": "sha256-bBJj6B2+iG993+n+JaeE2ed0IOfiF8ZIKz4awzkMOA0=",
+      "url": "images\/mech.gif"
+    },
+    {
+      "hash": "sha256-xB2vksGedTwmob6odi+3kwLwUNUZvCy0TkEHyDSQWHQ=",
+      "url": "images\/mirror.gif"
+    },
+    {
+      "hash": "sha256-sLoB0lLZe7OkL4VSzZxIvoj3fF0fNTcVW8ueCz5lJrA=",
+      "url": "images\/normal.gif"
+    },
+    {
+      "hash": "sha256-1yXlta3JNW\/yNcGMw1D\/0gy6I0pjDW9WP91H8+Bbi+M=",
+      "url": "images\/paper_plane.png"
+    },
+    {
+      "hash": "sha256-zNmYbvxtvvN1LDiPrgkmrPJ7IFe\/SNM0LeRUBbivft4=",
+      "url": "images\/paper_plane.svg"
+    },
+    {
+      "hash": "sha256-zNmYbvxtvvN1LDiPrgkmrPJ7IFe\/SNM0LeRUBbivft4=",
+      "url": "images\/paper-plane.svg"
+    },
+    {
+      "hash": "sha256-zZC3BLdokaoC4JUBh0WDrC5WlReitIDCmhoJcvqmzQk=",
+      "url": "images\/pen.png"
+    },
+    {
+      "hash": "sha256-yOshIm+or96\/ckzJmlH1\/ke6605e01htLMS1Xeav1w4=",
+      "url": "images\/person.gif"
+    },
+    {
+      "hash": "sha256-kT5w0sxZSK6A7HUT50g79mXN1oTbVbY5c5LUPd68lZc=",
+      "url": "images\/place.gif"
+    },
+    {
+      "hash": "sha256-keVfS6OUmquCIEc6vK22Y143x\/vbH6QPODrnfXgIbc0=",
+      "url": "images\/plant.gif"
+    },
+    {
+      "hash": "sha256-I7dMgka2AUA1AAFl7QPfZ08qet57ONiR\/AppTHwk+nQ=",
+      "url": "images\/play.gif"
+    },
+    {
+      "hash": "sha256-KP7PBNlFKFcRUpz52fBI0cqJSHmUlQ2NQYs+rLiANHc=",
+      "url": "images\/red.gif"
+    },
+    {
+      "hash": "sha256-yc2W15AGlPElTeeXPXJlGa7Sr+pOoyxresCvLUyj71g=",
+      "url": "images\/religion.gif"
+    },
+    {
+      "hash": "sha256-GTolDrz3X05XtL4hBovKTbatJfyGeXGhex06JF0k+Zw=",
+      "url": "images\/science.gif"
+    },
+    {
+      "hash": "sha256-quQab6AHV7rv5UCMPTrVdyXHPbjSxpm013Jj\/t1Zq90=",
+      "url": "images\/settings.png"
+    },
+    {
+      "hash": "sha256-D6Y\/V7F9HYvp3sCKQL7rPv4TgWzHLgHPxOYRXVe3dto=",
+      "url": "images\/shield.gif"
+    },
+    {
+      "hash": "sha256-Eico3gZ\/nEn16Wvg4tF9dAn5MiF6\/gyrQFWxXyy3aNE=",
+      "url": "images\/society.gif"
+    },
+    {
+      "hash": "sha256-5bbWpp9cXayd+Qqw7vIF7CAQm00t6XokgMoE9oMv7rQ=",
+      "url": "images\/sports.gif"
+    },
+    {
+      "hash": "sha256-TClSj8hK3HuHWwUE6+o7K6Dyn2S6VTqHgTKceaMq+jc=",
+      "url": "images\/tale.gif"
+    },
+    {
+      "hash": "sha256-5fR0mfFKBFxcvupXistjPTJcuuA7z25jGRZPuDc1K1o=",
+      "url": "images\/time.gif"
+    },
+    {
+      "hash": "sha256-XrFcJ+oNAeUwDHB9eQrkeoBa+zq06DvGsPR4V8i+SJs=",
+      "url": "images\/tsubo.gif"
+    },
+    {
+      "hash": "sha256-Hh4F4b2\/SikUmN4w0ez\/QcBcCs6+QXjYy36z98V7dWM=",
+      "url": "images\/twitter.png"
+    },
+    {
+      "hash": "sha256-AtxbNB2f+1\/oswMF2kEy8x583r+HyevxWA\/eB1i6cSk=",
+      "url": "images\/unaware.gif"
+    },
+    {
+      "hash": "sha256-L9iNkq\/ZuZzPG05wFal1stmi4+PYVMrUUB2AQ59hwwQ=",
+      "url": "images\/violence.gif"
+    },
+    {
+      "hash": "sha256-eeP6mt0UDgbk7AhhBJ4N0y+D+8\/fRgVKWndszRs1Rww=",
+      "url": "images\/weather.gif"
+    },
+    {
+      "hash": "sha256-V8RjOkeO55pMxy7YpOTumb50QxSDGftkFSyy7ykawKk=",
+      "url": "images\/work.gif"
+    },
+    {
+      "hash": "sha256-GRuV3MAtBcBlTNikPx9xsGzW9KHNsHscWAdXY6A96bg=",
+      "url": "images\/youtube.png"
     },
     {
       "hash": "sha256-Ydbmk1mG4\/1Nz0vHoWOXsRxO7haFzsLFaORnVOOhw3E=",
@@ -121,7 +317,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-uRx6YOEQBpn5Oftly7UJwD5WI9TPD\/N9CPIPhfpakg4=",
+      "hash": "sha256-6sPfVXkP\/9WUVXhTYNHs2QxxYm0uwU9b+53g5D3o0nI=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -197,7 +393,7 @@
       "url": "_framework\/netstandard.dll"
     },
     {
-      "hash": "sha256-q2+R0BT0bPuUPoEZFQ4Ohi1MdPzLwzA\/dQxXJDlUb9U=",
+      "hash": "sha256-fSJmwZvkN9qwzK4MKFMeQoSsAVbd6Bt7poEz0SvkGlk=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -357,5 +553,5 @@
       "url": "_content\/BlazorDownloadFile\/BlazorDownloadFileScript.js"
     }
   ],
-  "version": "YDhphMxQ"
+  "version": "9E556Pa9"
 };
