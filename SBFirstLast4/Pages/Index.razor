@@ -155,28 +155,35 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		await AppSettings.InitUserInfoAsync(LocalStorage);
-		await AppSettings.SetupAsync(LocalStorage);
-
-		if (AppSettings.IsLoggedIn)
+		try
 		{
-			await AppSettings.RefreshHashAsync(Http, LocalStorage);
-			Server.Post(new
+			await AppSettings.InitUserInfoAsync(LocalStorage);
+			await AppSettings.SetupAsync(LocalStorage);
+
+			if (AppSettings.IsLoggedIn)
 			{
-				Type = "LOGIN",
-				UserInfo = new
+				await AppSettings.RefreshHashAsync(Http, LocalStorage);
+				Server.Post(new
 				{
-					Name = AppSettings.UserName,
-					Guid = AppSettings.Guid,
-					Hash = AppSettings.Hash,
-				},
-				Date = DateTime.Now
-			});
-			NavigationManager.NavigateTo("top");
-			return;
+					Type = "LOGIN",
+					UserInfo = new
+					{
+						Name = AppSettings.UserName,
+						Guid = AppSettings.Guid,
+						Hash = AppSettings.Hash,
+					},
+					Date = DateTime.Now
+				});
+				NavigationManager.NavigateTo("top");
+				return;
+			}
+			IsLoading = false;
+			StateHasChanged();
 		}
-		IsLoading = false;
-		StateHasChanged();
+		catch(Exception ex)
+		{
+			await JSRuntime.Alert(ex.ToString());
+		}
 	}
 
 	private void OnChange()
