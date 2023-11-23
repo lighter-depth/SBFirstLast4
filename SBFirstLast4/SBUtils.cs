@@ -97,7 +97,7 @@ public static class JSHelper
 
 	public static ValueTask<bool> Confirm(this IJSRuntime jsRuntime, params object?[]? args) => jsRuntime.InvokeAsync<bool>("confirm", args);
 
-	public static ValueTask<TResult> GetElementValueById<T, TResult>(this IJSRuntime jsRuntime, T id) => jsRuntime.InvokeAsync<TResult>("eval", $"document.getElementById('{id}').value");
+	public static ValueTask<T> GetElementValueById<T>(this IJSRuntime jsRuntime, string id) => jsRuntime.InvokeAsync<T>("eval", $"document.getElementById('{id}').value");
 
 }
 

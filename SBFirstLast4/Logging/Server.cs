@@ -33,8 +33,15 @@ public static class Server
 
     internal static async Task<bool> CheckAsync(string input)
     {
-        var response = await client.GetFromJsonAsync<AutoResponse>($"https://sbfl4logging.onrender.com/auto?string={input}");
-        return response?.Result ?? false;
+        try
+        {
+            var response = await client.GetFromJsonAsync<AutoResponse>($"https://sbfl4logging.onrender.com/auto?string={input}");
+            return response?.Result ?? false;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 
