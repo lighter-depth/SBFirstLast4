@@ -1,5 +1,6 @@
 ﻿@page "/sound-room"
 @inject NavigationManager NavigationManager
+@using SBFirstLast4.Logging
 <PageTitle>Sound Room</PageTitle>
 
 <div class="sound-room">
@@ -81,6 +82,29 @@
 	private static string RequestedAudioName = "denno";
 	private static int AudioIndex = SBAudioManager.AudioNames.IndexOf("denno") is int result and >= 0 ? result : 0;
 	private static bool IsPlaying = false;
+
+	protected override void OnInitialized()
+	{
+		if (!AppSettings.IsLoggedIn)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+		if (!SBDictionary.IsLoadedCorrectly)
+			NavigationManager.NavigateTo("top", false);
+
+		Server.Post(new
+		{
+			Type = "SOUND_ROOM",
+			UserInfo = new
+			{
+				Name = AppSettings.UserName,
+				Guid = AppSettings.Guid,
+				Hash = AppSettings.Hash,
+			},
+			Date = DateTime.Now
+		});
+	}
 
 	private async Task PlayCurrentAudio()
 	{
