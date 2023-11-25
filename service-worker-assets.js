@@ -5,6 +5,190 @@
       "url": "404.html"
     },
     {
+      "hash": "sha256-IJHAYmgqmkYQ1TuCYfphpqH+FBtjxTsfMo8kSoyiv9I=",
+      "url": "audio\/animal.mp3"
+    },
+    {
+      "hash": "sha256-8IpNGDwuog5mXgMu4WQy\/H+WNpROCebA6PZ1a2F1vws=",
+      "url": "audio\/art.mp3"
+    },
+    {
+      "hash": "sha256-IwU4gzyYPNB1O0i0BYYDeg4v\/Mw1ZYkrOJP5Omye3Wc=",
+      "url": "audio\/body.mp3"
+    },
+    {
+      "hash": "sha256-NZvxU+nhKfd+97sv0DzvPS7OS+w50plRUrvzGnZeQ50=",
+      "url": "audio\/bug.mp3"
+    },
+    {
+      "hash": "sha256-Zwm02IfDzQyG8ezoStYQmf8pVoFc03SpaRmdpUVOWcw=",
+      "url": "audio\/cloth.mp3"
+    },
+    {
+      "hash": "sha256-MbdD7VdTj1yiErGhGsv92ctg87IpcylLsX7gWrQZmJI=",
+      "url": "audio\/concent.mp3"
+    },
+    {
+      "hash": "sha256-XD9nSk6DZ1A+KIo7GfXBUNuWbrv0FaQC4DCn4Hg+QpI=",
+      "url": "audio\/denno.mp3"
+    },
+    {
+      "hash": "sha256-WVuJCROoj7\/tLPlBYo5dOBY5GYxiERe7aNVYPr16lu8=",
+      "url": "audio\/down.mp3"
+    },
+    {
+      "hash": "sha256-fP3MwMaBMOU1R96NmM6UzBtDwvcu6\/Ja52Rez86Uorw=",
+      "url": "audio\/effective.mp3"
+    },
+    {
+      "hash": "sha256-wJH13sXleOAM1GXu0iyJH8a\/i7Pl4zhkmbf2Z+SfBr8=",
+      "url": "audio\/emote.mp3"
+    },
+    {
+      "hash": "sha256-fOZBAv7ni50yVKAFcR5YJMtp0iayAIiDfoG5zIroIgk=",
+      "url": "audio\/end.mp3"
+    },
+    {
+      "hash": "sha256-6s46xz1PGMkaULvhaKnuFwHNvTtkJJIioFYg8KOffnI=",
+      "url": "audio\/food.mp3"
+    },
+    {
+      "hash": "sha256-\/TCeptbRhereCJE5RWfyK+ptvA4nu32jSI8KegjupsI=",
+      "url": "audio\/heal.mp3"
+    },
+    {
+      "hash": "sha256-r\/EqeRfeFod50w8O+JykyAzl+r1\/\/aF1TLe+Q\/+caps=",
+      "url": "audio\/health.mp3"
+    },
+    {
+      "hash": "sha256-SCe8vgnZgsV3IM7vbgOJPZZWmIYh4uxxib29EC4IWQo=",
+      "url": "audio\/horizon.mp3"
+    },
+    {
+      "hash": "sha256-ARM0SqWjjZJHrcEVHk4DGqF0hw+kxvnudQ88MoLMnCg=",
+      "url": "audio\/insult.mp3"
+    },
+    {
+      "hash": "sha256-kEJ++HHuuouIvpisGhZyVMBpFECR2A+\/cOM5lZkctcQ=",
+      "url": "audio\/last.mp3"
+    },
+    {
+      "hash": "sha256-dpp6OfA55hXe7S\/PibVG4jbahylPpd8M9BQqYTs\/6eE=",
+      "url": "audio\/math.mp3"
+    },
+    {
+      "hash": "sha256-jPgeFna+\/91ShYIIrkOT2RcrGfPTHfKrpyecYVfnC78=",
+      "url": "audio\/mech.mp3"
+    },
+    {
+      "hash": "sha256-JGX1Owjq1K8dlEhSw0c25eDMuENM785U2PQ5Hc2esbw=",
+      "url": "audio\/middmg.mp3"
+    },
+    {
+      "hash": "sha256-btA78iBlcIOjyfMEDuNH\/Zh0s+CQNctKxD+hqQ\/FpJY=",
+      "url": "audio\/ninja.mp3"
+    },
+    {
+      "hash": "sha256-JQvXiHQMrt1vG+kBmOQg8EJGrXo3KlW\/MtBvk586UIM=",
+      "url": "audio\/noneffective.mp3"
+    },
+    {
+      "hash": "sha256-Axebgy9HxXDVOVAhGDTz1Z95yHrgNWl7MVluE0gRFso=",
+      "url": "audio\/normal.mp3"
+    },
+    {
+      "hash": "sha256-GTNtsIZ9\/sdnCw7OXQs0q+yksAZT7yXSkV77lX0\/zfc=",
+      "url": "audio\/overflow.mp3"
+    },
+    {
+      "hash": "sha256-cTZWHXs6V9\/uMjL+4aKUgp2eHUX5xkAopm7PUZXjHMQ=",
+      "url": "audio\/pera.mp3"
+    },
+    {
+      "hash": "sha256-oCHwVyx29iCPtD4w0EeBJvlZxDDLLzC7PShL1KDbnis=",
+      "url": "audio\/person.mp3"
+    },
+    {
+      "hash": "sha256-6mTmylXCX+X0aJ7wTKnLO7xUymxmf69aS+xMrVnk64s=",
+      "url": "audio\/place.mp3"
+    },
+    {
+      "hash": "sha256-\/yiD4io\/KLIGAewMCEu+wrIFX8bl1zKVskGo+Xa4x14=",
+      "url": "audio\/plant.mp3"
+    },
+    {
+      "hash": "sha256-Ti62hM\/5lGzPxSw+WDLPMMd8MXxQBeJk7JutrT0gLoI=",
+      "url": "audio\/play.mp3"
+    },
+    {
+      "hash": "sha256-7Dy\/iizp3GuZqyP57TywPn5PglcIndmD5stCKVNETxg=",
+      "url": "audio\/poison_heal.mp3"
+    },
+    {
+      "hash": "sha256-O8Jdqld7W1vqHTkZqq6Jb5NmtsSyJ9g7uF\/orrBy9IE=",
+      "url": "audio\/poison.mp3"
+    },
+    {
+      "hash": "sha256-v1UHAW8wTLxoD+wsb\/tbNFxvEu+usu3Mcfnvb5o3XhA=",
+      "url": "audio\/religion.mp3"
+    },
+    {
+      "hash": "sha256-O8Jdqld7W1vqHTkZqq6Jb5NmtsSyJ9g7uF\/orrBy9IE=",
+      "url": "audio\/science.mp3"
+    },
+    {
+      "hash": "sha256-xZQjoGCyMvdCuTt2Jj5xwYPwj53DfIgHtAZLRvpitQ0=",
+      "url": "audio\/seed_damage.mp3"
+    },
+    {
+      "hash": "sha256-VzCfnTGqI1poO3ndsv7OtV1AVGo3Hc1Yo+omoVwHoVQ=",
+      "url": "audio\/seeded.mp3"
+    },
+    {
+      "hash": "sha256-\/INvH8D94iwQ8lSPBIYdcBS5rD\/EoH4Bq79Q75hWD\/A=",
+      "url": "audio\/society.mp3"
+    },
+    {
+      "hash": "sha256-+WuBUbQEIe6PTAezPpXx9SCZe4edoV5q+EyJ3wBtKGM=",
+      "url": "audio\/sports.mp3"
+    },
+    {
+      "hash": "sha256-ZgHNsLo8kzrg+jWdSoiE+Gw6JlKj0dA3ZRyxUzbf2ak=",
+      "url": "audio\/start.mp3"
+    },
+    {
+      "hash": "sha256-nJGaf\/vtpMrWy9LERVBjNaKpDRjjnpaxqd9dQMFDBlA=",
+      "url": "audio\/tale.mp3"
+    },
+    {
+      "hash": "sha256-i7VpHKABspW6ZFz+HxqJkVDLfIONgu\/68sbm1dFHukU=",
+      "url": "audio\/time.mp3"
+    },
+    {
+      "hash": "sha256-n8A0Rp86qK\/8vl1ryRvrJU24eSiqAA0oKVu2huQJ55Y=",
+      "url": "audio\/up.mp3"
+    },
+    {
+      "hash": "sha256-MpcR54YOL4oIWRWb6aVCvdUoOjzldZ66ITF9E5H15+8=",
+      "url": "audio\/violence.mp3"
+    },
+    {
+      "hash": "sha256-\/FQrPw4ZXIbQq4vFOnETHlDGxHgsQsJPgyRnWBTXs2c=",
+      "url": "audio\/warn.mp3"
+    },
+    {
+      "hash": "sha256-KmudasBdDQaVdum0\/J1U4dSExO7ybqDKC+cJU2FGkuM=",
+      "url": "audio\/weather.mp3"
+    },
+    {
+      "hash": "sha256-9LMN8YcHiDqErdw5SSNM8455oYGc4D4ORUi1AT\/sIQs=",
+      "url": "audio\/wonderland.mp3"
+    },
+    {
+      "hash": "sha256-2d4qIVf3D1zUduWAqdeta7ftyuHr2Fc18JnihstPjHk=",
+      "url": "audio\/work.mp3"
+    },
+    {
       "hash": "sha256-10KEeWxsgry5D9LUZc0K86lpIg9RcWdyyBB5sXq6Ypk=",
       "url": "css\/app.css"
     },
@@ -53,7 +237,7 @@
       "url": "css\/open-iconic\/README.md"
     },
     {
-      "hash": "sha256-Q5L6lC7mq1Led0UcwFcIvhXMAOpT3YA6CY+NO8Tu0Og=",
+      "hash": "sha256-5rs4IfogsvV6a6rBaJP+iZqulPN\/8RVnzMQ9wFEUVIk=",
       "url": "css\/simulator.css"
     },
     {
@@ -261,7 +445,7 @@
       "url": "images\/youtube.png"
     },
     {
-      "hash": "sha256-Ydbmk1mG4\/1Nz0vHoWOXsRxO7haFzsLFaORnVOOhw3E=",
+      "hash": "sha256-rxBNFEEenBI4ZuhUuB1plS8uIPSyqtLezBg4QV11DwQ=",
       "url": "index.html"
     },
     {
@@ -317,7 +501,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-j\/Gc6xDDqNdt3AZUe1fFyrEKtRlOCuVjUMiahnmkFu0=",
+      "hash": "sha256-AwRIFK5alF4gcxZzbfFIB+2ogbPBCZSP6\/LGGoqo79E=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -381,7 +565,7 @@
       "url": "_framework\/Microsoft.Extensions.Primitives.dll"
     },
     {
-      "hash": "sha256-1FE9NF18naqH7fakcMM+UqINEOv24u+jN6niUz3nL04=",
+      "hash": "sha256-Pq2EZRHmdAVnRApEFAB7Ou5gMAUHw5SEVsLi2nmAbfY=",
       "url": "_framework\/Microsoft.JSInterop.dll"
     },
     {
@@ -393,7 +577,7 @@
       "url": "_framework\/netstandard.dll"
     },
     {
-      "hash": "sha256-vtzqrknHDDYQwrhZL8oFJLfAPMhbQboFUeSDx3clD9Y=",
+      "hash": "sha256-UIxN9lQg7WnFL2gHL0FNLoF2Bmnc0\/go8wxH17GY6nA=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -401,7 +585,7 @@
       "url": "_framework\/System.Collections.Concurrent.dll"
     },
     {
-      "hash": "sha256-21JrUKazLmmcPug7bB787UWVHc0aNrxveN6y3l7CP18=",
+      "hash": "sha256-r9NNAmNfVswKzZtOpj2fjpgNDToasQef1bsj0GT0IHw=",
       "url": "_framework\/System.Collections.dll"
     },
     {
@@ -553,5 +737,5 @@
       "url": "_content\/BlazorDownloadFile\/BlazorDownloadFileScript.js"
     }
   ],
-  "version": "76ry8cT1"
+  "version": "JpBK0QOv"
 };

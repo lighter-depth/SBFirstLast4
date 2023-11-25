@@ -26,6 +26,11 @@ html, body {
         z-index: -2;
     }
 
+main{
+    margin-left: -27px;
+}
+
+
 @media screen and (min-width: 450px) {
     #main {
         width: 450px;
@@ -462,9 +467,9 @@ html, body {
     cursor: not-allowed;
 }
 
-    #text button:focus {
-        outline: none;
-    }
+#text button:focus {
+    outline: none;
+}
 
 .A_up {
     background-color: indianred;
