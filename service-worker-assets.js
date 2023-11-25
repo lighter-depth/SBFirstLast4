@@ -449,7 +449,7 @@
       "url": "images\/youtube.png"
     },
     {
-      "hash": "sha256-JAZR33kJqqGD0tGhgHkalzG4KlnsShK5vxwtWf4\/C\/0=",
+      "hash": "sha256-rxBNFEEenBI4ZuhUuB1plS8uIPSyqtLezBg4QV11DwQ=",
       "url": "index.html"
     },
     {
@@ -741,5 +741,5 @@
       "url": "_content\/BlazorDownloadFile\/BlazorDownloadFileScript.js"
     }
   ],
-  "version": "3QP+5sLS"
+  "version": "Ah27FizM"
 };
