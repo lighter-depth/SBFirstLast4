@@ -237,7 +237,7 @@
       "url": "css\/open-iconic\/README.md"
     },
     {
-      "hash": "sha256-5rs4IfogsvV6a6rBaJP+iZqulPN\/8RVnzMQ9wFEUVIk=",
+      "hash": "sha256-YJ6Et9pcAZi\/pU8nQWX7Qpb+HuMl5eiCZwFryky97iE=",
       "url": "css\/simulator.css"
     },
     {
@@ -245,11 +245,15 @@
       "url": "favicon.png"
     },
     {
-      "hash": "sha256-yix8PDuH1kQZ8Qnd94tTmstztFwgmhEbj1sQT8Ah03Q=",
+      "hash": "sha256-0Pt6m3nkwlBKb9DPswfXGUEhO09O+KvaCS5Fqpb35bQ=",
+      "url": "font\/subset-mplus-1c-black.ttf"
+    },
+    {
+      "hash": "sha256-VuWhW6gm\/jri9KMVg+zkxk25m6paT1zQk2tvSVjj3+Y=",
       "url": "font\/subset-mplus-1p-bold.ttf"
     },
     {
-      "hash": "sha256-MiLZhZwmXzqvwM2yPYI4u\/1sWFr6lYyXKJnL2D6ozG8=",
+      "hash": "sha256-naf2jdNNxdks6Fmk4DDHOq6zblyRFXGntypxeX8s1m8=",
       "url": "font\/subset-mplus-1p-regular.ttf"
     },
     {
@@ -445,7 +449,7 @@
       "url": "images\/youtube.png"
     },
     {
-      "hash": "sha256-rxBNFEEenBI4ZuhUuB1plS8uIPSyqtLezBg4QV11DwQ=",
+      "hash": "sha256-JAZR33kJqqGD0tGhgHkalzG4KlnsShK5vxwtWf4\/C\/0=",
       "url": "index.html"
     },
     {
@@ -501,7 +505,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-mBGUVL82ZGshWNGKddX4lsRoiGPj1PaosD3ChcIRAZY=",
+      "hash": "sha256-8TGGsZzvTevJ+XhvIMY8\/O8gzSJ6qyj9czqPUwB0KGc=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -577,7 +581,7 @@
       "url": "_framework\/netstandard.dll"
     },
     {
-      "hash": "sha256-zkQqotJMFOTP2pRccjHQxQEx80vxZ5acOBXyGZXZTQo=",
+      "hash": "sha256-22zgeg0VzZBSHWxTxloc44cr6wZOGH2B3FAPt3s69\/A=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -693,7 +697,7 @@
       "url": "_framework\/System.Reflection.Primitives.dll"
     },
     {
-      "hash": "sha256-xHpdts6zgzZFidhSfnNJvqp8k+hulsjr2NhwolddFhw=",
+      "hash": "sha256-vY4qIu67jtXhnpik0QqDBQ5JdgJ9tii8maxMugZb16s=",
       "url": "_framework\/System.Runtime.dll"
     },
     {
@@ -737,5 +741,5 @@
       "url": "_content\/BlazorDownloadFile\/BlazorDownloadFileScript.js"
     }
   ],
-  "version": "OVElYo5V"
+  "version": "3QP+5sLS"
 };
