@@ -88,8 +88,6 @@ public class AbilityManager
 	public static Ability Default => _default;
 	private static readonly Ability _default = new Debugger();
 	public static List<Ability> Abilities => _abilities ??= GetAbilities();
-
-	private static Dictionary<string, Ability> NameDictionaty => Abilities.ToDictionary(a => a.GetType().Name, a => a);
 	public static List<Ability> CanonAbilities => Abilities.Count > 25 ? Abilities.Take(25).ToList() : Abilities;
 	#region get abilities
 	static List<Ability>? _abilities;
@@ -104,7 +102,6 @@ public class AbilityManager
 		return result;
 	}
 
-	public static Ability GetAbility(string abilityName) => NameDictionaty.TryGetValue(abilityName, out var result) ? result : Default;
 	public static string Serialize(Type abilityType)
 	{
 		for (var i = 0; i < Abilities.Count; i++)

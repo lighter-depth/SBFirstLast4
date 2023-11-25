@@ -165,6 +165,13 @@
 		await SBPreprocessor.Initialize(Http);
 	}
 
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (!firstRender)
+			return;
+		await SBAudioManager.Initialize(JSRuntime);
+	}
+
 	private async void LiteDictionaryBtn_Click()
 	{
 		IsLoading = true;

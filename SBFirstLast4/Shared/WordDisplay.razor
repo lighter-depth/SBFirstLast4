@@ -1,0 +1,50 @@
+﻿@page "/word-display"
+
+@if (Types.Count < 1)
+{
+	<div class="types1">
+		<div class="type">
+			<img class="icon" src=@Types.At(0).TypeToImg()><br>
+			<span>無属性</span>
+		</div>
+	</div>
+	<div class="word" style=@($"transform: scaleX({Math.Min(1, (double)5 / (1 * WordName.Length))}); width: {32 * WordName.Length}px; margin-left: {-16 * WordName.Length}px;")>
+		@WordName
+	</div>
+}
+@if (Types.Count == 1)
+{
+	<div class="types1">
+		<div class="type">
+			<img class="icon" src=@Types.At(0).TypeToImg()><br>
+			<span>@Types.At(0).TypeToString()</span>
+		</div>
+	</div>
+	<div class="word" style=@($"transform: scaleX({Math.Min(1, (double)5 / (1 * WordName.Length))}); width: {32 * WordName.Length}px; margin-left: {-16 * WordName.Length}px;")>
+		@WordName
+	</div>
+}
+@if (Types.Count > 1)
+{
+	<div class="types2">
+		<div class="type">
+			<img class="icon" src=@Types.At(0).TypeToImg()><br>
+			<span>@Types.At(0).TypeToString()</span>
+		</div>
+		<div class="type">
+			<img class="icon" src=@Types.At(1).TypeToImg()><br>
+			<span>@Types.At(1).TypeToString()</span>
+		</div>
+	</div>
+	<div class="word" style=@($"transform: scaleX({Math.Min(1, (double)5 / (1 * WordName.Length))}); width: {32 * WordName.Length}px; margin-left: {-16 * WordName.Length}px;")>
+		@WordName
+	</div>
+}
+
+@code {
+	[Parameter]
+	public List<WordType> Types { get; set; } = new();
+
+	[Parameter]
+	public string WordName { get; set; } = string.Empty;
+}

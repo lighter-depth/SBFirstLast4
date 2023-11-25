@@ -9,6 +9,16 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 {
 	public char Start => Name.At(0);
 	public char End => Name.GetLastChar();
+	public int Length => Name.Length;
+	public List<WordType> Types
+	{
+		get
+		{
+			if (IsEmpty) return new();
+			if (IsSingleType) return new() { Type1 };
+			return new() { Type1, Type2 };
+		}
+	}
 	public bool Contains(WordType type) => Type1 == type || Type2 == type;
 	public bool Contains(WordType type1, WordType type2) => Type1 == type1 || Type2 == type1 || Type1 == type2 || Type2 == type2;
 	public bool IsEmpty => Type1 == WordType.Empty;
@@ -58,8 +68,8 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	public static double CalcEffectiveDmg(WordType t1, WordType t2)
 	{
 		if (t1 == WordType.Empty || t2 == WordType.Empty) return 1;
-		var t1Index = Array.IndexOf(typeIndex, t1);
-		var t2Index = Array.IndexOf(typeIndex, t2);
+		var t1Index = typeIndex.IndexOf(t1);
+		var t2Index = typeIndex.IndexOf(t2);
 		return effList[t1Index, t2Index] switch
 		{
 			0 => 1,
@@ -296,4 +306,6 @@ public static class WordTypeEx
 		WordType.Insult => 'Z',
 		_ => 'I'
 	};
+
+	public static string TypeToImg(this WordType type) => $"images/{Enum.GetName(type)?.ToLower() + ".gif" ?? string.Empty}";
 }

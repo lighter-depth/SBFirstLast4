@@ -1,0 +1,141 @@
+﻿@page "/sound-room"
+@inject NavigationManager NavigationManager
+<PageTitle>Sound Room</PageTitle>
+
+<div class="sound-room">
+	<div class="controls">
+		<button @onclick="PlayCurrentAudio"><span class="oi oi-media-play"></span></button>
+		<button @onclick="PauseCurrentAudio"><span class="oi oi-media-pause"></span></button>
+		<button @onclick="GoToPreviousAudio"><span class="oi oi-media-step-backward"></span></button>
+		<button @onclick="GoToNextAudio"><span class="oi oi-media-step-forward"></span></button>
+	</div>
+	<div class="label-audio">
+		@AudioName
+	</div>
+	<div class="input">
+		<input id="audio-name" type="text" @bind="RequestedAudioName" />
+	</div>
+</div>
+<style>
+	.sound-room {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.controls {
+		display: flex;
+		margin: 10px;
+	}
+
+		.controls button {
+			width: 50px;
+			height: 50px;
+			border-radius: 50%;
+			border: none;
+			background-color: #f0f0f0;
+			margin: 5px;
+			transition: all 0.3s ease-in-out;
+		}
+
+			.controls button:hover {
+				transform: scale(1.1);
+			}
+
+			.controls button:focus {
+				outline: none;
+			}
+
+			.controls button span {
+				font-size: 30px;
+			}
+
+			.controls button:active {
+				background-color: #d0d0d0;
+				box-shadow: inset 0 0 10px #000;
+			}
+
+	.label-audio {
+		font-size: 27px;
+	}
+
+	.input {
+		display: flex;
+		align-items: center;
+		margin: 10px;
+	}
+
+
+		.input input {
+			width: 200px;
+			height: 30px;
+			border-radius: 15px;
+			border: solid 2px lightgray;
+			font-size: 20px;
+		}
+</style>
+
+@code {
+	private static string AudioName = "denno.mp3";
+	private static string PureAudioName = "denno";
+	private static string RequestedAudioName = "denno";
+	private static int AudioIndex = SBAudioManager.AudioNames.IndexOf("denno") is int result and >= 0 ? result : 0;
+	private static bool IsPlaying = false;
+
+	private async Task PlayCurrentAudio()
+	{
+		var audioName = RequestedAudioName;
+
+		if (!await SBAudioManager.TryPlayAudio(RequestedAudioName))
+			return;
+
+		if (IsPlaying)
+			await SBAudioManager.PauseAudio(PureAudioName);
+
+		IsPlaying = true;
+		PureAudioName = audioName;
+		AudioName = $"{PureAudioName}.mp3 ▶";
+	}
+
+	private async Task PauseCurrentAudio()
+	{
+		await SBAudioManager.PauseAudio(PureAudioName);
+		IsPlaying = false;
+		AudioName = $"{PureAudioName}.mp3 ⏸︎";
+	}
+
+	private async Task GoToPreviousAudio()
+	{
+		AudioIndex--;
+		if (AudioIndex < 0)
+			AudioIndex = SBAudioManager.AudioNames.Length - 1;
+
+
+		if (IsPlaying)
+		{
+			await SBAudioManager.PauseAudio(PureAudioName);
+			await SBAudioManager.PlayAudio(SBAudioManager.AudioNames[AudioIndex]);
+		}
+		PureAudioName = SBAudioManager.AudioNames[AudioIndex];
+		RequestedAudioName = PureAudioName;
+		AudioName = $"{PureAudioName}.mp3 {(IsPlaying ? '▶' : '⏸')}";
+	}
+
+	private async Task GoToNextAudio()
+	{
+		AudioIndex++;
+		if (AudioIndex >= SBAudioManager.AudioNames.Length)
+		{
+			AudioIndex = 0;
+		}
+
+		if (IsPlaying)
+		{
+			await SBAudioManager.PauseAudio(PureAudioName);
+			await SBAudioManager.PlayAudio(SBAudioManager.AudioNames[AudioIndex]);
+		}
+		PureAudioName = SBAudioManager.AudioNames[AudioIndex];
+		RequestedAudioName = PureAudioName;
+		AudioName = $"{PureAudioName}.mp3 {(IsPlaying ? '▶' : '⏸')}";
+	}
+}

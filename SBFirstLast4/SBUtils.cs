@@ -99,10 +99,14 @@ public static class JSHelper
 
 	public static ValueTask<T> GetElementValueById<T>(this IJSRuntime jsRuntime, string id) => jsRuntime.InvokeAsync<T>("eval", $"document.getElementById('{id}').value");
 
+	public static ValueTask<T> GetProperty<T>(this IJSObjectReference jsRef, string key) => jsRef.InvokeAsync<T>("getProperty", key);
+
+	public static ValueTask SetProperty<T>(this IJSObjectReference jsRef, string key, T value) => jsRef.InvokeVoidAsync("setProperty", key, value);
 }
 
 public static class CollectionHelper
 {
+	public static int IndexOf<T>(this T[] array, T value) => Array.IndexOf(array, value);
 	public static List<T> RemoveRange<T>(this List<T> list, IEnumerable<T> values) => list.Except(values).ToList();
 
 	public static void ReplaceOrAdd<T>(this List<T> list, T value)

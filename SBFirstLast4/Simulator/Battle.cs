@@ -12,6 +12,8 @@ public partial class Battle
 	public Player PreActor { get; set; } = new(AbilityManager.Default);
 	public Player PreReceiver { get; set; } = new(AbilityManager.Default);
 	public bool IsPlayer1sTurn { get; private set; } = true;
+
+	public bool WasPlayer1sTurn => !IsPlayer1sTurn;
 	public int TurnNum { get; private set; } = 1;
 	public List<string> UsedWords { get; init; } = new();
 	public required Func<Task<Order>> In { get; init; }

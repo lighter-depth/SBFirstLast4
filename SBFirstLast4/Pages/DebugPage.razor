@@ -2,6 +2,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @using SBFirstLast4.Simulator
+@using Blazorise
 
 
 <html lang="ja">
@@ -36,13 +37,13 @@
 				<div id="allyHPnum">@($"{Battle.Player1.HP}/{Player.MaxHP}")</div>
 				<div class="tri"></div>
 			</div>
-
-			<div id="foe-word" style="">
-				<div class="first">
+			<div id="foe-word" style=@($"opacity: {WordOpacities.Player2};")>
+				<WordDisplay WordName="@Player2Word.Name" Types="@Player2Word.Types"></WordDisplay>
+				<!--<div class="first">
 					<p>
 						ゆ
 					</p>
-				</div>
+				</div>-->
 			</div>
 			<div class="field-shadow-wrapper">
 				<div class="field-shadow" id="foe-shadow"></div>
@@ -83,8 +84,9 @@
 
 				<image xlink:href="images/heal.gif" width="100%" height="100%" mask="url(#mask6)"></image>
 			</svg>
-
-			<div id="ally-word"></div>
+			<div id="ally-word" style=@($"opacity: {WordOpacities.Player1};")>
+				<WordDisplay WordName="@Player1Word.Name" Types="@Player1Word.Types"></WordDisplay>
+			</div>
 			<div class="field-shadow-wrapper">
 				<div class="field-shadow" id="ally-shadow"></div>
 			</div>
@@ -129,16 +131,16 @@
 		</div>
 
 		<div id="message" style=@(IsProcessing ? string.Empty : "display: none;")>
-			<div id="message-text"></div>
+			<div id="message-text">@MessageText</div>
 		</div>
 
-		<form id="form">
+		<div id="form">
 			<div id="text" style=@(IsProcessing ? string.Empty : "display: block;")>
-				<input type="text" id="input" autocomplete="off" placeholder="「ゆ」からはじまることば">
-				<button type="submit" id="btn-submit"></button>
+				<input type="text" id="input" autocomplete="off" placeholder=@($"「{Battle.NextChar}」からはじまることば") @onkeydown=Input_KeyDown>
+				<button type="submit" id="btn-submit" @onclick=Submit_Click></button>
 			</div>
 			<p id="types"></p>
-		</form>
+		</div>
 		<div id="situation" class="sb-button" style="display: block;">
 			<p>じょうきょう</p>
 		</div>
@@ -149,7 +151,7 @@
 			<p>おわる</p>
 		</div>
 
-		<div id="wait-message"></div>
+		<div id="wait-message">@WaitMessage</div>
 		<div id="hint"></div>
 		<div id="situation-modal">
 			<div id="s-foe-info">
@@ -194,27 +196,171 @@
 </html>
 @code {
 	private Battle Battle = Battle.Empty;
-	private bool IsProcessing = false;
+	private bool IsProcessing;
+	private bool IsDead;
 
-	protected override void OnInitialized()
+
+	private List<AnnotatedString> BattleLogItems = new();
+
+	private TaskCompletionSource<Order> InputCompletion = new();
+
+	private string MessageText = string.Empty;
+	private string WaitMessage = string.Empty;
+
+
+	private (double Player1, double Player2) WordOpacities = (0, 0);
+
+	private Word Player1Word = Word.Default;
+	private Word Player2Word = Word.Default;
+
+	protected override async void OnInitialized()
 	{
 		Battle = new
 	(
-	new(AbilityManager.GetAbility(nameof(Debugger)))
+	new(AbilityManager.Default)
 		{
 			Proceeding = Proceeds.True,
 			Name = "先攻"
 		},
-	new(AbilityManager.GetAbility(nameof(Debugger)))
+	new(AbilityManager.Default)
 		{
 			Proceeding = Proceeds.False,
 			Name = "後攻"
 		}
 	)
 			{
-				In = null!,
-				Out = null!,
+				In = In,
+				Out = Out,
 				OnReset = cts => cts.Cancel()
 			};
+		StateHasChanged();
+		await Battle.Run();
+	}
+
+	private Task<Order> In()
+	{
+		InputCompletion = new();
+		return InputCompletion.Task;
+	}
+
+	private async Task Out(List<AnnotatedString> list)
+	{
+		try
+		{
+			BattleLogItems.AddRange(list);
+
+			if (Battle.CurrentOrderType == OrderType.Action)
+				await OutActionOrder(list);
+
+			if (Battle.CurrentOrderType == OrderType.Change)
+				OutChangeOrder(list);
+
+			StateHasChanged();
+		}
+		catch(Exception ex)
+		{
+			await JSRuntime.Alert(ex);
+		}
+	}
+
+	private async Task Input_KeyDown(KeyboardEventArgs e)
+	{
+		try
+		{
+			if (e.Key is "Process" or not "Enter") return;
+
+			var order = await JSRuntime.InvokeAsync<string>("eval", "document.getElementById('input').value");
+			await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('input').value = ''");
+			InputCompletion.TrySetResult(Order.Parse(order.Trim().Split(), Battle));
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.Alert(ex);
+		}
+	}
+
+	private async void Submit_Click() => await Input_KeyDown(new() { Key = "Enter" });
+
+	private async Task OutActionOrder(List<AnnotatedString> list)
+	{
+		try
+		{
+			MessageText = string.Empty;
+			if (IsDead) return;
+
+			IsDead = list.Select(x => x.Notice).Contains(Notice.DeathInfo);
+
+			foreach (var i in list)
+				if (i.Notice == Notice.Warn)
+				{
+					WaitMessage = i.Text;
+					StateHasChanged();
+					return;
+				}
+			IsProcessing = true;
+			var msgList = GetMessages(list);
+			if (!(IsDead ^ Battle.IsPlayer1sTurn)) await ShowWordAsync();
+			else await ShowWordAsync();
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.Alert(ex);
+		}
+	}
+
+	private void OutChangeOrder(List<AnnotatedString> list)
+	{
+
+	}
+
+	private static List<AnnotatedString> GetMessages(List<AnnotatedString> list)
+	{
+		var filter = new List<Notice>()
+		{
+			Notice.HPUpdated, Notice.NoDmgProp, Notice.NonEffectiveProp, Notice.MidDmgProp, Notice.EffectiveProp, Notice.CritInfo,
+			Notice.PoisonHeal,Notice.Heal, Notice.Buf, Notice.Debuf, Notice.RevInfo,Notice.Poison, Notice.PoisonDmg, Notice.Seed,
+			Notice.SeedDmg, Notice.InvokeBufInfo, Notice.Caution, Notice.DeathInfo
+		};
+		return list.Where(x => filter.Contains(x.Notice)).ToList();
+	}
+
+	private async Task ShowWordAsync(params object[] objs)
+	{
+		if (Battle.TurnNum > 2)
+			await FadeOut(Battle.IsPlayer1sTurn);
+
+		if (Battle.WasPlayer1sTurn)
+			Player1Word = Battle.Player1.CurrentWord;
+		else
+			Player2Word = Battle.Player2.CurrentWord;
+		StateHasChanged();
+		await Task.Delay(1);
+
+		await FadeIn(Battle.WasPlayer1sTurn);
+		StateHasChanged();
+	}
+	private async Task FadeOut(bool isPlayer1sTurn)
+	{
+		for (var i = 0.0; i < 1; i += 0.02)
+		{
+			if (isPlayer1sTurn)
+				WordOpacities.Player1 -= i;
+			else
+				WordOpacities.Player2 -= i;
+			StateHasChanged();
+			await Task.Delay(10);
+		}
+	}
+	private async Task FadeIn(bool isPlayer1sTurn)
+	{
+		for (var i = 0.0; i < 1; i += 0.02)
+		{
+			if (isPlayer1sTurn)
+				WordOpacities.Player1 += i;
+			else
+				WordOpacities.Player2 += i;
+			StateHasChanged();
+			await Task.Delay(10);
+		}
 	}
 }
