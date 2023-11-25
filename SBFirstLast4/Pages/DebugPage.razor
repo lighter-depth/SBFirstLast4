@@ -20,20 +20,20 @@
 		<div id="next"><a>つぎへ</a></div>
 		<div id="game" style="background-color: forestgreen">
 			<div id="foe-status">
-				<span id="foe-name">@Battle.Player2.Name</span><span class="poison" id="foe-poison">どく</span>
+				<span id="foe-name">@Battle.Player2.Name</span><span class="poison" id="foe-poison" style=@($"display: {(IsPoisoned.Player2 ? "inline" : "none")};")>どく</span>
 				<div id="left-HP">
-					<div id="left-HP-remain"></div>
+					<div id="left-HP-remain" style=@($"width: {HPWidth.Player2}%; background-color: {GetHPColor((double)HPNum.Player2 / Player.MaxHP) };")></div>
 				</div>
-				<div id="foeHPnum">@($"{Battle.Player2.HP}/{Player.MaxHP}")</div>
+				<div id="foeHPnum">@($"{HPNum.Player2}/{Player.MaxHP}")</div>
 				<div class="tri"></div>
 			</div>
 
 			<div id="ally-status">
-				<span id="ally-name">@Battle.Player1.Name</span><span class="poison" id="ally-poison">どく</span>
+				<span id="ally-name">@Battle.Player1.Name</span><span class="poison" id="ally-poison" style=@($"display: {(IsPoisoned.Player1 ? "inline" : "none")};")>どく</span>
 				<div id="right-HP">
-					<div id="right-HP-remain"></div>
+					<div id="right-HP-remain" style=@($"width: {HPWidth.Player1}%; background-color: {GetHPColor((double)HPNum.Player1 / Player.MaxHP) };")></div>
 				</div>
-				<div id="allyHPnum">@($"{Battle.Player1.HP}/{Player.MaxHP}")</div>
+				<div id="allyHPnum">@($"{HPNum.Player1}/{Player.MaxHP}")</div>
 				<div class="tri"></div>
 			</div>
 			<div id="foe-word" style=@($"opacity: {WordOpacities.Player2};")>
@@ -47,84 +47,104 @@
 			<div class="field-shadow-wrapper">
 				<div class="field-shadow" id="foe-shadow"></div>
 			</div>
-			<svg id="foe-up" class="foe-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-				<defs>
-					<filter id="filter">
-						<feGaussianBlur stdDeviation="5"></feGaussianBlur>
-					</filter>
-					<mask id="mask">
-						<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter)"></ellipse>
-					</mask>
-				</defs>
 
-				<image xlink:href="images/red.gif" width="100%" height="100%" mask="url(#mask)"></image>
-			</svg>
-			<svg id="foe-down" class="foe-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-				<defs>
-					<filter id="filter2">
-						<feGaussianBlur stdDeviation="5"></feGaussianBlur>
-					</filter>
-					<mask id="mask2">
-						<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter2)"></ellipse>
-					</mask>
-				</defs>
+			@if (ShowAnimation.Player2.Up)
+			{
+				<svg id="foe-up" class="foe-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+					<defs>
+						<filter id="filter">
+							<feGaussianBlur stdDeviation="5"></feGaussianBlur>
+						</filter>
+						<mask id="mask">
+							<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter)"></ellipse>
+						</mask>
+					</defs>
 
-				<image xlink:href="images/blue.gif" width="100%" height="100%" mask="url(#mask2)"></image>
-			</svg>
-			<svg id="foe-heal" class="foe-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-				<defs>
-					<filter id="filter6">
-						<feGaussianBlur stdDeviation="5"></feGaussianBlur>
-					</filter>
-					<mask id="mask6">
-						<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter6)"></ellipse>
-					</mask>
-				</defs>
+					<image xlink:href="images/red.gif" width="100%" height="100%" mask="url(#mask)"></image>
+				</svg>
+			}
+			@if (ShowAnimation.Player2.Down)
+			{
+				<svg id="foe-down" class="foe-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+					<defs>
+						<filter id="filter2">
+							<feGaussianBlur stdDeviation="5"></feGaussianBlur>
+						</filter>
+						<mask id="mask2">
+							<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter2)"></ellipse>
+						</mask>
+					</defs>
 
-				<image xlink:href="images/heal.gif" width="100%" height="100%" mask="url(#mask6)"></image>
-			</svg>
+					<image xlink:href="images/blue.gif" width="100%" height="100%" mask="url(#mask2)"></image>
+				</svg>
+			}
+			@if (ShowAnimation.Player2.Heal)
+			{
+				<svg id="foe-heal" class="foe-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+					<defs>
+						<filter id="filter6">
+							<feGaussianBlur stdDeviation="5"></feGaussianBlur>
+						</filter>
+						<mask id="mask6">
+							<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter6)"></ellipse>
+						</mask>
+					</defs>
+
+					<image xlink:href="images/heal.gif" width="100%" height="100%" mask="url(#mask6)"></image>
+				</svg>
+			}
+
 			<div id="ally-word" style=@($"opacity: {WordOpacities.Player1};")>
 				<WordDisplay WordName="@Player1Word.Name" Types="@Player1Word.Types"></WordDisplay>
 			</div>
 			<div class="field-shadow-wrapper">
 				<div class="field-shadow" id="ally-shadow"></div>
 			</div>
-			<svg id="ally-up" class="ally-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-				<defs>
-					<filter id="filter3">
-						<feGaussianBlur stdDeviation="5"></feGaussianBlur>
-					</filter>
-					<mask id="mask3">
-						<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter3)"></ellipse>
-					</mask>
-				</defs>
+			@if (ShowAnimation.Player1.Up)
+			{
+				<svg id="ally-up" class="ally-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+					<defs>
+						<filter id="filter3">
+							<feGaussianBlur stdDeviation="5"></feGaussianBlur>
+						</filter>
+						<mask id="mask3">
+							<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter3)"></ellipse>
+						</mask>
+					</defs>
 
-				<image xlink:href="images/red.gif" width="100%" height="100%" mask="url(#mask3)"></image>
-			</svg>
-			<svg id="ally-down" class="ally-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-				<defs>
-					<filter id="filter4">
-						<feGaussianBlur stdDeviation="5"></feGaussianBlur>
-					</filter>
-					<mask id="mask4">
-						<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter4)"></ellipse>
-					</mask>
-				</defs>
+					<image xlink:href="images/red.gif" width="100%" height="100%" mask="url(#mask3)"></image>
+				</svg>
+			}
+			@if (ShowAnimation.Player1.Down)
+			{
+				<svg id="ally-down" class="ally-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+					<defs>
+						<filter id="filter4">
+							<feGaussianBlur stdDeviation="5"></feGaussianBlur>
+						</filter>
+						<mask id="mask4">
+							<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter4)"></ellipse>
+						</mask>
+					</defs>
 
-				<image xlink:href="images/blue.gif" width="100%" height="100%" mask="url(#mask4)"></image>
-			</svg>
-			<svg id="ally-heal" class="ally-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-				<defs>
-					<filter id="filter5">
-						<feGaussianBlur stdDeviation="5"></feGaussianBlur>
-					</filter>
-					<mask id="mask5">
-						<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter5)"></ellipse>
-					</mask>
-				</defs>
+					<image xlink:href="images/blue.gif" width="100%" height="100%" mask="url(#mask4)"></image>
+				</svg>
+			}
+			@if (ShowAnimation.Player1.Heal)
+			{
+				<svg id="ally-heal" class="ally-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+					<defs>
+						<filter id="filter5">
+							<feGaussianBlur stdDeviation="5"></feGaussianBlur>
+						</filter>
+						<mask id="mask5">
+							<ellipse cx="50%" cy="50%" rx="25%" ry="25%" fill="white" filter="url(#filter5)"></ellipse>
+						</mask>
+					</defs>
 
-				<image xlink:href="images/heal.gif" width="100%" height="100%" mask="url(#mask5)"></image>
-			</svg>
+					<image xlink:href="images/heal.gif" width="100%" height="100%" mask="url(#mask5)"></image>
+				</svg>
+			}
 
 			<div id="timer"></div>
 		</div>
@@ -206,22 +226,45 @@
 	private string MessageText = string.Empty;
 	private string WaitMessage = string.Empty;
 
+	private (int Player1, int Player2) HPNum = (Player.MaxHP, Player.MaxHP);
+	private (double Player1, double Player2) HPWidth = (100, 100);
 
 	private (double Player1, double Player2) WordOpacities = (0, 0);
 
+	private (bool Player1, bool Player2) IsPoisoned = (false, false);
+
+	private ((bool Up, bool Down, bool Heal) Player1, (bool Up, bool Down, bool Heal) Player2) ShowAnimation = default;
+
 	private Word Player1Word = Word.Default;
 	private Word Player2Word = Word.Default;
+
+	private static readonly Dictionary<Notice, string> SoundDic = new()
+		{
+			[Notice.Buf] = "up",
+			[Notice.Debuf] = "down",
+			[Notice.RevInfo] = "pera",
+			[Notice.EffectiveProp] = "effective",
+			[Notice.MidDmgProp] = "middmg",
+			[Notice.NonEffectiveProp] = "noneffective",
+			[Notice.Heal] = "heal",
+			[Notice.Poison] = "poison",
+			[Notice.PoisonDmg] = "poison",
+			[Notice.PoisonHeal] = "poison_heal",
+			[Notice.Seed] = "seeded",
+			[Notice.SeedDmg] = "seed_damage",
+			[Notice.InvokeBufInfo] = "up"
+		};
 
 	protected override async void OnInitialized()
 	{
 		Battle = new
 	(
-	new(AbilityManager.Default)
+	new(new RocknRoll())
 		{
 			Proceeding = Proceeds.True,
 			Name = "先攻"
 		},
-	new(AbilityManager.Default)
+	new(new Kakumei())
 		{
 			Proceeding = Proceeds.False,
 			Name = "後攻"
@@ -256,7 +299,7 @@
 
 			StateHasChanged();
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			await JSRuntime.Alert(ex);
 		}
@@ -298,8 +341,22 @@
 				}
 			IsProcessing = true;
 			var msgList = GetMessages(list);
-			if (!(IsDead ^ Battle.IsPlayer1sTurn)) await ShowWordAsync();
-			else await ShowWordAsync();
+
+
+			if (Battle.WasPlayer1sTurn)
+				await ShowWordAsync(Battle.Player1.CurrentWord);
+
+			else
+				await ShowWordAsync(Battle.Player2.CurrentWord);
+
+			await Task.Delay(400);
+			await ShowMessageAsync(msgList);
+
+			if (!IsDead)
+			{
+				IsProcessing = false;
+				StateHasChanged();
+			}
 		}
 		catch (Exception ex)
 		{
@@ -323,10 +380,10 @@
 		return list.Where(x => filter.Contains(x.Notice)).ToList();
 	}
 
-	private async Task ShowWordAsync(params object[] objs)
+	private async Task ShowWordAsync(Word word)
 	{
-		if (Battle.TurnNum > 2)
-			await FadeOut(Battle.IsPlayer1sTurn);
+		if (Battle.TurnNum > 3 || IsDead)
+			await FadeOut(Battle.WasPlayer1sTurn);
 
 		if (Battle.WasPlayer1sTurn)
 			Player1Word = Battle.Player1.CurrentWord;
@@ -335,12 +392,249 @@
 		StateHasChanged();
 		await Task.Delay(1);
 
+		await SBAudioManager.PlayAudio(word.Type1.TypeToAudio());
 		await FadeIn(Battle.WasPlayer1sTurn);
 		StateHasChanged();
 	}
+
+	private async Task ShowDeadlyWordAsync(Word word)
+	{
+		if (Battle.TurnNum > 3)
+			await FadeOut(Battle.IsPlayer1sTurn);
+
+		if (Battle.IsPlayer1sTurn)
+			Player1Word = Battle.Player1.CurrentWord;
+		else
+			Player2Word = Battle.Player2.CurrentWord;
+		StateHasChanged();
+		await Task.Delay(1);
+
+		await SBAudioManager.PlayAudio(word.Type1.TypeToAudio());
+		await FadeIn(Battle.IsPlayer1sTurn);
+		StateHasChanged();
+	}
+
+	private async Task ShowMessageAsync(List<AnnotatedString> msgs)
+	{
+		var tasks = new List<Task>();
+		foreach (var msg in msgs)
+		{
+			if (!msg.IsInvisible) MessageText = msg.Text;
+			if (SoundDic.TryGetValue(msg.Notice, out var soundName)) SBAudioManager.PlayAudioForget(soundName);
+
+			if (msg.Notice == Notice.HPUpdated)
+			{
+				var task = UpdateAllHPBarsAsync(msg.Params[0], Player.MaxHP, msg.Params[1], Player.MaxHP);
+				tasks.Add(task);
+				continue;
+			}
+			if (msg.Notice == Notice.Buf)
+			{
+				var selector = !Battle.IsPlayer1sTurn ? PlayerSelector.Player1 : PlayerSelector.Player2;
+				await ShowEffectAsync(selector, "up");
+			}
+			if (msg.Notice == Notice.Debuf)
+			{
+				var selector = !Battle.IsPlayer1sTurn ? PlayerSelector.Player1 : PlayerSelector.Player2;
+				await ShowEffectAsync(selector, "down");
+			}
+			if (msg.Notice == Notice.Heal)
+			{
+				var selector = !Battle.IsPlayer1sTurn ? PlayerSelector.Player1 : PlayerSelector.Player2;
+				await ShowEffectAsync(selector, "heal");
+			}
+			if (msg.Notice == Notice.InvokeBufInfo)
+			{
+				var selector = !Battle.IsPlayer1sTurn ? PlayerSelector.Player2 : PlayerSelector.Player1;
+				await ShowEffectAsync(selector, "up");
+			}
+			if (msg.Notice == Notice.Poison)
+			{
+				if (Battle.WasPlayer1sTurn)
+					if (msg.Params[0] == 0)
+						IsPoisoned.Player1 = true;
+					else
+						IsPoisoned.Player2 = true;
+
+				else if (msg.Params[0] == 0)
+					IsPoisoned.Player1 = true;
+
+				else
+					IsPoisoned.Player2 = true;
+			}
+			if (msg.Notice == Notice.PoisonHeal)
+			{
+				if (!Battle.IsPlayer1sTurn)
+					if (msg.Params[0] == 0)
+						IsPoisoned.Player1 = false;
+					else
+						IsPoisoned.Player2 = false;
+
+				else if (msg.Params[0] == 0)
+					IsPoisoned.Player2 = false;
+
+				else
+					IsPoisoned.Player1 = false;
+			}
+			if (msg.Notice == Notice.DeathInfo)
+			{
+				await Task.Delay(500);
+				await SBAudioManager.PlayAudio("end");
+				await SBAudioManager.SeizeAudio(AppSettings.BattleBgm);
+			}
+			StateHasChanged();
+			await Task.Delay(800);
+		}
+		await Task.WhenAll(tasks);
+		StateHasChanged();
+	}
+	private async Task ShowEffectAsync(PlayerSelector selector, string uiSelector)
+	{
+		if (selector == PlayerSelector.Player1)
+		{
+			switch (uiSelector)
+			{
+				case "up":
+					ShowAnimation.Player1.Up = true;
+					break;
+				case "down":
+					ShowAnimation.Player1.Down = true;
+					break;
+				case "heal":
+					ShowAnimation.Player1.Heal = true;
+					break;
+				default:
+					break;
+			}
+		}
+		else if (selector == PlayerSelector.Player2)
+		{
+			switch (uiSelector)
+			{
+				case "up":
+					ShowAnimation.Player2.Up = true;
+					break;
+				case "down":
+					ShowAnimation.Player2.Down = true;
+					break;
+				case "heal":
+					ShowAnimation.Player2.Heal = true;
+					break;
+				default:
+					break;
+			}
+		}
+		StateHasChanged();
+		await Task.Delay(700);
+		if (selector == PlayerSelector.Player1)
+		{
+			switch (uiSelector)
+			{
+				case "up":
+					ShowAnimation.Player1.Up = false;
+					break;
+				case "down":
+					ShowAnimation.Player1.Down = false;
+					break;
+				case "heal":
+					ShowAnimation.Player1.Heal = false;
+					break;
+				default:
+					break;
+			}
+		}
+		else if (selector == PlayerSelector.Player2)
+		{
+			switch (uiSelector)
+			{
+				case "up":
+					ShowAnimation.Player2.Up = false;
+					break;
+				case "down":
+					ShowAnimation.Player2.Down = false;
+					break;
+				case "heal":
+					ShowAnimation.Player2.Heal = false;
+					break;
+				default:
+					break;
+			}
+		}
+		StateHasChanged();
+	}
+
+	private async Task UpdateAllHPBarsAsync(int allyHP, int allyHPMax, int foeHP, int foeHPMax)
+	{
+		if (allyHP != HPNum.Player1)
+		{
+			HPNum.Player1 = allyHP;
+			await UpdateHPBarAsync(allyHP, allyHPMax, PlayerSelector.Player1);
+		}
+		if (foeHP != HPNum.Player2)
+		{
+			HPNum.Player2 = foeHP;
+			await UpdateHPBarAsync(foeHP, foeHPMax, PlayerSelector.Player2);
+		}
+	}
+
+	private async Task UpdateHPBarAsync(int hp, int hpMax, PlayerSelector selector)
+	{
+		if (selector == PlayerSelector.Player1)
+		{
+			var start = HPWidth.Player1;
+			var end = (double)hp / hpMax * 100;
+			var change = end - start;
+			var duration = 600;
+			var interval = 10;
+			var time = 0;
+			var width = start;
+
+			while (time <= duration)
+			{
+				width = SwingEasing(time, start, change, duration);
+				HPWidth.Player1 = width;
+				time += interval;
+				StateHasChanged();
+				await Task.Delay(interval);
+			}
+			HPWidth.Player1 = end;
+		}
+		else if (selector == PlayerSelector.Player2)
+		{
+			var start = HPWidth.Player2;
+			var end = (double)hp / hpMax * 100;
+			var change = end - start;
+			var duration = 600;
+			var interval = 7;
+			var time = 0;
+			var width = start;
+
+			while (time <= duration)
+			{
+				width = SwingEasing(time, start, change, duration);
+				HPWidth.Player2 = width;
+				time += interval;
+				StateHasChanged();
+				await Task.Delay(interval);
+			}
+			HPWidth.Player2 = end;
+		}
+	}
+
+	private static double SwingEasing(double time, double start, double change, double duration) => start + change * ((-Math.Cos(time / duration * Math.PI) / 2) + 0.5);
+
+	private static string GetHPColor(double ratioHP)
+	{
+		if (ratioHP > 0.5)
+			return "#00DB0E";
+		if (ratioHP > 0.2)
+			return "#E1B740";
+		return "#B84731";
+	}
+
 	private async Task FadeOut(bool isPlayer1sTurn)
 	{
-		for (var i = 0.0; i < 1; i += 0.02)
+		for (var i = 0.0; i < 1; i += 0.04)
 		{
 			if (isPlayer1sTurn)
 				WordOpacities.Player1 -= i;
@@ -352,7 +646,7 @@
 	}
 	private async Task FadeIn(bool isPlayer1sTurn)
 	{
-		for (var i = 0.0; i < 1; i += 0.02)
+		for (var i = 0.0; i < 1; i += 0.04)
 		{
 			if (isPlayer1sTurn)
 				WordOpacities.Player1 += i;

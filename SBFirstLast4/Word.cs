@@ -308,4 +308,6 @@ public static class WordTypeEx
 	};
 
 	public static string TypeToImg(this WordType type) => $"images/{Enum.GetName(type)?.ToLower() + ".gif" ?? string.Empty}";
+
+	public static string TypeToAudio(this WordType type) => Enum.GetName(type)?.ToLower() ?? string.Empty;
 }

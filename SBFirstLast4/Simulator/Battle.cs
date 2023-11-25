@@ -161,6 +161,7 @@ public partial class Battle
 		// プレイヤーが死んだかどうかの判定、ターンの交代。
 		if (c.DeadFlag)
 		{
+			IsPlayer1sTurn = !IsPlayer1sTurn;
 			Out(Buffer);
 			OnReset(cts);
 		}

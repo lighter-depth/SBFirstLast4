@@ -57,7 +57,10 @@ public static class SBAudioManager
 	{
 		if (audioPlayers.TryGetValue(soundName, out var player)) await player.InvokeVoidAsync("play");
 	}
-
+	public static async void PlayAudioForget(string soundName)
+	{
+		await PlayAudio(soundName);
+	}
 	public static async Task<bool> TryPlayAudio(string soundName)
 	{
 		var result = audioPlayers.TryGetValue(soundName, out var player);
@@ -70,6 +73,14 @@ public static class SBAudioManager
 	public static async Task PauseAudio(string soundName)
 	{
 		if (audioPlayers.TryGetValue(soundName, out var player)) await player.InvokeVoidAsync("pause");
+	}
+	public static async Task SeizeAudio(string soundName)
+	{
+		if (!audioPlayers.TryGetValue(soundName, out var player)) 
+			return;
+
+		await player.InvokeVoidAsync("pause");
+		await player.SetProperty("currentTime", 0);
 	}
 	public static async Task CancelAudio()
 	{

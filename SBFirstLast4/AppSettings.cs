@@ -21,6 +21,8 @@ internal static class AppSettings
 
 	internal static bool IsAdmin { get; private set; } = false;
 
+	internal static string BattleBgm { get; set; } = "overflow";
+
 	internal static async Task SetSortResult(ILocalStorageService localStorage, bool value) 
 	{
 		SortResult = value;
@@ -142,7 +144,7 @@ internal static class AppSettings
 
 	internal static bool SkipFlag { get; private set; } =
 #if DEBUG
-	true
+	false
 #else
 	false
 #endif

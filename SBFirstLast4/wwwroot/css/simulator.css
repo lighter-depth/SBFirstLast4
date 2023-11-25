@@ -136,7 +136,6 @@ main{
     right: 10px;
     width: 50%;
     height: 170px;
-    display: none;
 }
 
 .ally-change {
@@ -145,7 +144,6 @@ main{
     left: 0px;
     width: 50%;
     height: 170px;
-    display: none;
 }
 
 .types1 {
@@ -934,14 +932,6 @@ main{
     padding: 0 10px;
     float: right;
     line-height: 100%;
-}
-
-#ally-poison {
-    display: none;
-}
-
-#foe-poison {
-    display: none;
 }
 
 #last-foe-word {
