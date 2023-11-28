@@ -43,6 +43,20 @@ public static class Server
             return false;
         }
     }
+
+    internal static async Task<bool> ExistsAsync(string input, CancellationToken token = default)
+    {
+		try
+		{
+			var encodedInput = Uri.EscapeDataString(input);
+			var response = await client.GetFromJsonAsync<TLResponse>($"https://sbfl4logging.onrender.com/typeless?string={encodedInput}", token);
+			return response?.Exists ?? false;
+		}
+		catch
+		{
+			return false;
+		}
+	}
 }
 
 file class AutoResponse
@@ -50,4 +64,7 @@ file class AutoResponse
     public bool Result { get; set; }
 }
 
-
+file class TLResponse 
+{
+    public bool Exists { get; set; }
+}

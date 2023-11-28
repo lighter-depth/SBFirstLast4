@@ -19,6 +19,8 @@ internal static class AppSettings
 
 	internal static bool SortResult { get; private set; } = false;
 
+	internal static bool UseExists { get; private set; } = false;
+
 	internal static bool IsAdmin { get; private set; } = false;
 
 	internal static string BattleBgm { get; set; } = "overflow";
@@ -28,7 +30,11 @@ internal static class AppSettings
 		SortResult = value;
 		await localStorage.SetItemAsync("SORT_RESULT", value);
 	}
-
+	internal static async Task SetUseExists(ILocalStorageService localStorage, bool value)
+	{
+		UseExists = value;
+		await localStorage.SetItemAsync("USE_EXISTS", value);
+	}
 	internal static async Task InitUserInfoAsync(ILocalStorageService localStorage)
 	{
 		IsLoggedIn = await localStorage.GetItemAsync<bool>("IS_LOGGED_IN");
@@ -46,6 +52,7 @@ internal static class AppSettings
 	internal static async Task SetupAsync(ILocalStorageService localStorage) 
 	{
 		SortResult = await localStorage.GetItemAsync<bool>("SORT_RESULT");
+		UseExists = await localStorage.GetItemAsync<bool>("USE_EXISTS");
 	}
 
 	internal static async Task SetUserInfoAsync(ILocalStorageService localStorage, string userName, string guid, string hash)

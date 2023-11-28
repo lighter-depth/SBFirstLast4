@@ -24,6 +24,14 @@
 						StateHasChanged();
 					}" />
     <label for="switch" class="toggle"></label>
+    <h1 class="settingname">ライトなタイプ判定</h1>
+    <input type="checkbox" id="switch2" class="checkbox" checked="@AppSettings.UseExists"
+    @onchange="async e =>
+					{
+						await AppSettings.SetUseExists(LocalStorage, (bool)(e.Value ?? false));
+						StateHasChanged();
+					}" />
+    <label for="switch2" class="toggle"></label>
 </div>
 <div class="divider"></div>
 <div class="form">
@@ -40,7 +48,8 @@
         margin: 20px;
     }
     settingname{
-        font-size: 22px;
+        font-size: 16px;
+        margin-top: 5px;
     }
 
     .divider {

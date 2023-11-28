@@ -12,7 +12,7 @@ public static class SBAudioManager
 		{
 			foreach (var i in new[]
 			{
-			"animal", "art", "body", "bug", "cloth", "concent", "denno", "down", "effective", "emote", "end", "food", "heal", "health", "horizon", "insult", "last",
+			"animal", "art", "barrier", "body", "bug", "cloth", "concent", "denno", "down", "effective", "emote", "end", "food", "heal", "health", "horizon", "insult", "last",
 			"math", "mech", "middmg", "ninja", "noneffective", "normal", "overflow", "pera", "person", "place", "plant", "play", "poison", "poison_heal", "religion",
 			"science", "seed_damage", "seeded", "society", "sports", "start", "tale", "time", "up", "violence", "warn", "weather", "wonderland", "work"
 		})
@@ -46,9 +46,9 @@ public static class SBAudioManager
 			var audio = await jsRuntime.InvokeAsync<IJSObjectReference>("eval", $"new Audio('{fileName}')");
 			return audio;
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			await jsRuntime.Alert(e);
+			await jsRuntime.Alert(ex);
 			return null!;
 		}
 	}

@@ -1,4 +1,4 @@
-﻿@page "/debug"
+﻿@page "/simulator-body"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @using SBFirstLast4.Simulator
@@ -25,9 +25,7 @@
 					<div id="left-HP-remain" style=@($"width: {HPWidth.Player2}%; background-color: {GetHPColor((double)HPNum.Player2 / Player.MaxHP) };")></div>
 				</div>
 				<div id="foeHPnum">
-					@(
-						$"{HPNum.Player2}/{Player.MaxHP}"
-						)
+					@($"{HPNum.Player2}/{Player.MaxHP}")
 				</div>
 				<div class="tri"></div>
 			</div>
@@ -38,9 +36,7 @@
 					<div id="right-HP-remain" style=@($"width: {HPWidth.Player1}%; background-color: {GetHPColor((double)HPNum.Player1 / Player.MaxHP) };")></div>
 				</div>
 				<div id="allyHPnum">
-					@(
-						$"{HPNum.Player1}/{Player.MaxHP}"
-						)
+					@($"{HPNum.Player1}/{Player.MaxHP}")
 				</div>
 				<div class="tri"></div>
 			</div>
@@ -186,7 +182,7 @@
 		<div id="skill" class="sb-button" style="display: block;" @onclick=ShowSkillModal>
 			<p>とくせい</p>
 		</div>
-		<div id="exit" class="sb-button">
+		<div id="exit" class="sb-button" @onclick=ShowEscapeModal>
 			<p>おわる</p>
 		</div>
 
@@ -196,23 +192,31 @@
 			<div id="s-foe-info">
 				<br />
 				<h3 style="font-weight: bold;">後攻<span id="foe-rank"></span></h3>
-				<p>こうげき<br><span id="foe-A">1.0倍</span></p>
-				<p>ぼうぎょ<br><span id="foe-B">1.0倍</span></p>
+				<p>こうげき<br><span id="foe-A">@($"{Battle.Player2.ATK: 0.##}倍")</span></p>
+				<p>ぼうぎょ<br><span id="foe-B">@($"{Battle.Player2.DEF: 0.##}倍")</span></p>
 				<!--<span>とくせい</span>
 				<div id="foe-tokusei"></div>--->
 			</div>
 			<div id="s-ally-info">
 				<br />
 				<h3 style="font-weight: bold;">先攻<span id="ally-rank"></span></h3>
-				<p>こうげき<br><span id="ally-A">1.0倍</span></p>
-				<p>ぼうぎょ<br><span id="ally-B">1.0倍</span></p>
+				<p>こうげき<br><span id="ally-A">@($"{Battle.Player1.ATK: 0.##}倍")</span></p>
+				<p>ぼうぎょ<br><span id="ally-B">@($"{Battle.Player1.DEF: 0.##}倍")</span></p>
 				<!--<span>とくせい</span>
 				<div id="ally-tokusei"></div>--->
 			</div>
 
-			<div id="last-foe-word"></div>
+			<div id="last-foe-word">@(Battle.OtherPlayer.CurrentWord.Name is string word && !string.IsNullOrEmpty(word) ? $"{word} の弱点" : string.Empty)</div>
 			<div class="types"></div>
-			<div class="will-damaged"></div>
+			<div class="will-damaged">
+				@foreach (var type in WillDamaged())
+				{
+					<div class="type">
+						<img class="icon" src="@type.TypeToImg()"><br>
+						<span>@type.TypeToString()</span>
+					</div>
+				}
+			</div>
 			<div class="close-modal" @onclick=HideSituationModal>とじる</div>
 		</div>
 		<div id="skill-modal" style=@($"display: {(ShowModal.Skill ? "block" : "none")}; opacity: {ModalOpacities.Skill};")>
@@ -534,7 +538,7 @@
 
 		#form {
 			/*position: fixed;
-																																											bottom: 0;*/
+																																																			bottom: 0;*/
 			z-index: 1;
 			text-align: center;
 		}
@@ -1121,8 +1125,8 @@
 </body>
 </html>
 @code {
-	internal static Ability Player1Ability = new Debugger();//AbilityManager.Default;
-	internal static Ability Player2Ability = new God();//AbilityManager.Default;
+	internal static Ability Player1Ability { get; set; } = AbilityManager.Default;
+	internal static Ability Player2Ability { get; set; } = AbilityManager.Default;
 
 	private Battle Battle = Battle.Empty;
 	private bool IsProcessing;
@@ -1180,12 +1184,12 @@
 	{
 		Battle = new
 	(
-	new(new MagicMirror())
+	new(Player1Ability)
 		{
 			Proceeding = Proceeds.True,
 			Name = "先攻"
 		},
-	new(new Dokubari())
+	new(Player2Ability)
 		{
 			Proceeding = Proceeds.False,
 			Name = "後攻"
@@ -1269,7 +1273,7 @@
 			Preview = Word.Default;
 			StateHasChanged();
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			await JSRuntime.AlertEx(ex);
 		}
@@ -1339,7 +1343,7 @@
 	private async Task OutChangeOrder(List<AnnotatedString> list)
 	{
 		foreach (var i in list)
-			if (i.Notice == Notice.Warn)
+			if (i.Notice is Notice.Warn or Notice.Caution)
 			{
 				ShowModalMessage(i.Text);
 				return;
@@ -1622,6 +1626,14 @@
 		StateHasChanged();
 	}
 
+	private IEnumerable<WordType> WillDamaged()
+	{
+		var word = Battle.OtherPlayer.CurrentWord;
+		foreach (var type in Enum.GetValues<WordType>())
+			if (Word.FromType(type).CalcEffectiveDmg(word) >= 2)
+				yield return type;
+	}
+
 	private async void ShowSkillModal()
 	{
 		await SBAudioManager.PlayAudio("pera");
@@ -1647,6 +1659,15 @@
 		StateHasChanged();
 		ShowModal.Skill = false;
 		StateHasChanged();
+	}
+
+	private async Task ShowEscapeModal()
+	{
+		if (!await JSRuntime.Confirm("シミュレーションを終了しますか？"))
+			return;
+
+		await SBAudioManager.CancelAudio();
+		NavigationManager.NavigateTo("simulator");
 	}
 
 	private bool IsCurrentSkill(string abilityName) => SkillSelector switch
@@ -1721,3 +1742,4 @@
 		internal static ShowPlayerAnimation Default => new(new(false, false, false, false), new(false, false, false, false));
 	}
 }
+

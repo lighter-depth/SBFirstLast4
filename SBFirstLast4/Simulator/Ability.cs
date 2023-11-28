@@ -300,10 +300,10 @@ internal class Jounetsu : Ability, ISingleTypedBufAbility
 		if (c is not BufContract bc) return;
 		if (bc.Word.Contains(BufType) && bc.Actor.TryChangeATK(Buf, bc.Word))
 		{
-			bc.Message.Add($"{bc.Actor.Name} の攻撃が上がった！(現在{bc.Actor.ATK,0:0.0#}倍)", Notice.Buf);
+			bc.Message.Add($"攻撃が上がった！(現在{bc.Actor.ATK,0:0.0#}倍)", Notice.Buf);
 			return;
 		}
-		bc.Message.Add($"{bc.Actor.Name} の攻撃はもう上がらない！", Notice.Caution);
+		bc.Message.Add($"攻撃はもう上がらない！", Notice.Caution);
 	}
 	public override string ToString() => "じょうねつ";
 }
@@ -323,10 +323,10 @@ internal class RocknRoll : Ability, ISingleTypedBufAbility
 		if (c is not BufContract bc) return;
 		if (bc.Word.Contains(BufType) && bc.Actor.TryChangeATK(Buf, bc.Word))
 		{
-			bc.Message.Add($"{bc.Actor.Name} の攻撃がぐーんと上がった！(現在{bc.Actor.ATK,0:0.0#}倍)", Notice.Buf);
+			bc.Message.Add($"攻撃がぐーんと上がった！(現在{bc.Actor.ATK,0:0.0#}倍)", Notice.Buf);
 			return;
 		}
-		bc.Message.Add($"{bc.Actor.Name} の攻撃はもう上がらない！", Notice.Caution);
+		bc.Message.Add($"攻撃はもう上がらない！", Notice.Caution);
 	}
 	public override string ToString() => "ロックンロール";
 }
@@ -366,10 +366,10 @@ internal class Mukimuki : Ability
 		if (c is not AttackContract ac) return;
 		if (ac.Actor.TryChangeATK(Buf, ac.Word))
 		{
-			ac.Message.Add($"{ac.Actor.Name} の攻撃が下がった！(現在{ac.Actor.ATK,0:0.0#}倍)", Notice.Debuf);
+			ac.Message.Add($"攻撃が下がった！(現在{ac.Actor.ATK,0:0.0#}倍)", Notice.Debuf);
 			return;
 		}
-		ac.Message.Add($"{ac.Actor.Name} の攻撃はもう下がらない！", Notice.Caution);
+		ac.Message.Add($"攻撃はもう下がらない！", Notice.Caution);
 	}
 	public override string ToString() => "むきむき";
 }
@@ -422,10 +422,10 @@ internal class Kachikochi : Ability, ISingleTypedBufAbility
 		if (c is not BufContract bc) return;
 		if (bc.Word.Contains(BufType) && bc.Actor.TryChangeDEF(Buf, bc.Word))
 		{
-			bc.Message.Add($"{bc.Actor.Name} の防御が上がった！(現在{bc.Actor.DEF,0:0.0#}倍)", Notice.Buf);
+			bc.Message.Add($"防御が上がった！(現在{bc.Actor.DEF,0:0.0#}倍)", Notice.Buf);
 			return;
 		}
-		bc.Message.Add($"{bc.Actor.Name} の防御はもう上がらない！", Notice.Caution);
+		bc.Message.Add($"防御はもう上がらない！", Notice.Caution);
 	}
 	public override string ToString() => "かちこち";
 }
@@ -463,10 +463,10 @@ internal class Sakinobashi : Ability, ISingleTypedBufAbility
 		if (c is not BufContract bc) return;
 		if (bc.Word.Contains(BufType) && bc.Actor.TryChangeDEF(Buf, bc.Word))
 		{
-			bc.Message.Add($"{bc.Actor.Name} の防御が上がった！(現在{bc.Actor.DEF,0:0.0#}倍)", Notice.Buf);
+			bc.Message.Add($"防御が上がった！(現在{bc.Actor.DEF,0:0.0#}倍)", Notice.Buf);
 			return;
 		}
-		bc.Message.Add($"{bc.Actor.Name} の防御はもう上がらない！", Notice.Caution);
+		bc.Message.Add($"防御はもう上がらない！", Notice.Caution);
 	}
 	public override string ToString() => "さきのばし";
 }
@@ -504,10 +504,10 @@ internal class Busou : Ability, ISingleTypedBufAbility
 		if (c is not BufContract bc) return;
 		if (bc.Word.Contains(BufType) && bc.Actor.TryChangeATK(Buf, bc.Word))
 		{
-			bc.Message.Add($"{bc.Actor.Name} の攻撃が上がった！(現在{bc.Actor.ATK,0:0.0#}倍)", Notice.Buf);
+			bc.Message.Add($"攻撃が上がった！(現在{bc.Actor.ATK,0:0.0#}倍)", Notice.Buf);
 			return;
 		}
-		bc.Message.Add($"{bc.Actor.Name} の攻撃はもう上がらない！", Notice.Caution);
+		bc.Message.Add($"攻撃はもう上がらない！", Notice.Caution);
 	}
 	public override string ToString() => "ぶそう";
 }
@@ -527,10 +527,10 @@ internal class Kasanegi : Ability, ISingleTypedBufAbility
 		if (c is not BufContract bc) return;
 		if (bc.Word.Contains(BufType) && bc.Actor.TryChangeDEF(Buf, bc.Word))
 		{
-			bc.Message.Add($"{bc.Actor.Name} の防御が上がった！(現在{bc.Actor.DEF,0:0.0#}倍)", Notice.Buf);
+			bc.Message.Add($"防御が上がった！(現在{bc.Actor.DEF,0:0.0#}倍)", Notice.Buf);
 			return;
 		}
-		bc.Message.Add($"{bc.Actor.Name} の防御はもう上がらない！", Notice.Caution);
+		bc.Message.Add($"防御はもう上がらない！", Notice.Caution);
 	}
 	public override string ToString() => "かさねぎ";
 
@@ -551,7 +551,7 @@ internal class Hoken : Ability
 		if (ac.Word.CalcEffectiveDmg(ac.Receiver.CurrentWord) >= 2)
 		{
 			ac.Receiver.TryChangeATK(Player.InsBufQty, ac.Receiver.CurrentWord);
-			ac.Message.Add($"{ac.Receiver.Name} は弱点を突かれて攻撃がぐぐーんと上がった！ (現在{ac.Receiver.ATK,0:0.0#}倍)", Notice.InvokeBufInfo);
+			ac.Message.Add($"弱点を突かれて攻撃がぐぐーんと上がった！ (現在{ac.Receiver.ATK,0:0.0#}倍)", Notice.InvokeBufInfo);
 		}
 	}
 	public override string ToString() => "ほけん";
@@ -592,7 +592,7 @@ internal class Dokubari : Ability
 		{
 			ac.Receiver.Poison();
 			ac.PoisonFlag = true;
-			ac.Message.Add($"{ac.Receiver.Name} は毒を受けた！", Notice.Poison, 1);
+			ac.Message.Add($"{ac.Receiver.Name} は毒を受けた！", Notice.Poison, 0);
 		}
 	}
 	public override string ToString() => "どくばり";
@@ -613,10 +613,10 @@ internal class Keisan : Ability, ISingleTypedBufAbility
 		if (c is not BufContract bc) return;
 		if (bc.Word.Contains(BufType) && bc.Actor.TryChangeATK(Buf, bc.Word))
 		{
-			bc.Message.Add($"{bc.Actor.Name} の攻撃が上がった！(現在{bc.Actor.ATK,0:0.0#}倍)", Notice.Buf);
+			bc.Message.Add($"攻撃が上がった！(現在{bc.Actor.ATK,0:0.0#}倍)", Notice.Buf);
 			return;
 		}
-		bc.Message.Add($"{bc.Actor.Name} の攻撃はもう上がらない！", Notice.Caution);
+		bc.Message.Add($"攻撃はもう上がらない！", Notice.Caution);
 	}
 	public override string ToString() => "けいさん";
 }
@@ -671,10 +671,10 @@ internal class Training : Ability, ISingleTypedBufAbility
 		if (c is not BufContract bc) return;
 		if (bc.Word.Contains(BufType) && bc.Actor.TryChangeATK(Buf, bc.Word))
 		{
-			bc.Message.Add($"{bc.Actor.Name} の攻撃が上がった！(現在{bc.Actor.ATK,0:0.0#}倍)", Notice.Buf);
+			bc.Message.Add($"攻撃が上がった！(現在{bc.Actor.ATK,0:0.0#}倍)", Notice.Buf);
 			return;
 		}
-		bc.Message.Add($"{bc.Actor.Name} の攻撃はもう上がらない！", Notice.Caution);
+		bc.Message.Add($"攻撃はもう上がらない！", Notice.Caution);
 	}
 	public override string ToString() => "トレーニング";
 }

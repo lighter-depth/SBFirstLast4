@@ -1,0 +1,79 @@
+﻿@page "/word-preview"
+@inject IJSRuntime JSRuntime
+
+@try
+{
+	@if (string.IsNullOrWhiteSpace(WordName))
+	{
+		<p id="types"></p>
+	}
+
+	else
+	{
+		<p id="types" style="opacity: 0.6;">
+			<div id="preview">
+				@if (Types.Count < 1)
+				{
+					<div class="types1">
+						<div class="type">
+							<div class="icon" style="height: 50px;"></div><br>
+							<span>無属性</span>
+						</div>
+					</div>
+				}
+				@if (Types.Count == 1)
+				{
+					<div class="types1">
+						<div class="type">
+							<img class="icon" src=@Types.At(0).TypeToImg()><br>
+							<span>@Types.At(0).TypeToString()</span>
+						</div>
+					</div>
+				}
+				@if (Types.Count > 1)
+				{
+					<div class="types2">
+						<div class="type">
+							<img class="icon" src=@Types.At(0).TypeToImg()><br>
+							<span>@Types.At(0).TypeToString()</span>
+						</div>
+						<div class="type">
+							<img class="icon" src=@Types.At(1).TypeToImg()><br>
+							<span>@Types.At(1).TypeToString()</span>
+						</div>
+					</div>
+				}
+				<div class="pre-message">@ToString(Effective)</div>
+			</div>
+		</p>
+	}
+
+}
+catch (Exception ex)
+{
+	JSRuntime.AlertEx(ex);
+}
+@code {
+	[Parameter]
+	public List<WordType> Types { get; set; } = new();
+
+	[Parameter]
+	public string WordName { get; set; } = string.Empty;
+
+	[Parameter]
+	public DamageType Effective { get; set; } = DamageType.MidDamage;
+
+	public enum DamageType
+	{
+		NoDamage, NonEffective, MidDamage, Effective, Heal
+	}
+
+	internal static string ToString(DamageType damageType) => damageType switch
+	{
+		DamageType.NoDamage => "こうかなし",
+		DamageType.NonEffective => "いまひとつ",
+		DamageType.MidDamage => "ふつうのダメージ",
+		DamageType.Effective => "こうかばつぐん",
+		_ => "かいふく"
+	};
+}

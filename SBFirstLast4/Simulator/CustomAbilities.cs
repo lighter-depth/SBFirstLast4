@@ -28,14 +28,15 @@ internal class MagicMirror : CustomAbility
 		{
 			ac.Receiver.DePoison();
 			ac.Actor.Poison();
-			ac.Message.Add($"{ac.Receiver.Name} は{PlayerState.Poison.StateToString()}を跳ね返した！", Notice.PoisonHeal, 1);
-			ac.Message.Add($"{ac.Actor.Name} は{PlayerState.Poison.StateToString()}を受けた！", Notice.Poison, 0);
+			ac.Message.Add($"{ac.Receiver.Name} は{PlayerState.Poison.StateToString()}を跳ね返した！", Notice.Barrier);
+			ac.Message.Add($"{ac.Receiver.Name} の毒が治った！", Notice.PoisonHeal, 1);
+			ac.Message.Add($"{ac.Actor.Name} は{PlayerState.Poison.StateToString()}を受けた！", Notice.Poison, 1);
 		}
 		if (c is SeedContract sc && sc.SeedFlag && sc.Receiver.State.HasFlag(PlayerState.Seed))
 		{
 			sc.Receiver.DeSeed();
 			sc.Actor.Seed();
-			sc.Message.Add($"{sc.Receiver.Name} は{PlayerState.Seed.StateToString()}を跳ね返した！", Notice.InvokeBufInfo);
+			sc.Message.Add($"{sc.Receiver.Name} は{PlayerState.Seed.StateToString()}を跳ね返した！", Notice.Barrier);
 			sc.Message.Add($"{sc.Actor.Name} は{PlayerState.Seed.StateToString()}を植え付けられた！", Notice.Seed, 0);
 		}
 	}

@@ -1,5 +1,4 @@
 ﻿using SBFirstLast4.Simulator;
-using System.Data;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
 
 namespace SBFirstLast4;
@@ -144,6 +143,8 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 		if(resultWord != default) return resultWord;
 		return (Word)name;
 	}
+
+	public static Word FromType(WordType type) => Default with { Type1 = type };
 }
 
 [DynamicLinqType]

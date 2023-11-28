@@ -90,6 +90,10 @@ public enum Notice
 	/// </summary>
 	InvokeBufInfo,
 	/// <summary>
+	/// 特殊な防御とくせいの発動に関する情報を示します。
+	/// </summary>
+	Barrier,
+	/// <summary>
 	/// ログに表示するプレイヤーの情報を示します。
 	/// </summary>
 	LogInfo,
