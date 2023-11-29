@@ -468,10 +468,10 @@ internal class AttackContract : Contract
 		}
 		if (Actor.TryChangeATK(-2, Word))
 		{
-			Message.Add($"{Actor.Name} の攻撃ががくっと下がった！(現在 {Actor.ATK,0:0.0#}倍)", Notice.Debuf);
+			Message.Add($"攻撃ががくっと下がった！(現在 {Actor.ATK,0:0.0#}倍)", Notice.Debuf);
 			return;
 		}
-		Message.Add($"{Actor.Name} の攻撃はもう下がらない！", Notice.Caution);
+		Message.Add($"攻撃はもう下がらない！", Notice.Caution);
 	}
 }
 /// <summary>

@@ -192,16 +192,16 @@
 			<div id="s-foe-info">
 				<br />
 				<h3 style="font-weight: bold;">後攻<span id="foe-rank"></span></h3>
-				<p>こうげき<br><span id="foe-A">@($"{Battle.Player2.ATK: 0.##}倍")</span></p>
-				<p>ぼうぎょ<br><span id="foe-B">@($"{Battle.Player2.DEF: 0.##}倍")</span></p>
+				<p>こうげき<br><span id="foe-A">@($"{Battle.Player2.ATK: 0.0#}倍")</span></p>
+				<p>ぼうぎょ<br><span id="foe-B">@($"{Battle.Player2.DEF: 0.0#}倍")</span></p>
 				<!--<span>とくせい</span>
 				<div id="foe-tokusei"></div>--->
 			</div>
 			<div id="s-ally-info">
 				<br />
 				<h3 style="font-weight: bold;">先攻<span id="ally-rank"></span></h3>
-				<p>こうげき<br><span id="ally-A">@($"{Battle.Player1.ATK: 0.##}倍")</span></p>
-				<p>ぼうぎょ<br><span id="ally-B">@($"{Battle.Player1.DEF: 0.##}倍")</span></p>
+				<p>こうげき<br><span id="ally-A">@($"{Battle.Player1.ATK: 0.0#}倍")</span></p>
+				<p>ぼうぎょ<br><span id="ally-B">@($"{Battle.Player1.DEF: 0.0#}倍")</span></p>
 				<!--<span>とくせい</span>
 				<div id="ally-tokusei"></div>--->
 			</div>
@@ -1182,6 +1182,13 @@
 
 	protected override async Task OnInitializedAsync()
 	{
+		if (!AppSettings.IsLoggedIn)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+		if (!SBDictionary.IsLoadedCorrectly)
+			NavigationManager.NavigateTo("top", false);
 		Battle = new
 	(
 	new(Player1Ability)

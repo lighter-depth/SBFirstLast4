@@ -141,26 +141,26 @@ internal class God : CustomAbility
 		{
 			if (ac.Actor.TryChangeATK(Buf, ac.Word))
 			{
-				ac.Message.Add($"{ac.Actor.Name} の攻撃が下がった！(現在{ac.Actor.ATK,0:0.0#}倍)", Notice.Debuf);
+				ac.Message.Add($"攻撃が下がった！(現在{ac.Actor.ATK,0:0.0#}倍)", Notice.Debuf);
 				return;
 			}
-			ac.Message.Add($"{ac.Actor.Name} の攻撃はもう下がらない！", Notice.Caution);
+			ac.Message.Add($"攻撃はもう下がらない！", Notice.Caution);
 		}
 		if (ac.State == AbilityType.ActionEnd)
 		{
 			if (ac.Actor.TryChangeATK(4, ac.Word))
 			{
-				ac.Message.Add($"{ac.Actor.Name} の攻撃がぐーんぐーんと上がった！！！！(現在{ac.Actor.ATK,0:0.0#}倍)", Notice.Buf);
+				ac.Message.Add($"攻撃がぐーんぐーんと上がった！！！！(現在{ac.Actor.ATK,0:0.0#}倍)", Notice.Buf);
 				return;
 			}
-			ac.Message.Add($"{ac.Actor.Name} の攻撃はもう上がらない！", Notice.Caution);
+			ac.Message.Add($"攻撃はもう上がらない！", Notice.Caution);
 		}
 		if (ac.State == AbilityType.Received)
 		{
 			ac.Receiver.TryChangeATK(100, ac.Receiver.CurrentWord);
-			ac.Message.Add($"{ac.Receiver.Name} はダメージを受けて攻撃がぐぐーんぐーんと上がった！！！！！ (現在{ac.Receiver.ATK,0:0.0#}倍)", Notice.InvokeBufInfo);
+			ac.Message.Add($"ダメージを受けて攻撃がぐぐーんぐーんと上がった！！！！！ (現在{ac.Receiver.ATK,0:0.0#}倍)", Notice.InvokeBufInfo);
 			ac.Receiver.TryChangeDEF(100, ac.Receiver.CurrentWord);
-			ac.Message.Add($"{ac.Receiver.Name} はダメージを受けて防御がぐぐーんぐーんと上がった！！！１！ (現在{ac.Receiver.DEF,0:0.0#}倍)", Notice.InvokeBufInfo);
+			ac.Message.Add($"ダメージを受けて防御がぐぐーんぐーんと上がった！！！１！ (現在{ac.Receiver.DEF,0:0.0#}倍)", Notice.InvokeBufInfo);
 		}
 	}
 	public override string ToString() => "神";
@@ -216,7 +216,7 @@ internal class GouyokunaTsubo : CustomAbility, ISingleTypedBufAbility
 		if (bc.Actor.CurrentWord.Contains(BufType))
 		{
 			bc.Actor.IncrementSkillChange();
-			bc.Message.Add($"{bc.Actor.Name} のとくせい変更上限が増えた！(残り{bc.Actor.SkillChangeRemain}回)", Notice.Buf);
+			bc.Message.Add($"とくせい変更上限が増えた！(残り{bc.Actor.SkillChangeRemain}回)", Notice.Buf);
 		}
 	}
 	public override string ToString() => "ごうよくなつぼ";
