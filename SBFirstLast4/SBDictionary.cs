@@ -155,7 +155,7 @@ public class SBDictionary
 		}
 		progress.Report("タイプ付き ワードを読み込んでいます... (7/7)");
 		await Task.WhenAll(tasks);
-		TypedWords = TypedWords.Distinct().ToList();
+		TypedWords = TypedWords.AsEnumerable().Reverse().DistinctBy(w => w.Name).Reverse().ToList();
 		progress.Report("キャッシュを保存しています...");
 		await localStorage.SetItemAsync(TYPED_WORDS, TypedWords);
 		await localStorage.SetItemAsync(HAS_LOADED, true);
