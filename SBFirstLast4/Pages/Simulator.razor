@@ -148,57 +148,11 @@
 		color: black;
 	}
 
-	.text-input {
-		width: 80%;
-		padding: 12px;
-		font-size: 18px;
-		border: 2px solid gray;
-		border-radius: 5px;
-		margin-top: 8px;
-	}
-
-		.text-input::placeholder {
-			color: dimgray;
-		}
 
 	.divider {
 		height: 2px;
 		background-color: darkgray;
 		margin: 10px 0;
-	}
-
-
-	.checkbox {
-		display: none;
-	}
-
-	.toggle {
-		position: relative;
-		display: inline-block;
-		width: 60px;
-		height: 34px;
-		background-color: lightgray;
-		border-radius: 17px;
-	}
-
-		.toggle::after {
-			content: "";
-			position: absolute;
-			width: 26px;
-			height: 26px;
-			border-radius: 50%;
-			background-color: white;
-			top: 4px;
-			left: 4px;
-			transition: all 0.3s;
-		}
-
-	.checkbox:checked + .toggle::after {
-		left: 30px;
-	}
-
-	.checkbox:checked + .toggle {
-		background-color: green;
 	}
 
 	.start-button {
@@ -217,82 +171,6 @@
 		text-decoration: none;
 		margin-top: 20px;
 	}
-
-	.btn-ability {
-		text-align: center;
-		width: 90%;
-		height: auto;
-		background-color: #BBBBBB;
-		border-color: transparent;
-		border-radius: 20px;
-		margin-top: 10px;
-		font-size: 22px;
-	}
-
-	.btn-change {
-		text-align: center;
-		width: 80%;
-		font-weight: bold;
-		height: 50px;
-		border: none;
-		border-radius: 30px;
-		font-size: 20px;
-		cursor: pointer;
-		background: linear-gradient(to right, #c02524, #f035cb);
-		color: white;
-		transition: background-color 0.3s, color 0.3s;
-		text-decoration: none;
-		margin-top: 20px;
-		align-self: center;
-	}
-
-		.btn-change[disabled] {
-			background: #CCCCCC;
-		}
-
-	.btn-reset {
-		text-align: center;
-		width: 85%;
-		height: 50px;
-		border: none;
-		border-radius: 30px;
-		font-size: 19px;
-		cursor: pointer;
-		background-color: #DDDDDD;
-		transition: background-color 0.3s, color 0.3s;
-		text-decoration: none;
-		margin-top: 20px;
-		align-self: center;
-	}
-
-	.dropdown-container {
-		width: 100%;
-		display: flex;
-		justify-content: center;
-	}
-
-	.dropdown {
-		width: 80%;
-		padding: 12px;
-		font-size: 18px;
-		border: 2px solid gray;
-		border-radius: 5px;
-	}
-
-	.scrollable-list {
-		height: 100px;
-		overflow-y: scroll;
-		width: 90%;
-		border: 2px solid #111111;
-		border-radius: 10px;
-		background-color: #F7F7F7;
-		margin-top: 9px;
-	}
-
-		.scrollable-list > p {
-			margin: 5px;
-			font-size: 18px;
-		}
 </style>
 
 @code {
