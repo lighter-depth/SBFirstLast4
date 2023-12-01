@@ -30,7 +30,7 @@ public static class SBAudioManager
 				await audioPlayers[i].SetProperty("volume", 0.36f);
 				await audioPlayers[i].SetProperty("loop", true);
 			}
-			await audioPlayers["pera"].SetProperty("volume", 0.4f);
+			await audioPlayers["pera"].SetProperty("volume", 0.2f);
 			await audioPlayers["art"].SetProperty("volume", 0.8f);
 		}
 		catch (Exception ex)

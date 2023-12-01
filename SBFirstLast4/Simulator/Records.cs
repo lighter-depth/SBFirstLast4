@@ -2,16 +2,16 @@
 
 public record BattleData(PlayerData Player1, PlayerData Player2, PlayerData PreActor, PlayerData PreReceiver, bool IsPlayer1sTurn, int TurnNum, List<string> UsedWords)
 {
-	public static explicit operator BattleData(Battle b) => 
+	public static explicit operator BattleData(Battle b) =>
 		new
 		(
-			b.Player1, 
-			b.Player2, 
-			b.PreActor, 
-			b.PreReceiver, 
-			b.IsPlayer1sTurn, 
-			b.TurnNum, 
-			new(b.UsedWords)
+			b.Player1,
+			b.Player2,
+			b.PreActor,
+			b.PreReceiver,
+			b.IsPlayer1sTurn,
+			b.TurnNum,
+			b.UsedWords.Take(..^1).ToList()
 		);
 }
 

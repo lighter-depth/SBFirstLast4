@@ -235,7 +235,7 @@ internal class Rewind : CustomAbility, ISingleTypedBufAbility
 		if(c is not  BufContract bc) return;
 		if (bc.Actor.CurrentWord.Contains(BufType))
 		{
-			var history = bc.Parent.History.At(^2);
+			var history = bc.Parent.History.Where(x => x.IsPlayer1sTurn == bc.Parent.IsPlayer1sTurn).LastOrDefault();
 			if (history is null)
 			{
 				bc.Message.Add("もう時間は巻き戻らない！", Notice.Caution);

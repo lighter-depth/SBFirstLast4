@@ -261,6 +261,6 @@ public partial class Battle
 		PreReceiver = d.PreReceiver;
 		IsPlayer1sTurn = d.IsPlayer1sTurn;
 		TurnNum = d.TurnNum;
-		UsedWords = new(d.UsedWords);
+		UsedWords = d.UsedWords.Select(x => x).ToList();
 	}
 }
