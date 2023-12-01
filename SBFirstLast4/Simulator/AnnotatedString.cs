@@ -94,6 +94,15 @@ public enum Notice
 	/// </summary>
 	Barrier,
 	/// <summary>
+	/// 特殊な変化とくせいの発動に関する情報を示します。
+	/// </summary>
+	Portal,
+	Rewind,
+	/// <summary>
+	/// バトル情報の変更に関する情報を示します。
+	/// </summary>
+	Alter,
+	/// <summary>
 	/// ログに表示するプレイヤーの情報を示します。
 	/// </summary>
 	LogInfo,
@@ -132,6 +141,8 @@ public class AnnotatedString
 	/// </summary>
 	public Notice Notice { get; set; } = Notice.None;
 	public int[] Params { get; set; } = Array.Empty<int>();
+
+	public BattleData? Data { get; set; }
 	/// <summary>
 	/// アノテーションの種類がログにのみ作用するかどうかの判定
 	/// </summary>

@@ -1,6 +1,7 @@
 ﻿@page "/simulator-body"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@layout NoMenuLayout
 @using SBFirstLast4.Simulator
 @using SBFirstLast4.Logging
 
@@ -16,6 +17,10 @@
 <body>
 	<div id="bg"></div>
 	<div id="main">
+		@if (ShowAlter)
+		{
+			<div id="alter"></div>
+		}
 		<div id="modal-message">@ModalMessage</div>
 		<div id="next"><a>つぎへ</a></div>
 		<div id="game" style="background-color: forestgreen">
@@ -103,6 +108,18 @@
 					<image xlink:href="images/barrier.gif" width="80%" height="80%"></image>
 				</svg>
 			}
+			@if (ShowAnimation.Player2.Portal)
+			{
+				<svg id="foe-portal" class="foe-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin-right: -5%; margin-top: 5%; animation-iteration-count: infinite;">
+					<image xlink:href="images/portal.gif" width="80%" height="80%"></image>
+				</svg>
+			}
+			@if (ShowAnimation.Player2.Rewind)
+			{
+				<svg id="foe-rewind" class="foe-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin-right: -5%; margin-top: 5%; animation-iteration-count: infinite;">
+					<image xlink:href="images/rewind.gif" width="80%" height="80%"></image>
+				</svg>
+			}
 
 			<div id="ally-word" style=@($"opacity: {WordOpacities.Player1};")>
 				<WordDisplay WordName="@Player1Word.Name" Types="@Player1Word.Types"></WordDisplay>
@@ -161,6 +178,18 @@
 					<image xlink:href="images/barrier.gif" width="80%" height="80%"></image>
 				</svg>
 			}
+			@if (ShowAnimation.Player1.Portal)
+			{
+				<svg id="ally-portal" class="ally-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin-left: 5%; margin-bottom: 5%;">
+					<image xlink:href="images/portal.gif" width="80%" height="80%"></image>
+				</svg>
+			}
+			@if (ShowAnimation.Player1.Rewind)
+			{
+				<svg id="ally-rewind" class="ally-change" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin-left: 5%; margin-bottom: 5%;">
+					<image xlink:href="images/rewind.gif" width="80%" height="80%"></image>
+				</svg>
+			}
 
 			<div id="timer"></div>
 		</div>
@@ -172,9 +201,9 @@
 		<div id="form">
 			<div id="text" style=@(IsProcessing ? string.Empty : "display: block;")>
 				<input type="text" id="input" autocomplete="off" placeholder=@($"「{Battle.NextChar}」からはじまることば") @onkeydown=Input_KeyDown @onkeyup=Input_KeyUp>
-				<button type="submit" id="btn-submit" @onclick=Submit_Click></button>
+				<button type="submit" id="btn-submit" style=@($"opacity: {SubmitOpacity};") @onclick=Submit_Click></button>
 			</div>
-			<WordPreview WordName=@Preview.Name Types=@Preview.Types Effective=DamageType></WordPreview>
+			<WordPreview WordName=@Preview.Name Types=@Preview.Types Effective=DamageType FirstChar=Battle.NextChar></WordPreview>
 		</div>
 		<div id="situation" class="sb-button" style="display: block;" @onclick=ShowSituationModal>
 			<p>じょうきょう</p>
@@ -289,6 +318,17 @@
 			background-position: center;
 			height: 100%;
 			/*z-index: -1;*/
+		}
+
+		#alter {
+			position: absolute;
+			background-repeat: no-repeat;
+			background-size: cover;
+			background-image: url(images/alterscreen.gif);
+			height: 100%;
+			width: 100%;
+			margin-left: 0%;
+			z-index: 2;
 		}
 
 
@@ -538,7 +578,7 @@
 
 		#form {
 			/*position: fixed;
-																																																			bottom: 0;*/
+																																																																	bottom: 0;*/
 			z-index: 1;
 			text-align: center;
 		}
@@ -654,7 +694,6 @@
 			z-index: 1;
 			top: 0px;
 			right: -30px;
-			opacity: 0.3;
 			background-color: white;
 			border-radius: 19px 0 19px 19px;
 			cursor: pointer;
@@ -775,6 +814,7 @@
 			height: 80%;
 			background-color: white;
 			margin-left: 5%;
+			padding-right: 20px;
 			z-index: 2;
 			border-radius: 20px;
 		}
@@ -793,6 +833,7 @@
 			height: 100%;
 			background-color: white;
 			margin-left: 0;
+			padding-right: 20px;
 			z-index: 2;
 			border-radius: 0px;
 		}
@@ -1125,8 +1166,8 @@
 </body>
 </html>
 @code {
-	internal static Ability Player1Ability { get; set; } = AbilityManager.Default;
-	internal static Ability Player2Ability { get; set; } = AbilityManager.Default;
+	internal static Ability Player1Ability { get; set; } = Ability.Default;
+	internal static Ability Player2Ability { get; set; } = Ability.Default;
 
 	private Battle Battle = Battle.Empty;
 	private bool IsProcessing;
@@ -1145,10 +1186,13 @@
 	private (double Player1, double Player2) HPWidth = (100, 100);
 
 	private (double Player1, double Player2) WordOpacities = (0, 0);
+	private double SubmitOpacity = 1;
 
 	private (bool Player1, bool Player2) IsPoisoned = (false, false);
 	private (bool Situation, bool Skill) ShowModal = (false, false);
 	private (double Situation, double Skill) ModalOpacities = (0, 0);
+
+	private bool ShowAlter;
 
 	private ShowPlayerAnimation ShowAnimation = ShowPlayerAnimation.Default;
 
@@ -1167,6 +1211,8 @@
 			[Notice.Buf] = "up",
 			[Notice.Debuf] = "down",
 			[Notice.Barrier] = "barrier",
+			[Notice.Portal] = "portal",
+			[Notice.Rewind] = "rewind",
 			[Notice.RevInfo] = "pera",
 			[Notice.EffectiveProp] = "effective",
 			[Notice.MidDmgProp] = "middmg",
@@ -1189,24 +1235,26 @@
 		}
 		if (!SBDictionary.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
+
 		Battle = new
-	(
-	new(Player1Ability)
-		{
-			Proceeding = Proceeds.True,
-			Name = "先攻"
-		},
-	new(Player2Ability)
-		{
-			Proceeding = Proceeds.False,
-			Name = "後攻"
-		}
-	)
+		(
+			new(Player1Ability)
+				{
+					Proceeding = Proceeds.True,
+					Name = "先攻"
+				},
+			new(Player2Ability)
+				{
+					Proceeding = Proceeds.False,
+					Name = "後攻"
+				}
+		)
 			{
 				In = In,
 				Out = Out,
 				OnReset = cts => cts.Cancel()
 			};
+
 		StateHasChanged();
 		await Battle.Run();
 	}
@@ -1249,6 +1297,7 @@
 			if (string.IsNullOrWhiteSpace(wordText))
 			{
 				Preview = Word.Default;
+				SetSubmitOpacity();
 				StateHasChanged();
 				return;
 			}
@@ -1266,6 +1315,7 @@
 					_ => WordPreview.DamageType.NoDamage
 				};
 				Preview = word;
+				SetSubmitOpacity();
 				StateHasChanged();
 				return;
 			}
@@ -1274,10 +1324,12 @@
 				DamageType = WordPreview.DamageType.MidDamage;
 				var exists = await Server.ExistsAsync(wordText, PreviewCancellation.Token);
 				Preview = exists ? (Word)wordText : Word.Default;
+				SetSubmitOpacity();
 				StateHasChanged();
 				return;
 			}
 			Preview = Word.Default;
+			SetSubmitOpacity();
 			StateHasChanged();
 		}
 		catch (Exception ex)
@@ -1364,7 +1416,7 @@
 		var filter = new List<Notice>()
 		{
 		Notice.HPUpdated, Notice.NoDmgProp, Notice.NonEffectiveProp, Notice.MidDmgProp, Notice.EffectiveProp, Notice.CritInfo,
-		Notice.PoisonHeal,Notice.Heal, Notice.Buf, Notice.Debuf, Notice.Barrier, Notice.RevInfo,Notice.Poison, Notice.PoisonDmg, Notice.Seed,
+		Notice.PoisonHeal,Notice.Heal, Notice.Buf, Notice.Debuf, Notice.Barrier, Notice.Portal,Notice.Rewind, Notice.Alter, Notice.RevInfo,Notice.Poison, Notice.PoisonDmg, Notice.Seed,
 		Notice.SeedDmg, Notice.InvokeBufInfo, Notice.Caution, Notice.DeathInfo
 		};
 		return list.Where(x => filter.Contains(x.Notice)).ToList();
@@ -1396,6 +1448,21 @@
 			if (!msg.IsInvisible) MessageText = msg.Text;
 			if (SoundDic.TryGetValue(msg.Notice, out var soundName)) SBAudioManager.PlayAudioForget(soundName);
 
+			if (msg.Notice == Notice.Alter)
+			{
+				await SBAudioManager.PlayAudio("glitch");
+				ShowAlter = true;
+				StateHasChanged();
+				Battle.AlterTo(msg.Data);
+				HPNum = (Battle.Player1.HP, Battle.Player2.HP);
+				HPWidth = ((double)Battle.Player1.HP / Player.MaxHP * 100, (double)Battle.Player2.HP / Player.MaxHP * 100);
+				Player1Word = Battle.Player1.CurrentWord;
+				Player2Word = Battle.Player2.CurrentWord;
+				await Task.Delay(200);
+				ShowAlter = false;
+				await SBAudioManager.SeizeAudio("glitch");
+			}
+
 			if (msg.Notice == Notice.HPUpdated)
 			{
 				var task = UpdateAllHPBarsAsync(msg.Params[0], Player.MaxHP, msg.Params[1], Player.MaxHP);
@@ -1417,6 +1484,16 @@
 			{
 				var selector = Battle.WasPlayer1sTurn ? PlayerSelector.Player1 : PlayerSelector.Player2;
 				await ShowEffectAsync(selector, "down");
+			}
+			if (msg.Notice == Notice.Portal)
+			{
+				var selector = Battle.WasPlayer1sTurn ? PlayerSelector.Player1 : PlayerSelector.Player2;
+				await ShowEffectAsync(selector, "portal");
+			}
+			if (msg.Notice == Notice.Rewind)
+			{
+				var selector = Battle.WasPlayer1sTurn ? PlayerSelector.Player1 : PlayerSelector.Player2;
+				await ShowEffectAsync(selector, "rewind");
 			}
 			if (msg.Notice == Notice.Barrier)
 			{
@@ -1462,7 +1539,8 @@
 				await SBAudioManager.SeizeAudio(AppSettings.BattleBgm);
 			}
 			StateHasChanged();
-			await Task.Delay(800);
+			if (msg.Notice != Notice.Alter)
+				await Task.Delay(800);
 		}
 		await Task.WhenAll(tasks);
 		StateHasChanged();
@@ -1484,11 +1562,17 @@
 			case "barrier":
 				player.Barrier = true;
 				break;
+			case "portal":
+				player.Portal = true;
+				break;
+			case "rewind":
+				player.Rewind = true;
+				break;
 			default:
 				break;
 		}
 		StateHasChanged();
-		await Task.Delay(700);
+		await Task.Delay(uiSelector == "rewind" ? 600 : 700);
 		switch (uiSelector)
 		{
 			case "up":
@@ -1502,6 +1586,12 @@
 				break;
 			case "barrier":
 				player.Barrier = false;
+				break;
+			case "portal":
+				player.Portal = false;
+				break;
+			case "rewind":
+				player.Rewind = false;
 				break;
 			default:
 				break;
@@ -1596,6 +1686,18 @@
 		> 0.2 => "#E1B740",
 		_ => "#B84731"
 	};
+
+	private double SetSubmitOpacity()
+	{
+		if (Preview.IsDefault)
+			return 0.3;
+
+
+		if (Preview.Start != Battle.NextChar || Preview.End == 'ん')
+			return 0.3;
+
+		return 1;
+	}
 
 	private async void ShowModalMessage(string message)
 	{
@@ -1735,18 +1837,20 @@
 		}
 	}
 
-	private record ShowAnimationInternal(bool Up, bool Down, bool Heal, bool Barrier)
+	private record ShowAnimationInternal(bool Up, bool Down, bool Heal, bool Barrier, bool Portal, bool Rewind)
 	{
 		internal bool Up { get; set; } = Up;
 		internal bool Down { get; set; } = Down;
 		internal bool Heal { get; set; } = Heal;
 		internal bool Barrier { get; set; } = Barrier;
+		internal bool Portal { get; set; } = Portal;
+		internal bool Rewind { get; set; } = Rewind;
 	}
 	private record ShowPlayerAnimation(ShowAnimationInternal Player1, ShowAnimationInternal Player2)
 	{
 		internal ShowAnimationInternal Player1 { get; set; } = Player1;
 		internal ShowAnimationInternal Player2 { get; set; } = Player2;
-		internal static ShowPlayerAnimation Default => new(new(false, false, false, false), new(false, false, false, false));
+		internal static ShowPlayerAnimation Default => new(new(false, false, false, false, false, false), new(false, false, false, false, false, false));
 	}
 }
 

@@ -1,4 +1,6 @@
-﻿namespace SBFirstLast4.Simulator;
+﻿using System.Data;
+
+namespace SBFirstLast4.Simulator;
 
 public class Player
 {
@@ -185,6 +187,21 @@ public class Player
 		SkillChangeRemain = original.SkillChangeRemain;
 	}
 	#endregion
+
+	public static implicit operator Player(PlayerData d) => new(Ability.Deserialize(d.AbilityIndex))
+	{
+		Name = d.Name,
+		HP = d.HP, 
+		ATKIndex = d.ATKIndex,
+		DEFIndex = d.DEFIndex,
+		CurrentWord = d.CurrentWord,
+		State = d.State,
+		FoodCountRemain = d.Args.FoodRem,
+		CureCountRemain = d.Args.CureRem,
+		PoisonDmg = d.Args.PoisonDmg,
+		SeedTurnRemain = d.Args.SeedRem,
+		SkillChangeRemain = d.Args.SkillRem
+	};
 
 	public class BredString
 	{

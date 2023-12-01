@@ -12,8 +12,8 @@ public static class SBAudioManager
 		{
 			foreach (var i in new[]
 			{
-			"animal", "art", "barrier", "body", "bug", "cloth", "concent", "denno", "down", "effective", "emote", "end", "food", "heal", "health", "horizon", "insult", "last",
-			"math", "mech", "middmg", "ninja", "noneffective", "normal", "overflow", "pera", "person", "place", "plant", "play", "poison", "poison_heal", "religion",
+			"animal", "art", "barrier", "body", "bug", "cloth", "concent", "denno", "down", "effective", "emote", "end", "food", "glitch", "heal", "health", "horizon", "insult", "last",
+			"math", "mech", "middmg", "ninja", "noneffective", "normal", "overflow", "pera", "person", "place", "plant", "play", "poison", "poison_heal", "portal", "religion", "rewind",
 			"science", "seed_damage", "seeded", "society", "sports", "start", "tale", "time", "up", "violence", "warn", "weather", "wonderland", "work"
 		})
 			{

@@ -86,7 +86,7 @@ public abstract class Contract
 			OnContractEnd
 		};
 	}
-	[SetsRequiredMembers] public Contract() : this(new(AbilityManager.Default), new(AbilityManager.Default), new(), Battle.Empty) { }
+	[SetsRequiredMembers] public Contract() : this(new(Ability.Default), new(Ability.Default), new(), Battle.Empty) { }
 	#endregion
 
 	#region methods
@@ -284,7 +284,7 @@ public class ContractArgs
 		PreReceiver = pr;
 	}
 	public static ContractArgs Empty => _empty;
-	private static readonly ContractArgs _empty = new(new(AbilityManager.Default), new(AbilityManager.Default));
+	private static readonly ContractArgs _empty = new(new(Ability.Default), new(Ability.Default));
 }
 /// <summary>
 /// 攻撃のコントラクトを管理するクラスです。

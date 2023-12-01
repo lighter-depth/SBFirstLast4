@@ -216,8 +216,35 @@ internal class GouyokunaTsubo : CustomAbility, ISingleTypedBufAbility
 		if (bc.Actor.CurrentWord.Contains(BufType))
 		{
 			bc.Actor.IncrementSkillChange();
-			bc.Message.Add($"とくせい変更上限が増えた！(残り{bc.Actor.SkillChangeRemain}回)", Notice.Buf);
+			bc.Message.Add($"とくせい変更上限が増えた！(残り{bc.Actor.SkillChangeRemain}回)", Notice.Portal);
 		}
 	}
 	public override string ToString() => "ごうよくなつぼ";
+}
+
+internal class Rewind : CustomAbility, ISingleTypedBufAbility
+{
+	public override AbilityType Type => AbilityType.ContractEnd;
+	public override List<string> CustomName => new() { "rw", "RW", "りわいんど", "リワインド", "rewind", "Rewind", "REWIND" };
+	public override string Description => "時間タイプの言葉を使うと、１ターン時を巻き戻す";
+	public override string ImgFile => "rewindskill.gif";
+	public WordType BufType => WordType.Time;
+
+	public override void Execute(Contract c)
+	{
+		if(c is not  BufContract bc) return;
+		if (bc.Actor.CurrentWord.Contains(BufType))
+		{
+			var history = bc.Parent.History.At(^2);
+			if (history is null)
+			{
+				bc.Message.Add("もう時間は巻き戻らない！", Notice.Caution);
+				return;
+			}
+            bc.Message.Add("時間が巻き戻る！", Notice.Rewind);
+			bc.Message.Add(Notice.Alter, history);
+		}
+		return;
+	}
+	public override string ToString() => "リワインド";
 }

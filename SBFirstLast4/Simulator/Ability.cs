@@ -85,11 +85,9 @@ public enum AbilityType
 /// </summary>
 public class AbilityManager
 {
-	public static Ability Default => _default;
-	private static readonly Ability _default = new Debugger();
 	public static List<Ability> Abilities => _abilities ??= GetAbilities();
 	public static List<Ability> CanonAbilities => Abilities.Count > 25 ? Abilities.Take(25).ToList() : Abilities;
-	#region get abilities
+
 	static List<Ability>? _abilities;
 	static List<Ability> GetAbilities()
 	{
@@ -101,20 +99,6 @@ public class AbilityManager
 				result.Add(ability);
 		return result;
 	}
-
-	public static string Serialize(Type abilityType)
-	{
-		for (var i = 0; i < Abilities.Count; i++)
-		{
-			if (Abilities[i].GetType() == abilityType) return i.ToString();
-		}
-		throw new ArgumentException($"Ability {abilityType.Name} has not found");
-	}
-	public static Ability Deserialize(string abilityIndex)
-	{
-		return Abilities[int.Parse(abilityIndex)];
-	}
-	#endregion
 
 	/// <summary>
 	/// 文字列からとくせいを生成します。
@@ -178,6 +162,18 @@ public abstract class Ability
 	/// <param name="c">発動元の<see cref="Contract"/></param>
 	public abstract void Execute(Contract c);
 	public new abstract string ToString();
+
+	public static Ability Default => _default;
+	private static readonly Ability _default = new Debugger();
+	public int Serialize()
+	{
+		foreach (var (ability, i) in AbilityManager.Abilities.Select((a, i) => (a, i)))
+			if (GetType() == ability.GetType())
+				return i;
+
+		return default;
+	}
+	public static Ability Deserialize(int abilityIndex) => AbilityManager.Abilities.At(abilityIndex) ?? Default;
 }
 /// <summary>
 /// バフ系のとくせいに実装するインターフェースです。

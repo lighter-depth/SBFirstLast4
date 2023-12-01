@@ -7,15 +7,15 @@ namespace SBFirstLast4.Simulator;
 
 public partial class Battle
 {
-	public Player Player1 { get; init; } = new(AbilityManager.Default);
-	public Player Player2 { get; init; } = new(AbilityManager.Default);
-	public Player PreActor { get; set; } = new(AbilityManager.Default);
-	public Player PreReceiver { get; set; } = new(AbilityManager.Default);
+	public Player Player1 { get; private set; } = new(Ability.Default);
+	public Player Player2 { get; private set; } = new(Ability.Default);
+	public Player PreActor { get; set; } = new(Ability.Default);
+	public Player PreReceiver { get; set; } = new(Ability.Default);
 	public bool IsPlayer1sTurn { get; private set; } = true;
 
 	public bool WasPlayer1sTurn => !IsPlayer1sTurn;
 	public int TurnNum { get; private set; } = 1;
-	public List<string> UsedWords { get; init; } = new();
+	public List<string> UsedWords { get; private set; } = new();
 	public required Func<Task<Order>> In { get; init; }
 	public required Func<List<AnnotatedString>, Task> Out { get; init; }
 	public List<AnnotatedString> Buffer { get; private set; } = new();
@@ -33,9 +33,14 @@ public partial class Battle
 	public bool IsBeforeInit { get; private set; } = true;
 
 	public char NextChar => OtherPlayer.CurrentWord.End;
+
+
+	public List<BattleData> History { get; internal set; } = new();
+
+
 	static readonly Action<Order, CancellationTokenSource> emptyDelegate = (o, c) => { };
 	CancellationTokenSource cts = new();
-	public static Battle Empty => new(new(AbilityManager.Default), new(AbilityManager.Default))
+	public static Battle Empty => new(new(Ability.Default), new(Ability.Default))
 	{
 		In = async () => await Task.Run(() => new Order()),
 		Out = async a => await Task.CompletedTask,
@@ -46,7 +51,7 @@ public partial class Battle
 	public Battle(Player p1, Player p2) => (Player1, Player2) = (p1, p2);
 
 	[SetsRequiredMembers]
-	public Battle() : this(new(AbilityManager.Default), new(AbilityManager.Default)) { }
+	public Battle() : this(new(Ability.Default), new(Ability.Default)) { }
 
 	public void Dispose()
 	{
@@ -63,7 +68,6 @@ public partial class Battle
 		{
 			Buffer.Clear();
 
-			// 入力処理、CPU かどうかを判定
 			var order = await In();
 			CurrentOrderType = order.Type;
 			if (order.Type is OrderType.None)
@@ -72,7 +76,6 @@ public partial class Battle
 				continue;
 			}
 
-			// 辞書 OrderFunctions からコマンド名に合致するハンドラーを取り出す
 			if (OrderFunctions.TryGetValue(order.Type, out var func))
 				func(order, cts);
 			else
@@ -162,6 +165,7 @@ public partial class Battle
 		if (c.DeadFlag)
 		{
 			IsPlayer1sTurn = !IsPlayer1sTurn;
+			History.Add((BattleData)this);
 			Out(Buffer);
 			OnReset(cts);
 		}
@@ -222,6 +226,7 @@ public partial class Battle
 
 	public void ToggleTurn()
 	{
+		History.Add((BattleData)this);
 		PreActor = CurrentPlayer.Clone();
 		PreReceiver = OtherPlayer.Clone();
 		IsPlayer1sTurn = !IsPlayer1sTurn;
@@ -244,4 +249,18 @@ public partial class Battle
 
 	[GeneratedRegex("^[ぁ-ゔゟヴー]*$")]
 	private static partial Regex KanaRegex();
+
+	public void AlterTo(BattleData? d)
+	{
+		if (d is null)
+			return;
+
+		Player1 = d.Player1;
+		Player2 = d.Player2;
+		PreActor = d.PreActor;
+		PreReceiver = d.PreReceiver;
+		IsPlayer1sTurn = d.IsPlayer1sTurn;
+		TurnNum = d.TurnNum;
+		UsedWords = new(d.UsedWords);
+	}
 }

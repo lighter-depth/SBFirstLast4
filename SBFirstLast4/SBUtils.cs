@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using Blazored.LocalStorage;
 using Microsoft.JSInterop;
 using SBFirstLast4.Simulator;
 
@@ -45,7 +44,7 @@ public static class SBUtils
 			return false;
 		}
 	}
-	
+
 	public static char GetLastChar(this string str)
 	{
 		var length = str.Length;
@@ -121,23 +120,18 @@ public static class CollectionHelper
 		list[index] = value;
 	}
 
-	public static void Add(this List<AnnotatedString> list, string text, Notice notice)
-	{
-		list.Add(new(text, notice));
-	}
-	public static void Add(this List<AnnotatedString> list, string text, Notice notice, params int[] args)
-	{
-		list.Add(new(text, notice) { Params = args });
-	}
-	public static void Add(this List<AnnotatedString> list, Notice notice, int player1HP, int player2HP)
-	{
-		list.Add(new(string.Empty, notice) { Params = new[] { player1HP, player2HP } });
-	}
+	public static void Add(this List<AnnotatedString> list, string text, Notice notice) => list.Add(new(text, notice));
+	
+	public static void Add(this List<AnnotatedString> list, string text, Notice notice, params int[] args) => list.Add(new(text, notice) { Params = args });
+	
+	public static void Add(this List<AnnotatedString> list, Notice notice, int player1HP, int player2HP) => list.Add(new(string.Empty, notice) { Params = new[] { player1HP, player2HP } });
+	
+	public static void Add(this List<AnnotatedString> list, Notice notice, BattleData data) => list.Add(new(string.Empty, notice) { Data = data });
 	public static void AddMany(this List<AnnotatedString> list, IEnumerable<AnnotatedString> msgs)
 	{
 		foreach (var msg in msgs)
 			list.Add(msg);
-	}
+	}	
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static Span<T> AsSpan<T>(this List<T> list) => CollectionsMarshal.AsSpan(list);

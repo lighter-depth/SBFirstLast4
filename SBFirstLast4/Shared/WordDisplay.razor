@@ -1,5 +1,10 @@
 ﻿@page "/word-display"
 
+@if (string.IsNullOrWhiteSpace(WordName))
+{
+	<div class="types1"></div>
+	return;
+}
 @if (Types.Count < 1)
 {
 	<div class="types1">
