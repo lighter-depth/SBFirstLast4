@@ -57,6 +57,10 @@
       "url": "audio\/food.mp3"
     },
     {
+      "hash": "sha256-\/\/3Mz9RVwXOhFuanzDdskOF3ethDJxRhn3QVh0qiNAA=",
+      "url": "audio\/glitch.mp3"
+    },
+    {
       "hash": "sha256-\/TCeptbRhereCJE5RWfyK+ptvA4nu32jSI8KegjupsI=",
       "url": "audio\/heal.mp3"
     },
@@ -133,8 +137,16 @@
       "url": "audio\/poison.mp3"
     },
     {
+      "hash": "sha256-rZmObbQuDG9u2nwu5cfo3ety8eS69Q8V3cmEZwnvE68=",
+      "url": "audio\/portal.mp3"
+    },
+    {
       "hash": "sha256-v1UHAW8wTLxoD+wsb\/tbNFxvEu+usu3Mcfnvb5o3XhA=",
       "url": "audio\/religion.mp3"
+    },
+    {
+      "hash": "sha256-+sWF1kva9mF7nMvZZgArAWYyccLPkjX1qim5s3dys7A=",
+      "url": "audio\/rewind.mp3"
     },
     {
       "hash": "sha256-O8Jdqld7W1vqHTkZqq6Jb5NmtsSyJ9g7uF\/orrBy9IE=",
@@ -269,6 +281,10 @@
       "url": "icon-512.png"
     },
     {
+      "hash": "sha256-HHmlbSO4tQpWBHdPtPrxTD\/z\/WUHbKeDeLYBXJi4yGY=",
+      "url": "images\/alterscreen.gif"
+    },
+    {
       "hash": "sha256-KNHdnZf6fXwGHXOnoE3t8JWQ8kK2Hgu1NXeV7lqqjE0=",
       "url": "images\/animal.gif"
     },
@@ -393,12 +409,24 @@
       "url": "images\/play.gif"
     },
     {
+      "hash": "sha256-282EmYhFLRFGWSyBM6kgctyfjNQifBessd+vcA+3yUs=",
+      "url": "images\/portal.gif"
+    },
+    {
       "hash": "sha256-KP7PBNlFKFcRUpz52fBI0cqJSHmUlQ2NQYs+rLiANHc=",
       "url": "images\/red.gif"
     },
     {
       "hash": "sha256-yc2W15AGlPElTeeXPXJlGa7Sr+pOoyxresCvLUyj71g=",
       "url": "images\/religion.gif"
+    },
+    {
+      "hash": "sha256-Gqa8mwqlm1rLX4xx3HnpeURPBpSyIZ5E4VxdyKDm4oQ=",
+      "url": "images\/rewind.gif"
+    },
+    {
+      "hash": "sha256-+SlLQgdEKkt4IWf0C9+890fMtyxU43kPx5IdJOHN73Q=",
+      "url": "images\/rewindskill.gif"
     },
     {
       "hash": "sha256-GTolDrz3X05XtL4hBovKTbatJfyGeXGhex06JF0k+Zw=",
@@ -513,7 +541,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-mi03sdxMmoUSZFlomHE4ARS2i0gR8eo6Fb3NyHRurOE=",
+      "hash": "sha256-vYEn7y4VElC5QhU2Gq+7wRNSKGOGSUF6G0dhIrN+Jk4=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -589,7 +617,7 @@
       "url": "_framework\/netstandard.dll"
     },
     {
-      "hash": "sha256-r2Sox+xxLdjvTAu86bHl94OKa\/+ODA7ETKKsxhUeZkQ=",
+      "hash": "sha256-TC2VXj579UOeRPKsvjsmBl22m0Mntverg5IEvqzCB4c=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -749,5 +777,5 @@
       "url": "_content\/BlazorDownloadFile\/BlazorDownloadFileScript.js"
     }
   ],
-  "version": "oZT27MSS"
+  "version": "F2idlGCJ"
 };
