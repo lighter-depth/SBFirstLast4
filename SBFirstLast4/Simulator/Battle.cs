@@ -1,6 +1,4 @@
-﻿#pragma warning disable CS8618
-
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace SBFirstLast4.Simulator;
@@ -16,10 +14,10 @@ public partial class Battle
 	public bool WasPlayer1sTurn => !IsPlayer1sTurn;
 	public int TurnNum { get; private set; } = 1;
 	public List<string> UsedWords { get; private set; } = new();
-	public required Func<Task<Order>> In { get; init; }
-	public required Func<List<AnnotatedString>, Task> Out { get; init; }
+	public required Func<Task<Order>> In { get; init; } = () => Task.FromResult(Order.Empty);
+	public required Func<List<AnnotatedString>, Task> Out { get; init; } = _ => Task.CompletedTask;
 	public List<AnnotatedString> Buffer { get; private set; } = new();
-	public required Action<CancellationTokenSource> OnReset { get; init; }
+	public required Action<CancellationTokenSource> OnReset { get; init; } = _ => { };
 
 	Dictionary<OrderType, Action<Order, CancellationTokenSource>> OrderFunctions = new();
 	public Player CurrentPlayer => IsPlayer1sTurn ? Player1 : Player2;
@@ -40,12 +38,7 @@ public partial class Battle
 
 	static readonly Action<Order, CancellationTokenSource> emptyDelegate = (o, c) => { };
 	CancellationTokenSource cts = new();
-	public static Battle Empty => new(new(Ability.Default), new(Ability.Default))
-	{
-		In = async () => await Task.Run(() => new Order()),
-		Out = async a => await Task.CompletedTask,
-		OnReset = c => { }
-	};
+	public static Battle Empty => new(new(Ability.Default), new(Ability.Default));
 
 	[SetsRequiredMembers]
 	public Battle(Player p1, Player p2) => (Player1, Player2) = (p1, p2);

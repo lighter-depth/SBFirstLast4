@@ -9,6 +9,7 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	public char Start => Name.At(0);
 	public char End => Name.GetLastChar();
 	public int Length => Name.Length;
+
 	public List<WordType> Types
 	{
 		get
@@ -94,6 +95,26 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 		return 0;
 	}
 
+	public string Serialize() => $"/w/{Name}++{Type1.TypeToChar()}++{Type2.TypeToChar()}/w/";
+
+	public static Word Deserialize(string? str)
+	{
+		if (str is null)
+			return Default;
+
+		str = str.Trim();
+		if (!str.StartsWith("/w/") || !str.EndsWith("/w/") || str.Length < 4)
+			return Default;
+
+		var wordData = str[3..^3].Split("++");
+
+		var name = wordData.At(0) ?? string.Empty;
+		var type1 = wordData.At(1)?.At(0).CharToType() ?? default;
+		var type2 = wordData.At(2)?.At(0).CharToType() ?? default;
+
+		return new(name, type1, type2);
+	}
+
 	static Word()
 	{
 		// 0: Normal, 1: Effective, 2: Non-Effective, 3: No Damage
@@ -144,7 +165,7 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 		return (Word)name;
 	}
 
-	public static Word FromType(WordType type) => Default with { Type1 = type };
+	internal static Word FromType(WordType type) => Default with { Type1 = type };
 }
 
 [DynamicLinqType]

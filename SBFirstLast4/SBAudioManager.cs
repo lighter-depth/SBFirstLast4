@@ -15,7 +15,7 @@ public static class SBAudioManager
 			"animal", "art", "barrier", "body", "bug", "cloth", "concent", "denno", "down", "effective", "emote", "end", "food", "glitch", "heal", "health", "horizon", "insult", "last",
 			"math", "mech", "middmg", "ninja", "noneffective", "normal", "overflow", "pera", "person", "place", "plant", "play", "poison", "poison_heal", "portal", "religion", "rewind",
 			"science", "seed_damage", "seeded", "society", "sports", "start", "tale", "time", "up", "violence", "warn", "weather", "wonderland", "work"
-		})
+			})
 			{
 				audioPlayers.TryAdd(i, await CreatePlayerAsync(jsRuntime, $"audio/{i}.mp3"));
 			}
@@ -35,7 +35,7 @@ public static class SBAudioManager
 		}
 		catch (Exception ex)
 		{
-			await jsRuntime.Alert(ex);
+			await jsRuntime.AlertEx(ex);
 		}
 	}
 
@@ -48,7 +48,7 @@ public static class SBAudioManager
 		}
 		catch (Exception ex)
 		{
-			await jsRuntime.Alert(ex);
+			await jsRuntime.AlertEx(ex);
 			return null!;
 		}
 	}
@@ -76,7 +76,7 @@ public static class SBAudioManager
 	}
 	public static async Task SeizeAudio(string soundName)
 	{
-		if (!audioPlayers.TryGetValue(soundName, out var player)) 
+		if (!audioPlayers.TryGetValue(soundName, out var player))
 			return;
 
 		await player.InvokeVoidAsync("pause");

@@ -97,6 +97,10 @@ public class Order
 	/// エラーの情報を表す文字列
 	/// </summary>
 	public string? ErrorMessage { get; internal set; }
+
+	public static Order Empty => _empty;
+	private static readonly Order _empty = new();
+
 	static readonly Order defaultError = new(OrderType.Error) { ErrorMessage = "なにかがおかしいよ" };
 	static readonly Dictionary<string, Options> OptionDic = new()
 	{
