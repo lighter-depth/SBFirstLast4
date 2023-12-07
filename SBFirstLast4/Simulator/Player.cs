@@ -41,7 +41,7 @@ public class Player
 	public const int SeedDmg = 5;
 	public const int MaxSeedTurn = 4;
 	public int SkillChangeRemain { get; private set; } = MaxAbilChange;
-	public Proceeds Proceeding { get; internal set; } = Proceeds.Random;
+	public Proceeds Proceeds { get; internal set; } = Proceeds.Random;
 
 	public List<BredString> BrdBuf { get; set; } = new();
 	#endregion

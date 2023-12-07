@@ -5,6 +5,8 @@
 @using SBFirstLast4.Simulator
 @using SBFirstLast4.Logging
 
+<PageTitle>簡易シミュレーター</PageTitle>
+
 <html lang="ja">
 <head>
 	<meta charset="UTF-8">
@@ -47,11 +49,6 @@
 			</div>
 			<div id="foe-word" style=@($"opacity: {WordOpacities.Player2};"))>
 				<WordDisplay WordName="@Player2Word.Name" Types="@Player2Word.Types"></WordDisplay>
-				<!--<div class="first">
-				<p>
-				ゆ
-				</p>
-				</div>-->
 			</div>
 			<div class="field-shadow-wrapper">
 				<div class="field-shadow" id="foe-shadow"></div>
@@ -190,7 +187,6 @@
 					<image xlink:href="images/rewind.gif" width="80%" height="80%"></image>
 				</svg>
 			}
-
 			<div id="timer"></div>
 		</div>
 
@@ -210,6 +206,17 @@
 		</div>
 		<div id="skill" class="sb-button" style="display: block;" @onclick=ShowSkillModal>
 			<p>とくせい</p>
+		</div>
+		<div id="history">
+			<div class="history-command" @onclick=CommandBack>
+				<span class="oi oi-arrow-left"></span>
+			</div>
+			<div class="history-command" style="margin-left: 10px;" @onclick=CommandForth>
+				<span class="oi oi-arrow-right"></span>
+			</div>
+			<div class="history-command" style="margin-left: 10px;" @onclick=CommandLatest>
+				<span class="oi oi-media-step-forward"></span>
+			</div>
 		</div>
 		<div id="exit" class="sb-button" @onclick=ShowEscapeModal>
 			<p>おわる</p>
@@ -1084,7 +1091,7 @@
 
 		#situation {
 			display: none;
-			top: 300px;
+			top: 330px;
 			width: 43%;
 			height: 150px;
 			background-color: #9A5252;
@@ -1124,7 +1131,7 @@
 
 		#skill {
 			display: none;
-			top: 300px;
+			top: 330px;
 			right: 0;
 			width: 43%;
 			height: 150px;
@@ -1135,8 +1142,32 @@
 			line-height: 150px;
 		}
 
+		#history{
+			position: absolute;
+			display: flex;
+			flex-flow: row;
+			top: 290px;
+			width: 100px;
+			height: 30px;
+			margin-right: 10px;
+			margin-left: 60%;
+		}
+
+		.history-command{
+			color: #555555;
+			background-color: white;
+			cursor: pointer;
+			border: 2px solid #999999;
+			padding: 2px;
+			padding-left: 5px;
+			width: 30px;
+			border-radius: 5px;
+		}
+		.history-command:active{
+			background-color: #DDDDDD
+		}
 		#exit {
-			top: 470px;
+			top: 500px;
 			margin-left: 25%;
 			width: 50%;
 			height: 70px;
@@ -1240,12 +1271,12 @@
 		(
 			new(Player1Ability)
 				{
-					Proceeding = Proceeds.True,
+					Proceeds = Proceeds.True,
 					Name = "先攻"
 				},
 			new(Player2Ability)
 				{
-					Proceeding = Proceeds.False,
+					Proceeds = Proceeds.False,
 					Name = "後攻"
 				}
 		)
@@ -1454,10 +1485,7 @@
 				ShowAlter = true;
 				StateHasChanged();
 				Battle.AlterTo(msg.Data);
-				HPNum = (Battle.Player1.HP, Battle.Player2.HP);
-				HPWidth = ((double)Battle.Player1.HP / Player.MaxHP * 100, (double)Battle.Player2.HP / Player.MaxHP * 100);
-				Player1Word = Battle.Player1.CurrentWord;
-				Player2Word = Battle.Player2.CurrentWord;
+				AlterUI();
 				await Task.Delay(200);
 				ShowAlter = false;
 				await SBAudioManager.SeizeAudio("glitch");
@@ -1718,6 +1746,7 @@
 			StateHasChanged();
 			await Task.Delay(1);
 		}
+		ModalOpacities.Situation = 1;
 		StateHasChanged();
 	}
 
@@ -1730,6 +1759,7 @@
 			StateHasChanged();
 			await Task.Delay(1);
 		}
+		ModalOpacities.Situation = 0;
 		StateHasChanged();
 		ShowModal.Situation = false;
 		StateHasChanged();
@@ -1753,6 +1783,7 @@
 			StateHasChanged();
 			await Task.Delay(1);
 		}
+		ModalOpacities.Skill = 1;
 		StateHasChanged();
 	}
 
@@ -1765,6 +1796,7 @@
 			StateHasChanged();
 			await Task.Delay(1);
 		}
+		ModalOpacities.Skill = 0;
 		StateHasChanged();
 		ShowModal.Skill = false;
 		StateHasChanged();
@@ -1837,6 +1869,34 @@
 		}
 	}
 
+	private void AlterUI()
+	{
+		HPNum = (Battle.Player1.HP, Battle.Player2.HP);
+		HPWidth = ((double)Battle.Player1.HP / Player.MaxHP * 100, (double)Battle.Player2.HP / Player.MaxHP * 100);
+		Player1Word = Battle.Player1.CurrentWord;
+		Player2Word = Battle.Player2.CurrentWord;
+		StateHasChanged();
+	}
+
+	private void CommandBack()
+	{
+		Battle.AlterBack();
+		AlterUI();
+	}
+
+	private void CommandForth()
+	{
+		Battle.AlterForth();
+		AlterUI();
+	}
+
+
+	private void CommandLatest()
+	{
+		Battle.AlterLatest();
+		AlterUI();
+	}
+
 	private record ShowAnimationInternal(bool Up, bool Down, bool Heal, bool Barrier, bool Portal, bool Rewind)
 	{
 		internal bool Up { get; set; } = Up;
@@ -1845,12 +1905,13 @@
 		internal bool Barrier { get; set; } = Barrier;
 		internal bool Portal { get; set; } = Portal;
 		internal bool Rewind { get; set; } = Rewind;
+		internal static ShowAnimationInternal Default => new(false, false, false, false, false, false);
 	}
 	private record ShowPlayerAnimation(ShowAnimationInternal Player1, ShowAnimationInternal Player2)
 	{
 		internal ShowAnimationInternal Player1 { get; set; } = Player1;
 		internal ShowAnimationInternal Player2 { get; set; } = Player2;
-		internal static ShowPlayerAnimation Default => new(new(false, false, false, false, false, false), new(false, false, false, false, false, false));
+		internal static ShowPlayerAnimation Default => new(ShowAnimationInternal.Default, ShowAnimationInternal.Default);
 	}
 }
 

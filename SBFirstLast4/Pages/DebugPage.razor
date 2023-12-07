@@ -2,7 +2,7 @@
 @layout NoMenuLayout
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
-
+<PageTitle>きくらげ</PageTitle>
 
 <p>@Kikurage</p>
 
@@ -23,8 +23,10 @@
 		if (!await JSRuntime.Confirm("きくらげですか？"))
 			return;
 
+		var kikurage = string.Empty;
+
 		while (true)
-			await JSRuntime.Alert(Kikurage += "きくらげ");
+			await JSRuntime.Alert(kikurage += "きくらげ");
 
 	}
 

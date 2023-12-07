@@ -17,8 +17,13 @@ public record BattleData(PlayerData Player1, PlayerData Player2, PlayerData PreA
 			b.UsedWords.Take(..^1).ToList()
 		);
 
+	public Word CurrentWord => IsPlayer1sTurn ? Player1.CurrentWord : Player2.CurrentWord;
+
+	public bool IsEdited { get; set; }
 	public static BattleData Default => _default;
 	private static readonly BattleData _default = new(PlayerData.Default, PlayerData.Default, PlayerData.Default, PlayerData.Default, default, 0, new());
+
+	public override string ToString() => Serialize();
 
 	public string Serialize()
 	{

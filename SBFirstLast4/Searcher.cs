@@ -16,9 +16,9 @@ public class Searcher
         (not null, not null) => x => x.Contains((WordType)Type1) && x.Contains((WordType)Type2),
         (not null, null) => x => x.Contains((WordType)Type1) && (!IsSingleTypedOnly || x.IsSingleType) && (!IsDoubleTypedOnly || x.IsDoubleType),
         (null, not null) => x => x.Contains((WordType)Type2) && (!IsSingleTypedOnly || x.IsSingleType) && (!IsDoubleTypedOnly || x.IsDoubleType),
-        (null, null) when IsTypedOnly => x => !x.IsEmpty,
-        (null, null) when IsSingleTypedOnly => x => x.IsSingleType,
-        (null, null) when IsDoubleTypedOnly => x => x.IsDoubleType,
+		(null, null) when IsSingleTypedOnly => x => x.IsSingleType,
+		(null, null) when IsDoubleTypedOnly => x => x.IsDoubleType,
+		(null, null) when IsTypedOnly => x => !x.IsEmpty,
         _ => _ => true
     };
     public Word[] Search(Func<Word, bool>? predicate = null) => SBDictionary.PerfectDic.AsParallel().Where(predicate ?? Predicate).Where(x => Body.IsMatch(x.Name)).ToArray();

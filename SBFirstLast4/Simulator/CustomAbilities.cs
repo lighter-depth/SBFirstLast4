@@ -150,7 +150,7 @@ internal class God : CustomAbility
 		{
 			if (ac.Actor.TryChangeATK(4, ac.Word))
 			{
-				ac.Message.Add($"攻撃がぐーんぐーんと上がった！！！！(現在{ac.Actor.ATK,0:0.0#}倍)", Notice.Buf);
+				ac.Message.Add($"攻撃がぐぐーんと上がった！！！！(現在{ac.Actor.ATK,0:0.0#}倍)", Notice.Buf);
 				return;
 			}
 			ac.Message.Add($"攻撃はもう上がらない！", Notice.Caution);
@@ -158,9 +158,9 @@ internal class God : CustomAbility
 		if (ac.State == AbilityType.Received)
 		{
 			ac.Receiver.TryChangeATK(100, ac.Receiver.CurrentWord);
-			ac.Message.Add($"ダメージを受けて攻撃がぐぐーんぐーんと上がった！！！！！ (現在{ac.Receiver.ATK,0:0.0#}倍)", Notice.InvokeBufInfo);
+			ac.Message.Add($"ダメージを受けて攻撃がぐぐぐーんと上がった！！！！！ (現在{ac.Receiver.ATK,0:0.0#}倍)", Notice.InvokeBufInfo);
 			ac.Receiver.TryChangeDEF(100, ac.Receiver.CurrentWord);
-			ac.Message.Add($"ダメージを受けて防御がぐぐーんぐーんと上がった！！！１！ (現在{ac.Receiver.DEF,0:0.0#}倍)", Notice.InvokeBufInfo);
+			ac.Message.Add($"ダメージを受けて防御がぐぐぐーんと上がった！！！１！ (現在{ac.Receiver.DEF,0:0.0#}倍)", Notice.InvokeBufInfo);
 		}
 	}
 	public override string ToString() => "神";
@@ -235,14 +235,20 @@ internal class Rewind : CustomAbility, ISingleTypedBufAbility
 		if (c is not BufContract bc) return;
 		if (bc.Actor.CurrentWord.Contains(BufType))
 		{
-			var history = bc.Parent.History.Take(..^1).Where(x => x.IsPlayer1sTurn != bc.Parent.IsPlayer1sTurn).LastOrDefault();
-			if (history is null)
+			var d = bc.Parent.DHistory
+				.OrderBy(x => x.Key)
+				.Select(x => x.Value)
+				.Where(x => x.TurnNum < bc.Parent.TurnNum)
+				.Take(..^1)
+				.LastOrDefault(x => x.IsPlayer1sTurn != bc.Parent.IsPlayer1sTurn);
+
+			if (d is null)
 			{
 				bc.Message.Add("もう時間は巻き戻らない！", Notice.Caution);
 				return;
 			}
 			bc.Message.Add("時間が巻き戻る！", Notice.Rewind);
-			bc.Message.Add(Notice.Alter, history with { IsPlayer1sTurn = !history.IsPlayer1sTurn });
+			bc.Message.Add(Notice.Alter, d with { IsPlayer1sTurn = !d.IsPlayer1sTurn, TurnNum = d.TurnNum + 1 });
 		}
 		return;
 	}

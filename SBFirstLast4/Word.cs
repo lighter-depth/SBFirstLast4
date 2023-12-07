@@ -82,7 +82,7 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 
 	public bool IsBuf(Ability ability) => ability is ISingleTypedBufAbility buf && Contains(buf.BufType);
 	public bool IsSeed(Ability ability) => ability is ISeedable seed && Contains(seed.SeedType);
-	public int IsSuitable(Word prev)
+	public SuitableIndicator IsSuitable(Word prev)
 	{
 		if (End == 'ん')
 			return -1;
@@ -93,6 +93,15 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 		if (Start != prev.End)
 			return 1;
 		return 0;
+	}
+
+	public readonly struct SuitableIndicator
+	{
+		private int Value { get; init; }
+
+		public static implicit operator SuitableIndicator(int @int) => new() { Value = @int };
+		public static implicit operator int(SuitableIndicator s) => s.Value;
+		public static implicit operator bool(SuitableIndicator s) => s.Value == 0;
 	}
 
 	public string Serialize() => $"/w/{Name}++{Type1.TypeToChar()}++{Type2.TypeToChar()}/w/";
@@ -158,10 +167,11 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	}
 	public static explicit operator Word(string name) => new(name, WordType.Empty, WordType.Empty);
 
-	public static Word FromString(string name)
+	public static Word FromString(string? name)
 	{
+		if (string.IsNullOrWhiteSpace(name)) return Default;
 		var resultWord = SBDictionary.GetSplitList(name[0]).Find(x => x.Name == name);
-		if(resultWord != default) return resultWord;
+		if (resultWord != default) return resultWord;
 		return (Word)name;
 	}
 

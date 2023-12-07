@@ -85,7 +85,10 @@ public static class SBUtils
 	public static bool IsWild(this char c) => c is '*' or '＊';
 
 	public static bool IsWild(this string name) => name.Contains('*') || name.Contains('＊');
+
 	public static string Stringify(this Exception ex) => $"{ex.GetType().Name}: {ex.Message}";
+
+	public static bool IsDefault<T>(this T value) where T : struct => value.Equals(default(T));
 }
 
 public static class JSHelper

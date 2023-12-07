@@ -12,14 +12,14 @@ public partial class Battle
 	public bool IsPlayer1sTurn { get; private set; } = true;
 
 	public bool WasPlayer1sTurn => !IsPlayer1sTurn;
-	public int TurnNum { get; private set; } = 1;
+	public int TurnNum { get; private set; }
 	public List<string> UsedWords { get; private set; } = new();
 	public required Func<Task<Order>> In { get; init; } = () => Task.FromResult(Order.Empty);
 	public required Func<List<AnnotatedString>, Task> Out { get; init; } = _ => Task.CompletedTask;
 	public List<AnnotatedString> Buffer { get; private set; } = new();
 	public required Action<CancellationTokenSource> OnReset { get; init; } = _ => { };
 
-	Dictionary<OrderType, Action<Order, CancellationTokenSource>> OrderFunctions = new();
+	private Dictionary<OrderType, Action<Order, CancellationTokenSource>> OrderFunctions = new();
 	public Player CurrentPlayer => IsPlayer1sTurn ? Player1 : Player2;
 	public Player OtherPlayer => IsPlayer1sTurn ? Player2 : Player1;
 	public OrderType CurrentOrderType { get; private set; } = OrderType.None;
@@ -32,12 +32,19 @@ public partial class Battle
 
 	public char NextChar => OtherPlayer.CurrentWord.End;
 
+	public Dictionary<int, BattleData> DHistory => _dHistory.Where(kv => !kv.Value.IsEdited).ToDictionary(kv => kv.Key, kv => kv.Value);
 
-	public List<BattleData> History { get; internal set; } = new();
+	public void SetDHistoryElement(BattleData value, int index)
+	{
+		_dHistory[index] = value;
+		foreach(var kv in _dHistory)
+			if(kv.Key > index)
+				kv.Value.IsEdited = true;
+	}
 
+	private Dictionary<int, BattleData> _dHistory = new();
 
-	static readonly Action<Order, CancellationTokenSource> emptyDelegate = (o, c) => { };
-	CancellationTokenSource cts = new();
+	private CancellationTokenSource Cancellation = new();
 	public static Battle Empty => new(new(Ability.Default), new(Ability.Default));
 
 	[SetsRequiredMembers]
@@ -48,7 +55,7 @@ public partial class Battle
 
 	public void Dispose()
 	{
-		if(!cts.IsCancellationRequested) OnReset(cts);
+		if(!Cancellation.IsCancellationRequested) OnReset(Cancellation);
 	}
 
 	public async Task Run()
@@ -56,8 +63,8 @@ public partial class Battle
 		Initialize();
 		IsBeforeInit = false;
 		await Out(Buffer);
-		cts = new CancellationTokenSource();
-		while (!cts.IsCancellationRequested)
+		Cancellation = new CancellationTokenSource();
+		while (!Cancellation.IsCancellationRequested)
 		{
 			Buffer.Clear();
 
@@ -70,9 +77,9 @@ public partial class Battle
 			}
 
 			if (OrderFunctions.TryGetValue(order.Type, out var func))
-				func(order, cts);
+				func(order, Cancellation);
 			else
-				OnDefault(order, cts);
+				OnDefault(order, Cancellation);
 
 			// 出力処理
 			await Out(Buffer);
@@ -81,7 +88,7 @@ public partial class Battle
 	}
 	private void Initialize()
 	{
-		IsPlayer1sTurn = InitIsP1sTurn();
+		IsPlayer1sTurn = InitIsPlayer1sTurn();
 		Buffer.Add($"{CurrentPlayer.Name} のターンです", Notice.General);
 		Buffer.Add($"{Player1.Name}: {Player1.HP}/{Player.MaxHP},     {Player2.Name}: {Player2.HP}/{Player.MaxHP}", Notice.LogInfo);
 		OrderFunctions = new()
@@ -89,19 +96,21 @@ public partial class Battle
 			[OrderType.Error] = OnErrorOrdered,
 			[OrderType.Change] = OnChangeOrdered
 		};
+		_dHistory[TurnNum] =(BattleData)this with { IsPlayer1sTurn = !IsPlayer1sTurn };
+		TurnNum++;
 	}
 	/// <summary>
 	/// 先攻・後攻の設定を行います。
 	/// </summary>
 	/// <returns><see cref="Player1"/>が先攻するかどうかを表すフラグ</returns>
-	private bool InitIsP1sTurn()
+	private bool InitIsPlayer1sTurn()
 	{
 		var randomFlag = SBUtils.Random.Next(2) == 0;
-		var p1TPA = Player1.Proceeding;
-		var p2TPA = Player2.Proceeding;
-		if (p1TPA == p2TPA) return randomFlag;
-		if (p1TPA == Proceeds.True || p2TPA == Proceeds.False) return true;
-		if (p1TPA == Proceeds.False || p2TPA == Proceeds.True) return false;
+		var player1Proceeds = Player1.Proceeds;
+		var player2Proceeds = Player2.Proceeds;
+		if (player1Proceeds == player2Proceeds) return randomFlag;
+		if (player1Proceeds == Proceeds.True || player2Proceeds == Proceeds.False) return true;
+		if (player1Proceeds == Proceeds.False || player2Proceeds == Proceeds.True) return false;
 		return randomFlag;
 	}
 
@@ -139,7 +148,7 @@ public partial class Battle
 			   : word.IsHeal ? ContractType.Heal
 			   : word.IsSeed(CurrentPlayer.Ability) ? ContractType.Seed
 			   : ContractType.Attack;
-		var c = Contract.Create(ct, CurrentPlayer, OtherPlayer, word, this, new ContractArgs(PreActor, PreReceiver) { IsInferSuccessed = isInferSuccessed });
+		var c = Contract.Create(ct, CurrentPlayer, OtherPlayer, word, this, new(PreActor, PreReceiver) { IsInferSuccessed = isInferSuccessed });
 		c.Execute();
 
 		// Contract の情報をバッファーに追加する。
@@ -158,7 +167,7 @@ public partial class Battle
 		if (c.DeadFlag)
 		{
 			IsPlayer1sTurn = !IsPlayer1sTurn;
-			History.Add((BattleData)this);
+			SetDHistoryElement((BattleData)this, TurnNum);
 			Out(Buffer);
 			OnReset(cts);
 		}
@@ -181,7 +190,7 @@ public partial class Battle
 		var nextAbil = AbilityManager.Create(order.Body, IsCustomAbilUsable);
 		if (nextAbil is null)
 		{
-			Buffer.Add($"入力 {order.Body} に対応するとくせいが見つかりませんでした。", Notice.Warn);
+			Buffer.Add($"そんなとくせいはない！", Notice.Warn);
 			return;
 		}
 		if (nextAbil.ToString() == player.Ability.ToString())
@@ -219,7 +228,7 @@ public partial class Battle
 
 	public void ToggleTurn()
 	{
-		History.Add((BattleData)this);
+		SetDHistoryElement((BattleData)this, TurnNum);
 		PreActor = CurrentPlayer.Clone();
 		PreReceiver = OtherPlayer.Clone();
 		IsPlayer1sTurn = !IsPlayer1sTurn;
@@ -255,5 +264,31 @@ public partial class Battle
 		IsPlayer1sTurn = d.IsPlayer1sTurn;
 		TurnNum = d.TurnNum;
 		UsedWords = d.UsedWords.Select(x => x).ToList();
+	}
+
+	public void AlterBack()
+	{
+		if (!DHistory.TryGetValue(Math.Max(0, TurnNum - 2), out var d))
+			return;
+
+		AlterTo(d with { IsPlayer1sTurn = !d.IsPlayer1sTurn, TurnNum = d.TurnNum + 1});
+	}
+
+	public void AlterForth()
+	{
+		if (!DHistory.TryGetValue(TurnNum, out var d))
+			return;
+
+		AlterTo(d with { IsPlayer1sTurn = !d.IsPlayer1sTurn, TurnNum = d.TurnNum + 1});
+	}
+
+	public void AlterLatest()
+	{
+		var d = DHistory.OrderBy(kv => kv.Key).LastOrDefault();
+
+		if (d.IsDefault())
+			return;
+
+		AlterTo(d.Value with { IsPlayer1sTurn = !d.Value.IsPlayer1sTurn, TurnNum = d.Value.TurnNum + 1 });
 	}
 }
