@@ -4,11 +4,11 @@ requires: STD;
 
 #define STD_KILLERS
 
-#define KILLEROF(_X) @TW.Where(w => w.Start == "_X".LastChar && w.CalcEffectiveDmg(/_X/d) * (w.Name.Length > 6 ? 2 : 1) > 7)
-#define KILLEDBY(_X) @TW.Where(w => w.End == "_X".FirstChar && /_X/d.CalcEffectiveDmg(w) * ("_X".Length > 6 ? 2 : 1) > 7)
+#define KILLEROF(_X) @TW.Where(Start == "_X".LastChar && \cl(/_X/d) * (Length > 6 ? 2 : 1) > 7)
+#define KILLEDBY(_X) @TW.Where(End == "_X".FirstChar && /_X/d.\cl(@item) * ("_X".Length > 6 ? 2 : 1) > 7)
 
-#define XEROF(_X, _Y) @TW.Where(w => w.Start == "_X".LastChar && w.CalcEffectiveDmg(/_X/d) * (w.Name.Length > 6 ? 2 : (w.Name.Length == 6 || w.\c($G) || w.\c($B) || w.\c($Q) || w.\c($P) || w.\c($Z) || w.\c($R)) ? 1.5 : 1) _Y)
-#define XEDBY(_X, _Y) @TW.Where(w => w.End == "_X".FirstChar && /_X/d.CalcEffectiveDmg(w) * ("_X".Length > 6 ? 2 : ("_X".Length == 6 || /_X/d.\c($G) || /_X/d.\c($B) || /_X/d.\c($Q) || /_X/d.\c($P) || /_X/d.\c($Z) || /_X/d.\c($R)) ? 1.5 : 1) _Y)
+#define XEROF(_X, _Y) @TW.Where(Start == "_X".LastChar && \cl(/_X/d) * (Length > 6 ? 2 : (Length == 6 || \c($G) || \c($B) || \c($Q) || \c($P) || \c($Z) || \c($R)) ? 1.5 : 1) _Y)
+#define XEDBY(_X, _Y) @TW.Where(End == "_X".FirstChar && /_X/d.\cl(@item) * ("_X".Length > 6 ? 2 : ("_X".Length == 6 || /_X/d.\c($G) || /_X/d.\c($B) || /_X/d.\c($Q) || /_X/d.\c($P) || /_X/d.\c($Z) || /_X/d.\c($R)) ? 1.5 : 1) _Y)
 
 #define SEMIKILLEROF(_X) XEROF(_X, >5)
 #define SEMIKILLEDBY(_X) XEDBY(_X, >5)
@@ -27,3 +27,14 @@ requires: STD;
 
 #define 2XEROF(_X) XEROF(_X, ==2)
 #define 2XEDBY(_X) XEDBY(_X, ==2)
+
+#define KILLST(_T) @TW.Where(\c($_T)).Select(Name).Intersect(@8X)
+#define SEMIKILLST(_T) @TW.Where(\c($_T)).Select(Name).Intersect(@6X)
+#define 4XST(_T) @TW.Where(\c($_T)).Select(Name).Intersect(@4X)
+
+#define KILLST2(_T1, _T2) @TW.Where(\c($_T1) && \c($_T2)).Select(Name).Intersect(@8X)
+#define SEMIKILLST2(_T1, _T2) @TW.Where(\c($_T1) && \c($_T2)).Select(Name).Intersect(@6X)
+#define 4XST2(_T1, _T2) @TW.Where(\c($_T1) && \c($_T2)).Select(Name).Intersect(@4X)
+
+
+

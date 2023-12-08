@@ -493,7 +493,7 @@
       "url": "manifest.json"
     },
     {
-      "hash": "sha256-xfQNq3sWxeQtW4+ouNx\/y5cFi19XU0e9irriysSapAQ=",
+      "hash": "sha256-KlyeOk9rbEvuox7n4TzmVrsPJSoXKoKarWODhY8Fx2g=",
       "url": "sblibs\/Killers.sbmdl"
     },
     {
@@ -541,7 +541,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-3\/GyPcpOAJq+ZKlh7s734pISMrP+qMfYFOhJ7aS2XwY=",
+      "hash": "sha256-fk1MeD217Q8w75YKBxNO3RwVuVFRDSdNiBXMcd8EghI=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -617,7 +617,7 @@
       "url": "_framework\/netstandard.dll"
     },
     {
-      "hash": "sha256-vhAIzFM9ScMZWCZJhwJ6SIlVJSnG5uE48lto6s2zjcM=",
+      "hash": "sha256-i02eSMuYGfL+A5lkVbplK+PEtHBkUITbKI+BC+cUrf8=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -777,5 +777,5 @@
       "url": "_content\/BlazorDownloadFile\/BlazorDownloadFileScript.js"
     }
   ],
-  "version": "QjWa5b\/f"
+  "version": "ZROBWK2G"
 };
