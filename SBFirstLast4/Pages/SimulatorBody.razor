@@ -1376,8 +1376,8 @@
 			if (e.Key is "Process" or not "Enter")
 				return;
 
-			var order = await JSRuntime.InvokeAsync<string>("eval", "document.getElementById('input').value");
-			await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('input').value = ''");
+			var order = await JSRuntime.GetElementValueById<string>("input");
+			await JSRuntime.ClearElementValueById("input");
 			Preview = Word.Default;
 			OrderCompletion.TrySetResult(Order.Parse(order.Trim().Split(), Battle));
 		}

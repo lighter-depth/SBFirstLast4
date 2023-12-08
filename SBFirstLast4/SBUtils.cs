@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.JSInterop;
 using SBFirstLast4.Simulator;
@@ -101,6 +100,8 @@ public static class JSHelper
 
 	public static ValueTask<T> GetElementValueById<T>(this IJSRuntime jsRuntime, string id) => jsRuntime.InvokeAsync<T>("eval", $"document.getElementById('{id}').value");
 
+	public static ValueTask ClearElementValueById(this IJSRuntime jsRuntime, string id) => jsRuntime.InvokeVoidAsync("eval", $"document.getElementById('{id}').value = ''");
+
 	public static ValueTask<T> GetProperty<T>(this IJSObjectReference jsRef, string key) => jsRef.InvokeAsync<T>("getProperty", key);
 
 	public static ValueTask SetProperty<T>(this IJSObjectReference jsRef, string key, T value) => jsRef.InvokeVoidAsync("setProperty", key, value);
@@ -135,8 +136,6 @@ public static class CollectionHelper
 		foreach (var msg in msgs)
 			list.Add(msg);
 	}	
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static Span<T> AsSpan<T>(this List<T> list) => CollectionsMarshal.AsSpan(list);
 	public static List<string[]> SplitToChunks(this List<string> source, int chunkSize)
 	{
@@ -173,13 +172,9 @@ public static class CollectionHelper
 		result.AddRange(words.Where(x => x.Length < 6).Select(x => $"({x})"));
 		return result;
 	}
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static T? At<T>(this IEnumerable<T> source, int index) => source.ElementAtOrDefault(index);
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static T? At<T>(this IEnumerable<T> source, Index index) => source.ElementAtOrDefault(index);
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static char At(this string source, int index) => index < 0 || index >= source.Length ? default : source[index];
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static char At(this string source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];
 
 }

@@ -141,7 +141,7 @@
 		TokenSource.Cancel();
 		TokenSource = new();
 
-		var wordText = await JSRuntime.InvokeAsync<string>("eval", "document.getElementById('word-input').value");
+		var wordText = await JSRuntime.GetElementValueById<string>("word-input");
 		await Task.Delay(1);
 		if (string.IsNullOrWhiteSpace(wordText))
 		{

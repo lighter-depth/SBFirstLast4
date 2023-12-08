@@ -99,10 +99,7 @@ public partial class Battle
 		_dHistory[TurnNum] =(BattleData)this with { IsPlayer1sTurn = !IsPlayer1sTurn };
 		TurnNum++;
 	}
-	/// <summary>
-	/// 先攻・後攻の設定を行います。
-	/// </summary>
-	/// <returns><see cref="Player1"/>が先攻するかどうかを表すフラグ</returns>
+
 	private bool InitIsPlayer1sTurn()
 	{
 		var randomFlag = SBUtils.Random.Next(2) == 0;
@@ -114,9 +111,6 @@ public partial class Battle
 		return randomFlag;
 	}
 
-	/// <summary>
-	/// デフォルトで実行されるハンドラーです。単語の種別に応じて<see cref="System.Diagnostics.Contracts.Contract"/>を生成し処理します。
-	/// </summary>
 	public void OnDefault(Order order, CancellationTokenSource cts)
 	{
 		Word word;

@@ -177,8 +177,8 @@
 		try
 		{
 			if (e.Key is "Process" or not "Enter") return;
-			var input = await JSRuntime.InvokeAsync<string>("eval", "document.getElementById('console-input').value");
-			await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('console-input').value = ''");
+			var input = await JSRuntime.GetElementValueById<string>("console-input");
+			await JSRuntime.ClearElementValueById("console-input");
 			outputBuffer.Add(($"> {input}", "Cmd"));
 			StateHasChanged();
 			await Task.Delay(1);

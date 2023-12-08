@@ -499,11 +499,11 @@
 	private async void EndCharInput_KeyDown(KeyboardEventArgs e)
 	{
 		if (e.Key is "Process" or not "Enter") return;
-		var wordText = await JSRuntime.InvokeAsync<string>("eval", "document.getElementById('endchar-input').value");
+		var wordText = await JSRuntime.GetElementValueById<string>("endchar-input");
 		await Task.Delay(1);
 		if (string.IsNullOrWhiteSpace(wordText))
 		{
-			await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('endchar-input').value = ''");
+			await JSRuntime.ClearElementValueById("endchar-input");
 			StateHasChanged();
 			await Task.Delay(1);
 			return;
@@ -512,7 +512,7 @@
 		AppliedEndFilters = AppliedEndFilters.Distinct().ToList();
 		StateHasChanged();
 		await Task.Delay(1);
-		await JSRuntime.InvokeVoidAsync("eval", "document.getElementById('endchar-input').value = ''");
+		await JSRuntime.ClearElementValueById("endchar-input");
 		StateHasChanged();
 		await Task.Delay(1);
 	}

@@ -21,6 +21,9 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	}
 	public bool Contains(WordType type) => Type1 == type || Type2 == type;
 	public bool Contains(WordType type1, WordType type2) => Type1 == type1 || Type2 == type1 || Type1 == type2 || Type2 == type2;
+
+	public bool Contains(IEnumerable<WordType> types) => this is var word && types.Any(word.Contains);
+
 	public bool IsEmpty => Type1 == WordType.Empty;
 	public bool IsSingleType => Type1 != WordType.Empty && Type2 == WordType.Empty;
 	public bool IsDoubleType => Type1 != WordType.Empty && Type2 != WordType.Empty;

@@ -25,10 +25,10 @@
 			<div class="divider"></div>
 			<div class="inner-grid">
 				<label class="text-label" style="font-weight:600; font-size: 22px;"> とくせいの使用</label>
-				<input type="checkbox" id="switch" class="checkbox" checked="true" 
-					@onchange="async e =>
+				<input type="checkbox" id="switch" class="checkbox" checked="true"
+				@onchange="async e =>
 					{
-						AllowAbility = (bool)(e.Value ?? false); 
+						AllowAbility = (bool)(e.Value ?? false);
 						StateHasChanged();
 						await Task.Delay(1);
 					}" />
@@ -36,10 +36,88 @@
 			</div>
 			<div class="divider"></div>
 			<div class="inner-grid">
+				<label class="text-label" style="font-weight:600; font-size: 22px;"> 除外タイプ</label>
+				<div class="filters-textarea" style="box-shadow: none;">
+					<ul class="filters-sortable">
+						@if (ExceptTypes.Count == 0)
+						{
+							<li class="filters-frame" style="background-color: darkblue; color: white; border-radius: 8px;" @onclick="() =>
+							{
+								ShowExceptableTypes = true;
+								StateHasChanged();
+							}">
+								除外タイプを追加　+
+							</li>
+						}
+						else
+						{
+							foreach (var i in ExceptTypes)
+							{
+								<li class="filters-frame" @onclick="async() =>
+								{
+									ExceptTypes.Remove(i);
+									await ReloadResult();
+								}">
+									@i.TypeToString()
+									<span class="filters-delete" role="button" tabindex="0" />
+								</li>
+							}
+							<li class="filters-frame" @onclick="() =>
+							{
+								ShowExceptableTypes = true;
+								StateHasChanged();
+							}" style="max-width: 21px;" @onclick:stopPropagation=true>
+								＋
+							</li>
+						}
+					</ul>
+				</div>
+				@if (ShowExceptableTypes)
+				{
+					<div class="scrollable-list">
+						@foreach (var filter in VisibleTypes)
+						{
+							<p @onclick="async() =>
+							{
+								ExceptTypes.Add(filter);
+								await ReloadResult();
+							}">@filter.TypeToString()</p>
+						}
+					</div>
+					<div class=transparent-screen @onclick="() =>
+					{
+						ShowExceptableTypes = false;
+						StateHasChanged();
+					}">
+					</div>
+				}
+			</div>
+			<div class="divider"></div>
+			<div class="inner-grid">
 				@foreach (var i in WordResults)
 				{
 					<label class="text-label">@i</label>
 				}
+				<div style="display: flex; flex-flow: row; gap: 30px;">
+					@if ((AllowAbility ? AbilityResults : PureResults).Count - TakeCount > 0)
+					{
+						<label class="text-label" style="color: dodgerblue; text-decoration: underline; cursor: pointer"
+						@onclick="() =>
+						{
+							TakeCount += 5;
+							StateHasChanged();
+						}">さらに表示...</label>
+					}
+					@if (Math.Min((AllowAbility ? AbilityResults : PureResults).Count, TakeCount) > 5)
+					{
+						<label class="text-label" style="color: dodgerblue; text-decoration: underline; cursor: pointer"
+						@onclick="() =>
+						{
+							TakeCount = 5;
+							StateHasChanged();
+						}">表示数を減らす...</label>
+					}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -155,14 +233,141 @@
 		background-color: green;
 	}
 
+	.scrollable-list {
+		height: 150px;
+		overflow-y: scroll;
+		width: 90%;
+		border: 1px solid #888888;
+		border-radius: 10px;
+		background-color: #EEEEEE;
+		margin-top: 9px;
+		z-index: 2;
+	}
+
+		.scrollable-list > p {
+			margin: 10px 20px 10px 20px;
+			padding-left: 10px;
+			padding-top: 2px;
+			padding-bottom: 2px;
+			font-size: 18.5px;
+			background-color: white;
+			box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+			border-radius: 10px;
+			border-color: transparent;
+			cursor: pointer;
+		}
+
+			.scrollable-list > p:hover {
+				background-color: aliceblue;
+			}
+
+	.filters-textarea {
+		background: #fff;
+		border: 1px solid #ddd;
+		box-sizing: border-box;
+		margin: 2px 0;
+		padding: 4px;
+		width: 100%;
+	}
+
+	.filters-sortable {
+		-webkit-padding-start: 0;
+		align-items: center;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: left;
+		list-style: none;
+		margin: 0;
+		padding-inline-start: 0;
+		padding: 0;
+		gap: 10px;
+		min-height: 19px;
+	}
+
+	.filters-frame {
+		background: #fff;
+		border: 1px solid #d9d9d9;
+		border-radius: 5px;
+		box-shadow: none;
+		color: #404040;
+		cursor: pointer;
+		font-size: 17px;
+		margin: 0;
+		max-height: 100%;
+		max-width: 100%;
+		padding: 1px 23px 1px 6px;
+		resize: none;
+		word-break: break-all;
+		z-index: 10;
+	}
+
+	.filters-delete {
+		background: #fff;
+		border-radius: 50%;
+		box-shadow: 0 0 1px 1px #999;
+		cursor: pointer;
+		display: inline-block;
+		height: 15px;
+		line-height: 5px;
+		margin-left: 3px;
+		margin-top: 4px;
+		position: absolute;
+		vertical-align: middle;
+		width: 15px;
+	}
+
+		.filters-delete::before, .filters-delete::after {
+			background-color: #666;
+			content: "";
+			height: 1px;
+			left: 2px;
+			position: absolute;
+			top: 7px;
+			-webkit-transform: rotate(45deg);
+			transform: rotate(45deg);
+			width: 11px;
+		}
+
+		.filters-delete::after {
+			-webkit-transform: rotate(-45deg);
+			transform: rotate(-45deg);
+		}
+
+	.filters-list {
+		position: absolute;
+		top: 50px;
+		left: 50px;
+		width: 200px;
+		height: 300px;
+		border: 1px solid black;
+		background-color: white;
+		z-index: 10;
+		padding: 10px;
+		overflow-y: scroll;
+	}
+
+	.transparent-screen {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 1;
+		background-color: transparent;
+	}
+
 </style>
 
 @code {
 	private string TypeIndicator = string.Empty;
 	private bool AllowAbility = true;
-	private List<string> WordResults => AllowAbility ? AbilityResults : PureResults;
+	private IEnumerable<string> WordResults => (AllowAbility ? AbilityResults : PureResults).Take(TakeCount);
 	private List<string> PureResults = new();
 	private List<string> AbilityResults = new();
+	private List<WordType> ExceptTypes = new();
+	private bool ShowExceptableTypes;
+	private IEnumerable<WordType> VisibleTypes => Enum.GetValues<WordType>().Except(ExceptTypes.Append(default));
+	private int TakeCount = 5;
 
 	protected override void OnInitialized()
 	{
@@ -187,9 +392,11 @@
 		});
 	}
 
-	private async void TextInput_KeyUp()
+	private async Task TextInput_KeyUp() => await ReloadResult();
+
+	private async Task ReloadResult()
 	{
-		var wordText = await JSRuntime.InvokeAsync<string>("eval", "document.getElementById('word-input').value");
+		var wordText = await JSRuntime.GetElementValueById<string>("word-input");
 		await Task.Delay(1);
 		var word = await InferWordTypeOrDefaultAsync(wordText);
 		if (word == default)
@@ -200,7 +407,11 @@
 			await Task.Delay(1);
 			return;
 		}
-		var list = SBDictionary.GetSplitList(wordText.GetLastChar());
+
+		var list = SBDictionary.GetSplitList(wordText.GetLastChar()) is var l && ExceptTypes.Count == 0
+					? l
+					: l.Where(w => !w.Contains(ExceptTypes));
+
 		var randomLow = word.IsEmpty ? 1 : .85;
 		var randomHigh = word.IsEmpty ? 1 : .99;
 		var resultList = new List<AttackInfo>();
@@ -254,11 +465,9 @@
 		}
 		resultList.Sort();
 		noAbilityList.Sort();
-		AbilityResults = resultList.Take(5).Select(x => x.ToString()).ToList();
-		PureResults = noAbilityList.Take(5).Select(x => x.ToString()).ToList();
+		AbilityResults = resultList.Select(x => x.ToString()).ToList();
+		PureResults = noAbilityList.Select(x => x.ToString()).ToList();
 		StateHasChanged();
-		await Task.Delay(1);
-
 	}
 
 	private async Task<Word> InferWordTypeOrDefaultAsync(string wordText)
@@ -286,19 +495,6 @@
 			await Task.Delay(1);
 			return default;
 		}
-		if (!SBDictionary.IsLite)
-		{
-			TypeIndicator = "Loading...";
-			StateHasChanged();
-			await Task.Delay(1);
-		}
-		if (!SBDictionary.IsLite && !SBDictionary.PerfectNameDic.Contains(wordText))
-		{
-			TypeIndicator = "辞書にない単語です。";
-			StateHasChanged();
-			await Task.Delay(1);
-			return default;
-		}
 
 		var resultWord = SBDictionary.GetSplitList(keyChar).Find(x => x.Name == wordText);
 
@@ -306,8 +502,7 @@
 		var (type1, type2) = (resultWord.Type1, resultWord.Type2);
 		typeIndicatorResult += (type1, type2) switch
 		{
-			(WordType.Empty, WordType.Empty) when SBDictionary.IsLite && resultWord == default => "辞書にない、または無属性",
-			(WordType.Empty, WordType.Empty) => "無属性",
+			(WordType.Empty, WordType.Empty) => "辞書にない、または無属性",
 			(var type, WordType.Empty) => $"{type.TypeToString()}",
 			(WordType.Empty, var type) => $"{type.TypeToString()}",
 			(var typeA, var typeB) => $"{typeA.TypeToString()} / {typeB.TypeToString()}"
