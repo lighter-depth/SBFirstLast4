@@ -88,14 +88,14 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	public SuitableIndicator IsSuitable(Word prev)
 	{
 		if (End == 'ん')
-			return -1;
+			return SuitableIndicator.InvalidEnd;
 		if (string.IsNullOrWhiteSpace(prev.Name))
-			return 0;
+			return SuitableIndicator.Suitable;
 		if (Start.IsWild() || prev.End.IsWild())
-			return 0;
+			return SuitableIndicator.Suitable;
 		if (Start != prev.End)
-			return 1;
-		return 0;
+			return SuitableIndicator.BadStart;
+		return SuitableIndicator.Suitable;
 	}
 
 	public readonly struct SuitableIndicator
@@ -105,6 +105,11 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 		public static implicit operator SuitableIndicator(int @int) => new() { Value = @int };
 		public static implicit operator int(SuitableIndicator s) => s.Value;
 		public static implicit operator bool(SuitableIndicator s) => s.Value == 0;
+		public static implicit operator SuitableIndicator(bool @bool) => new() { Value = @bool ? 0 : 1 };
+
+		public const int Suitable = 0;
+		public const int InvalidEnd = -1;
+		public const int BadStart = 1;
 	}
 
 	public string Serialize() => $"/w/{Name}++{Type1.TypeToChar()}++{Type2.TypeToChar()}/w/";

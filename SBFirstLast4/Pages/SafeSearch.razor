@@ -549,7 +549,7 @@
 			DownloadConfig.IsNotype = false;
 			DownloadConfig.DeclType = ListDeclType.TypedOnly;
 
-			Server.Post(new
+			Server.Log(new
 			{
 				Type = "SEARCH_SAFE",
 				Order = new
@@ -560,10 +560,10 @@
 						"おまかせ（弱）" => "WEAK",
 						"おまかせ（中）" => "MID",
 						"おまかせ（強）" => "HEAVY",
-						"カスタム" => $"[{string.Join(", ", AppliedCategoryFilters)}]",
+						"カスタム" => $"[{AppliedCategoryFilters.Stringify()}]",
 						_ => "EMPTY"
 					},
-					Char = SelectedCharFilterItem == "なし" ? "EMPTY" : $"[{string.Join(", ", AppliedEndFilters)}]"
+					Char = SelectedCharFilterItem == "なし" ? "EMPTY" : $"[{AppliedEndFilters.Stringify()}]"
 				},
 				UserInfo = new
 				{

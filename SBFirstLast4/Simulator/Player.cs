@@ -1,6 +1,4 @@
-﻿using System.Data;
-
-namespace SBFirstLast4.Simulator;
+﻿namespace SBFirstLast4.Simulator;
 
 public class Player
 {

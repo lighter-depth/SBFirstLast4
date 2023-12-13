@@ -168,7 +168,7 @@
 
         await AppSettings.SetIsAdminAsync();
 
-        Server.Post(new
+        Server.Log(new
         {
             Type = "USERNAME",
             OldName = oldName,
@@ -209,7 +209,7 @@
         if (!await JSRuntime.Confirm("すべてのキャッシュを消去します。よろしいですか？"))
             return;
 
-        Server.Post(new
+        Server.Log(new
         {
             Type = "LOGOUT",
             UserInfo = new

@@ -66,7 +66,7 @@ public static class SBScriptExecutor
 	private static string ResultObjectToString(object result)
 	{
 		if (result is System.Collections.IEnumerable enumerable and not string)
-			return $"[{string.Join(", ", enumerable.Cast<object>().Select(x => ResultObjectToString(x)))}]";
+			return $"[{enumerable.Cast<object>().Select(ResultObjectToString).Stringify()}]";
 
 		return result.ToString() ?? "null";
 	}

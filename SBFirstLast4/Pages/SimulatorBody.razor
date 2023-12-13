@@ -1200,7 +1200,7 @@
 	internal static Ability Player1Ability { get; set; } = Ability.Default;
 	internal static Ability Player2Ability { get; set; } = Ability.Default;
 
-	private Battle Battle = Battle.Empty;
+	private Battle Battle = Battle.Default;
 	private bool IsProcessing;
 	private bool IsDead;
 
@@ -1296,7 +1296,7 @@
 		return OrderCompletion.Task;
 	}
 
-	private async Task Out(List<AnnotatedString> list)
+	private async Task Out(IEnumerable<AnnotatedString> list)
 	{
 		try
 		{
@@ -1389,7 +1389,7 @@
 
 	private async void Submit_Click() => await Input_KeyDown(new() { Key = "Enter" });
 
-	private async Task OutActionOrder(List<AnnotatedString> list)
+	private async Task OutActionOrder(IEnumerable<AnnotatedString> list)
 	{
 		try
 		{
@@ -1430,7 +1430,7 @@
 		}
 	}
 
-	private async Task OutChangeOrder(List<AnnotatedString> list)
+	private async Task OutChangeOrder(IEnumerable<AnnotatedString> list)
 	{
 		foreach (var i in list)
 			if (i.Notice is Notice.Warn or Notice.Caution)
@@ -1442,7 +1442,7 @@
 		await SBAudioManager.PlayAudio("concent");
 	}
 
-	private static List<AnnotatedString> GetMessages(List<AnnotatedString> list)
+	private static List<AnnotatedString> GetMessages(IEnumerable<AnnotatedString> list)
 	{
 		var filter = new List<Notice>()
 		{
@@ -1907,6 +1907,7 @@
 		internal bool Rewind { get; set; } = Rewind;
 		internal static ShowAnimationInternal Default => new(false, false, false, false, false, false);
 	}
+
 	private record ShowPlayerAnimation(ShowAnimationInternal Player1, ShowAnimationInternal Player2)
 	{
 		internal ShowAnimationInternal Player1 { get; set; } = Player1;

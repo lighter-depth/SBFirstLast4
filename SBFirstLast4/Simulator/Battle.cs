@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Microsoft.AspNetCore.Components;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace SBFirstLast4.Simulator;
@@ -15,7 +16,7 @@ public partial class Battle
 	public int TurnNum { get; private set; }
 	public List<string> UsedWords { get; private set; } = new();
 	public required Func<Task<Order>> In { get; init; } = () => Task.FromResult(Order.Empty);
-	public required Func<List<AnnotatedString>, Task> Out { get; init; } = _ => Task.CompletedTask;
+	public required Func<IEnumerable<AnnotatedString>, Task> Out { get; init; } = _ => Task.CompletedTask;
 	public List<AnnotatedString> Buffer { get; private set; } = new();
 	public required Action<CancellationTokenSource> OnReset { get; init; } = _ => { };
 
@@ -45,7 +46,7 @@ public partial class Battle
 	private Dictionary<int, BattleData> _dHistory = new();
 
 	private CancellationTokenSource Cancellation = new();
-	public static Battle Empty => new(new(Ability.Default), new(Ability.Default));
+	public static Battle Default => new(new(Ability.Default), new(Ability.Default));
 
 	[SetsRequiredMembers]
 	public Battle(Player p1, Player p2) => (Player1, Player2) = (p1, p2);

@@ -86,7 +86,7 @@ public abstract class Contract
 			OnContractEnd
 		};
 	}
-	[SetsRequiredMembers] public Contract() : this(new(Ability.Default), new(Ability.Default), new(), Battle.Empty) { }
+	[SetsRequiredMembers] public Contract() : this(new(Ability.Default), new(Ability.Default), new(), Battle.Default) { }
 	#endregion
 
 	#region methods
@@ -118,12 +118,12 @@ public abstract class Contract
 		{
 			var strictFlag = Word.IsSuitable(Receiver.CurrentWord);
 			Args.IsWordNotUsed = !Parent.UsedWords.Contains(Word.Name);
-			if (strictFlag > 0)
+			if (strictFlag == Word.SuitableIndicator.BadStart)
 			{
 				Message.Add("開始文字がマッチしていません。", Notice.Warn);
 				return false;
 			}
-			if (strictFlag < 0)
+			if (strictFlag == Word.SuitableIndicator.InvalidEnd)
 			{
 				Message.Add("「ん」で終わっています", Notice.Warn);
 				return false;

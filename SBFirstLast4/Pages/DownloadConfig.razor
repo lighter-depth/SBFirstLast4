@@ -398,7 +398,7 @@ else
 		StateHasChanged();
 		await Task.Delay(1);
 
-		Server.Post(new
+		Server.Log(new
 		{
 			Type = "DOWNLOAD",
 			Peek = (listType == default || IsNotype ? DataListStr.At(0) : DataListWord.At(0).ToString()) ?? "NULL",

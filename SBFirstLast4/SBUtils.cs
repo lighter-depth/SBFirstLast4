@@ -27,6 +27,7 @@ public static class SBUtils
 		new[]{"ば", "び", "ぶ", "べ", "ぼ"},
 		new[]{"ぱ", "ぴ", "ぷ", "ぺ", "ぽ"}
 	};
+
 	static string[][]? kanaList;
 
 	public static string[] KanaListSpread => kanaListSpread ??= KanaList.SelectMany(x => x).ToArray();
@@ -125,18 +126,21 @@ public static class CollectionHelper
 	}
 
 	public static void Add(this List<AnnotatedString> list, string text, Notice notice) => list.Add(new(text, notice));
-	
+
 	public static void Add(this List<AnnotatedString> list, string text, Notice notice, params int[] args) => list.Add(new(text, notice) { Params = args });
-	
+
 	public static void Add(this List<AnnotatedString> list, Notice notice, int player1HP, int player2HP) => list.Add(new(string.Empty, notice) { Params = new[] { player1HP, player2HP } });
-	
+
 	public static void Add(this List<AnnotatedString> list, Notice notice, BattleData data) => list.Add(new(string.Empty, notice) { Data = data });
+	
 	public static void AddMany(this List<AnnotatedString> list, IEnumerable<AnnotatedString> msgs)
 	{
 		foreach (var msg in msgs)
 			list.Add(msg);
-	}	
+	}
+	
 	public static Span<T> AsSpan<T>(this List<T> list) => CollectionsMarshal.AsSpan(list);
+	
 	public static List<string[]> SplitToChunks(this List<string> source, int chunkSize)
 	{
 		const int chunksize = 10000;
@@ -147,6 +151,7 @@ public static class CollectionHelper
 			var count = Math.Min(chunksize, source.Count - i);
 			chunks.Add(sourceSpan.Slice(i, count).ToArray());
 		}
+
 		return chunks;
 	}
 
@@ -172,9 +177,16 @@ public static class CollectionHelper
 		result.AddRange(words.Where(x => x.Length < 6).Select(x => $"({x})"));
 		return result;
 	}
+	
 	public static T? At<T>(this IEnumerable<T> source, int index) => source.ElementAtOrDefault(index);
+	
 	public static T? At<T>(this IEnumerable<T> source, Index index) => source.ElementAtOrDefault(index);
+	
 	public static char At(this string source, int index) => index < 0 || index >= source.Length ? default : source[index];
+	
 	public static char At(this string source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];
-
+	
+	public static string Stringify<T>(this IEnumerable<T> values, string separator) => string.Join(separator, values);
+	
+	public static string Stringify<T>(this IEnumerable<T> values) => string.Join(", ", values);
 }

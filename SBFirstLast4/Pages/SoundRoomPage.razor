@@ -93,7 +93,7 @@
 		if (!SBDictionary.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 
-		Server.Post(new
+		Server.Log(new
 		{
 			Type = "SOUND_ROOM",
 			UserInfo = new

@@ -9,9 +9,25 @@
 		<div class="stack-panel">
 			<label class="label">最高打点検索</label>
 			<label class="text-label">
-				単語を入力すると、その単語に対して高いダメージを出せる単語を、順番に５つ出力します。<br><br>
+				単語を入力すると、その単語@(IsAttackSide ? "を用いて" : "に対して")高いダメージを出せる単語を、順番に@(TakeCount)個出力します。<br><br>
 				（動作が遅い場合はページをリロード後、ライト版辞書を選択すると改善するかもしれません。）
 			</label>
+		</div>
+	</div>
+</div>
+<div class="grid">
+	<div class="border">
+		<div class="stack-panel">
+			<div class="inner-grid">
+				<label class="text-label" style="font-weight:600; font-size: 22px;"> @(IsAttackSide ? "攻撃サイド" : "防御サイド")</label>
+				<input type="checkbox" id="switchmain" class="checkbox" checked="@IsAttackSide"
+				@onchange="async e =>
+					{
+						IsAttackSide = (bool)(e.Value ?? false);
+						await ReloadResult();
+					}" />
+				<label for="switchmain" class="toggle" id="togglemain"></label>
+			</div>
 		</div>
 	</div>
 </div>
@@ -225,12 +241,20 @@
 			transition: all 0.3s;
 		}
 
+	#togglemain{
+		background-color: #6C5CE7;
+	}
+
 	.checkbox:checked + .toggle::after {
 		left: 30px;
 	}
 
 	.checkbox:checked + .toggle {
 		background-color: green;
+	}
+
+	#switchmain:checked + .toggle {
+		background-color: #E76C5C;
 	}
 
 	.scrollable-list {
@@ -368,6 +392,7 @@
 	private bool ShowExceptableTypes;
 	private IEnumerable<WordType> VisibleTypes => Enum.GetValues<WordType>().Except(ExceptTypes.Append(default));
 	private int TakeCount = 5;
+	private static bool IsAttackSide;
 
 	protected override void OnInitialized()
 	{
@@ -379,7 +404,7 @@
 		if (!SBDictionary.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 
-		Server.Post(new
+		Server.Log(new
 		{
 			Type = "BEST_DMG",
 			UserInfo = new
@@ -405,6 +430,12 @@
 			AbilityResults = new();
 			StateHasChanged();
 			await Task.Delay(1);
+			return;
+		}
+
+		if (IsAttackSide)
+		{
+			ReloadAttackSideResult(word);
 			return;
 		}
 
@@ -458,6 +489,72 @@
 				resultList.Add(new(i, WordType.Tale, highDmg, lowDmg));
 			}
 			if (i.Name.Length > 6 && !i.IsHeal)
+			{
+				var (lowDmg, highDmg) = (lowDmgRaw * 2, highDmgRaw * 2);
+				resultList.Add(new(i, WordType.Tale, highDmg, lowDmg));
+			}
+		}
+		resultList.Sort();
+		noAbilityList.Sort();
+		AbilityResults = resultList.Select(x => x.ToString()).ToList();
+		PureResults = noAbilityList.Select(x => x.ToString()).ToList();
+		StateHasChanged();
+	}
+
+	private void ReloadAttackSideResult(Word word)
+	{
+		var list = SBDictionary.TypedWords.Where(w => w.End == word.Start) is var l && ExceptTypes.Count == 0
+			? l
+			: l.Where(w => !w.Contains(ExceptTypes));
+
+
+		var resultList = new List<AttackInfo>();
+		var noAbilityList = new List<AttackInfo>();
+		foreach (var i in list)
+		{
+			var randomLow = i.IsEmpty ? 1 : .85;
+			var randomHigh = i.IsEmpty ? 1 : .99;
+
+			var lowDmgRaw = (int)(10 * word.CalcEffectiveDmg(i) * randomLow);
+			var highDmgRaw = (int)(10 * word.CalcEffectiveDmg(i) * randomHigh);
+			resultList.Add(new(i, WordType.Empty, highDmgRaw, lowDmgRaw));
+			noAbilityList.Add(new(i, WordType.Empty, highDmgRaw, lowDmgRaw));
+			if (word.Contains(WordType.Place))
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Place, highDmg, lowDmg));
+			}
+			if (word.Contains(WordType.Body))
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Body, highDmg, lowDmg));
+			}
+			if (word.Contains(WordType.Science))
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Science, highDmg, lowDmg));
+			}
+			if (word.Contains(WordType.Person))
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Person, highDmg, lowDmg));
+			}
+			if (word.Contains(WordType.Insult))
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Insult, highDmg, lowDmg));
+			}
+			if (word.Contains(WordType.Religion))
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Religion, highDmg, lowDmg));
+			}
+			if (word.Name.Length == 6 && !word.IsHeal)
+			{
+				var (lowDmg, highDmg) = ((int)(lowDmgRaw * 1.5), (int)(highDmgRaw * 1.5));
+				resultList.Add(new(i, WordType.Tale, highDmg, lowDmg));
+			}
+			if (word.Name.Length > 6 && !word.IsHeal)
 			{
 				var (lowDmg, highDmg) = (lowDmgRaw * 2, highDmgRaw * 2);
 				resultList.Add(new(i, WordType.Tale, highDmg, lowDmg));

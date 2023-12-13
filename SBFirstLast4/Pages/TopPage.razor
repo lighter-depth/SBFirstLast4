@@ -172,7 +172,7 @@
 		await SBAudioManager.Initialize(JSRuntime);
 	}
 
-	private async void LiteDictionaryBtn_Click()
+	private async Task LiteDictionaryBtn_Click()
 	{
 		IsLoading = true;
 		StateHasChanged();
@@ -180,7 +180,7 @@
 		await LoadDictionaryAsync(DictionaryInitializationToken.Lite);
 		NavigationManager.NavigateTo("typed", false);
 	}
-	private async void FullDictionaryBtn_Click()
+	private async Task FullDictionaryBtn_Click()
 	{
 		IsLoading = true;
 		StateHasChanged();
@@ -188,7 +188,7 @@
 		await LoadDictionaryAsync(DictionaryInitializationToken.Full);
 		NavigationManager.NavigateTo("home", false);
 	}
-	private async void CacheBtn_Click()
+	private async Task CacheBtn_Click()
 	{
 		if (!await JSRuntime.Confirm("すべての キャッシュを消去します。よろしいですか？")) return;
 

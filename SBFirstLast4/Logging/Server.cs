@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net.Http.Json;
 
 namespace SBFirstLast4.Logging;
 
@@ -7,7 +8,7 @@ public static class Server
     private static readonly HttpClient client = new();
     private const string SERVER_URL = "https://sbfl4logging.onrender.com/log";
 
-    internal static async void Post<T>(T value)
+    internal static async void Log<T>(T value)
     {
         if (!AppSettings.IsAdmin)
             await client.PostAsJsonAsync(SERVER_URL, value);
@@ -54,7 +55,7 @@ public static class Server
 		}
 		catch
 		{
-			return false;
+			return true;
 		}
 	}
 }

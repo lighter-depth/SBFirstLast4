@@ -124,7 +124,7 @@
 		if (!SBDictionary.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 
-		Server.Post(new
+		Server.Log(new
 		{
 			Type = "TYPE_CHECK",
 			UserInfo = new

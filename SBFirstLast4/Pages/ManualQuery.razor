@@ -192,7 +192,7 @@
 				outputBuffer.AddRange(infoSplit.Select((x, i) => (x + (i == infoSplit.Length - 1 ? string.Empty : "00\"}"), (i & 1) == 1 ? string.Empty : "Monitor")));
 				outputBuffer.Add((infoSplit.Length.ToString(), "Safe"));
 				StateHasChanged();
-				Server.Post(new
+				Server.Log(new
 				{
 					Type = "MONITOR",
 					UserInfo = new
@@ -213,7 +213,7 @@
 				outputBuffer.AddRange(infoSplit.Select((x, i) => (x + (i == infoSplit.Length - 1 ? string.Empty : "00\"}"), (i & 1) == 1 ? string.Empty : "Monitor")));
 				outputBuffer.Add((info.Split("00\"},").Length.ToString(), "Safe"));
 				StateHasChanged();
-				Server.Post(new
+				Server.Log(new
 				{
 					Type = "MONITOR",
 					UserInfo = new
@@ -238,7 +238,7 @@
 				outputBuffer.AddRange(status.Select(x => (x, string.Empty)));
 				StateHasChanged();
 
-				Server.Post(new
+				Server.Log(new
 				{
 					Type = "QUERY",
 					Order = input.Trim(),
@@ -272,7 +272,7 @@
 
 			StateHasChanged();
 
-			Server.Post(new
+			Server.Log(new
 			{
 				Type = "QUERY",
 				Order = input.Trim(),

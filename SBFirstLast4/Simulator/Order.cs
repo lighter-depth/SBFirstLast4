@@ -60,48 +60,30 @@ public enum Options
 	SetMode,
 	SetLuck
 }
-/// <summary>
-/// <see cref="Battle"/>オブジェクトへの命令を表すクラスです。
-/// </summary>
+
 public class Order
 {
-	/// <summary>
-	/// 命令の種類
-	/// </summary>
-	public OrderType Type { get; set; } = OrderType.None;
-	/// <summary>
-	/// プレイヤーの指定
-	/// </summary>
-	public PlayerSelector Selector { get; set; } = PlayerSelector.None;
-	/// <summary>
-	/// オプションの種類
-	/// </summary>
-	public Options Option { get; set; } = Options.None;
-	/// <summary>
-	/// 論理値のパラメーター
-	/// </summary>
+	public OrderType Type { get; set; }
+
+	public PlayerSelector Selector { get; set; }
+
+	public Options Option { get; set; }
+
 	public bool Enabler { get; set; }
-	/// <summary>
-	/// 文字列のパラメーター
-	/// </summary>
+
 	public string Body { get; set; } = string.Empty;
-	/// <summary>
-	/// <see cref="WordType"/>列挙型を表す文字列のパラメーター
-	/// </summary>
+
 	public string? TypeParam { get; set; }
-	/// <summary>
-	/// <see cref="double"/>のパラメーター
-	/// </summary>
+
 	public double[] Param { get; set; } = Array.Empty<double>();
-	/// <summary>
-	/// エラーの情報を表す文字列
-	/// </summary>
+
 	public string? ErrorMessage { get; internal set; }
 
 	public static Order Empty => _empty;
 	private static readonly Order _empty = new();
 
-	static readonly Order defaultError = new(OrderType.Error) { ErrorMessage = "なにかがおかしいよ" };
+	static readonly Order DefaultError = new(OrderType.Error) { ErrorMessage = "なにかがおかしいよ" };
+	static readonly Order NoParameterError = new(OrderType.Error) { ErrorMessage = "パラメーターが指定されていません" };
 	static readonly Dictionary<string, Options> OptionDic = new()
 	{
 		["setmaxhp"] = Options.SetMaxHP,
@@ -156,16 +138,14 @@ public class Order
 	public Order(Options option, params double[] param) => (Type, Option, Param) = (OrderType.NumOption, option, param);
 	public Order(string wordName) => (Type, Body) = (OrderType.Action, wordName);
 	public Order(string wordName, string typeName) => (Type, Body, TypeParam) = (OrderType.Action, wordName, typeName);
-	/// <summary>
-	/// 文字列を<see cref="Order"/>オブジェクトに変換します。
-	/// </summary>
+	
 	public static Order Parse(string[] value, Battle parent)
 	{
 		var key = value.At(0)?.ToLower();
 		if (key is "change" or "ch") return ParseChangeOrder(value, parent);
 		if (key is "show" or "sh")
 		{
-			if (value.Length < 2) return new(OrderType.Error) { ErrorMessage = "パラメーターが指定されていません" };
+			if (value.Length < 2) return NoParameterError;
 			return new(OrderType.Show, value[1].ToLower());
 		}
 		if (key is "reset" or "rs") return new(OrderType.Reset);
@@ -173,18 +153,18 @@ public class Order
 		if (key is "help") return new(OrderType.Help);
 		if (key is "__add")
 		{
-			if (value.Length < 2) return new(OrderType.Error) { ErrorMessage = "パラメーターが指定されていません" };
+			if (value.Length < 2) return NoParameterError;
 			return new(OrderType.Add, value[1]);
 		}
 		if (key is "__remove")
 		{
-			if (value.Length < 2) return new(OrderType.Error) { ErrorMessage = "パラメーターが指定されていません" };
+			if (value.Length < 2) return NoParameterError;
 			return new(OrderType.Remove, value[1]);
 		}
 		if (key is "__search") return new(OrderType.Search);
 		if (key is "action" or "ac")
 		{
-			if (value.Length < 2) return new(OrderType.Error) { ErrorMessage = "パラメーターが指定されていません" };
+			if (value.Length < 2) return NoParameterError;
 			return ParseActionOrder(value[1..]);
 		}
 		if (!string.IsNullOrWhiteSpace(key)) return ParseActionOrder(value);
@@ -197,7 +177,7 @@ public class Order
 	}
 	private static Order ParseChangeOrder(string[] value, Battle parent)
 	{
-		if (value.Length is not (2 or 3)) return new(OrderType.Error) { ErrorMessage = "パラメーターが指定されていません" };
+		if (value.Length is not (2 or 3)) return NoParameterError;
 		if (value.Length is 2)
 		{
 			var body = value[1];
@@ -210,7 +190,7 @@ public class Order
 			var selector = GetSelector(parent, value[1]);
 			return new(OrderType.Change, body, selector);
 		}
-		return defaultError;
+		return DefaultError;
 	}
 	private static PlayerSelector GetSelector(Battle parent, string name = "")
 	{

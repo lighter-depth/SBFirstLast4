@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace SBFirstLast4;
 
-public partial class WordLengthSyntax
+public static partial class WordLengthSyntax
 {
 
     public static Func<string, bool> ParseInputToPredicate(string input)

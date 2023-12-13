@@ -140,7 +140,7 @@ internal static class AppSettings
 
 			if (hash is null) return "UNKNOWN_HASH";
 
-			return string.Join(string.Empty, hash.Select(b => b.ToString("x2")));
+			return hash.Select(b => b.ToString("x2")).Stringify(string.Empty);
 		}
 		catch
 		{

@@ -70,7 +70,7 @@ public static partial class SBPreprocessor
                     + (x is ObjectLikeMacro o
                     ? $"Key: {o.Name}, Value: {o.Body}"
                     : x is FunctionLikeMacro f
-                    ? $"Sign: {f.Name}({string.Join(", ", f.Parameters)}), Body: {f.Body}"
+                    ? $"Sign: {f.Name}({f.Parameters.Stringify()}), Body: {f.Body}"
                     : "NULL"))
                     .Concat(ModuleManager.UserDefined.Symbols.Select(x => $"Symbol: {x}"))
                     .ToArray();
@@ -102,7 +102,7 @@ public static partial class SBPreprocessor
                     + (x is ObjectLikeMacro o
                     ? $"Key: {o.Name}, Value: {o.Body}"
                     : x is FunctionLikeMacro f
-                    ? $"Sign: {f.Name}({string.Join(", ", f.Parameters)}), Body: {f.Body}"
+                    ? $"Sign: {f.Name}({f.Parameters.Stringify()}), Body: {f.Body}"
                     : "NULL"))
                     .Concat(ModuleManager.Symbols.Select(x => $"Symbol: {x}"))
                     .ToArray();
@@ -122,7 +122,7 @@ public static partial class SBPreprocessor
                     + (x is ObjectLikeMacro o
                     ? $"Key: {o.Name}, Value: {o.Body}"
                     : x is FunctionLikeMacro f
-                    ? $"Sign: {f.Name}({string.Join(", ", f.Parameters)}), Body: {f.Body}"
+                    ? $"Sign: {f.Name}({f.Parameters.Stringify()}), Body: {f.Body}"
                     : "NULL"))
                     .Concat(module.Symbols.Select(x => $"Symbol: {x}"))
                     .ToArray();
