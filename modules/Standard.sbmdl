@@ -1,0 +1,5 @@
+module STD;
+
+#define STD
+
+#transient __WZ__ "天で話にならねぇよ..."
