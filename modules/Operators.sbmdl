@@ -1,0 +1,43 @@
+﻿module STD_OPERATORS;
+requires: STD;
+
+#define STD_OPERATORS;
+
+#transient __UOP__(X, O) (O(X))
+
+#define POS(X) (X)
+#define NEG(X) __UOP__(X, -)
+#define NOT(X) (-1 - (X))
+#define NOTL(X) __UOP__(X, !)
+#define ABS(X) (Math.Abs(X))
+
+#transient __BOP__(X, Y, O) ((X) O (Y))
+
+#define ADD(X, Y) __BOP__(X, Y, +)
+#define SUB(X, Y) __BOP__(X, Y, -)
+#define MUL(X, Y) __BOP__(X, Y, *)
+#define DIV(X, Y) __BOP__(X, Y, /)
+#define REM(X, Y) __BOP__(X, Y, %)
+
+#define AND(X, Y) __BOP__(X, Y, &)
+#define OR(X, Y) __BOP__(X, Y, |)
+#define XOR(X, Y) (((X) | (Y)) - ((X) & (Y)))
+
+#define ANDL(X, Y) __BOP__(X, Y, &&)
+#define ORL(X, Y) __BOP__(X, Y, ||)
+
+#transient __TB__(X) Convert.ToBoolean(X)
+#transient __TI__(X) Convert.ToInt32(X)
+
+#define XORL(X, Y) __TB__(__TI__((X) || (Y)) - __TI__((X) && (Y)))
+
+#define SHL(X, Y) __BOP__(X, Y, <<)
+#define SHR(X, Y) __BOP__(X, Y, >>)
+
+#define CRS(X, Y) __BOP__(X, Y, ??)
+
+#define POW(X, Y) (Math.Pow((X), (Y)))
+
+#transient __TOP__(X, Y, Z, O1, O2) ((X) O1 (Y) O2 (Z))
+
+#define IIF(X, Y, Z) __TOP__(X, Y, Z, ?, :)

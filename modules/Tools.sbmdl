@@ -1,0 +1,15 @@
+﻿module STD_TOOLS;
+
+requires: STD;
+
+#define STD_TOOLS
+
+#define UNO(_X) @TW.Where(Start == "_X".LastChar).Where((Length > 6 ? "_X".Length > 6 : Length == "_X".Length) || \c(/_X/d.Type1) || (/X/d.Type2 != $I && \c(/_X/d.Type2))).Sort()
+
+#define DAIFUGO(_X) @TW.Where(Start == "_X".LastChar && Length > 1).Where((Length - "_X".Length > 0 && Length - "_X".Length < 3) || ("_X".Length > 6 && (Length == 2 || Length == 3))).OrderBy(Length)
+#define DAIFUGOR(_X) @TW.Where(Start == "_X".LastChar && Length > 1).Where((Length - "_X".Length > -3 && Length - "_X".Length < 0) || ("_X".Length < 3 && Length > 5)).OrderBy(Length)
+
+#define STARTS(_X) @TW.Where(Start == '_X')
+#define ENDS(_X) @TW.Where(`_Xー*$`.\~(Name))
+#define STARTSN(_X) @NN.Where(FirstChar == '_X')
+#define ENDSN(_X) @NN.Where(`_Xー*$`.\~(@item))
