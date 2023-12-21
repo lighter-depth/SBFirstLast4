@@ -493,22 +493,6 @@
       "url": "manifest.json"
     },
     {
-      "hash": "sha256-HF4dZM6UJrt68bMMYPhkueY\/4av8TpgxL6eyhpqlMOQ=",
-      "url": "sblibs\/Killers.sbmdl"
-    },
-    {
-      "hash": "sha256-Cl1PPrc0fk24pTOfmSCPDOOLkH12Ooa+pak\/4gjcsAs=",
-      "url": "sblibs\/Lists.sbmdl"
-    },
-    {
-      "hash": "sha256-XIp\/LVcSnQIlmAHkR\/PjG8lGM\/rHEn+O9hbeQcVfLCc=",
-      "url": "sblibs\/Standard.sbmdl"
-    },
-    {
-      "hash": "sha256-iVA9Akb5keZ0e27AhpFOpse91WnYxNVx2IXrgzxDenA=",
-      "url": "sblibs\/Tools.sbmdl"
-    },
-    {
       "hash": "sha256-lOCs45frNf+D7me6lKLgUhRCdt4VwHCp9H6Ct+YWzfs=",
       "url": "_framework\/blazor.webassembly.js"
     },
@@ -541,7 +525,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-aShpEQA2oG++Si2XkNQl2D8X3uUSowheO1wxV\/QRct4=",
+      "hash": "sha256-hSKYzC7IH4YnXn06CTkEZPIhMo0Gb7iD5jBXHMtDrMc=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -617,7 +601,7 @@
       "url": "_framework\/netstandard.dll"
     },
     {
-      "hash": "sha256-WIe0ow3WjLs26le9QZwXybwjPzxtQKiwoAiXbwura8s=",
+      "hash": "sha256-PvlDLx7XLnnuJ+8xqdqnjsiZq\/XfggFiyIadO7C8+uA=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -777,5 +761,5 @@
       "url": "_content\/BlazorDownloadFile\/BlazorDownloadFileScript.js"
     }
   ],
-  "version": "o9pPNxWH"
+  "version": "KWFyGBaw"
 };
