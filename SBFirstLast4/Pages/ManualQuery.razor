@@ -37,7 +37,7 @@
 @if (moduleFiles != null)
 {
 	<div style="display: flex; flex-flow: column;">
-		@foreach (var (file, i) in moduleFiles.Select((f, i) => (f, i)))
+		@foreach (var(file, i) in moduleFiles.WithIndex())
 		{
 			<div>
 				<span class="file-name">@file.Name</span>

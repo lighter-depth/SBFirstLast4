@@ -167,7 +167,7 @@ public abstract class Ability
 	private static readonly Ability _default = new Debugger();
 	public int Serialize()
 	{
-		foreach (var (ability, i) in AbilityManager.Abilities.Select((a, i) => (a, i)))
+		foreach (var (ability, i) in AbilityManager.Abilities.WithIndex())
 			if (GetType() == ability.GetType())
 				return i;
 

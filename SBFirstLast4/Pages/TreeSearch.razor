@@ -1,0 +1,97 @@
+﻿@page "/treesearch"
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@using SBFirstLast4.Logging
+@using SBFirstLast4.Expression
+<PageTitle>Tree Search</PageTitle>
+
+<div id="main">
+	<div class="tree-node">
+		<div class="node-title">
+			ソース
+		</div>
+		<div id="source-selector">
+			<select>
+				<option>無属性辞書</option>
+				<option>有属性辞書</option>
+			</select>
+		</div>
+	</div>
+	@foreach (var (name, i) in new[] { "マップ", "マップ" }.WithIndex())
+	{
+		<Node NodeTitle=@name Type=@(Nodes.At(i - 1)?.OutType ?? typeof(Word))></Node>
+	}
+	<div class="pipe"></div>
+	<div class="tree-node" style="align-self: start; width: 60px; margin-left: 27px;">
+		<div>
+			<select id=node-selector @onchange="async e => await NodeSelector_OnChange(e)">
+				@{
+					async Task NodeSelector_OnChange(ChangeEventArgs e)
+					{
+						await JSRuntime.SetElementValueById("node-selector", "root");
+						StateHasChanged();
+					}
+				}
+				<option disabled hidden selected value="root">ノードの追加</option>
+				<option>フィルタ</option>
+				<option>マップ</option>
+				<option>出力</option>
+			</select>
+		</div>
+	</div>
+</div>
+<style>
+	body {
+		background-color: #F5F6F1;
+	}
+
+	#main {
+		display: flex;
+		flex-flow: column;
+		align-content: center;
+	}
+
+	.tree-node {
+		display: flex;
+		border-radius: 20px;
+		background-color: white;
+		box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+		margin: 20px;
+		flex-flow: column;
+	}
+
+	.node-title {
+		font-size: 22px;
+		font-weight: bold;
+		align-self: center;
+	}
+
+	#source-selector {
+		align-self: center;
+	}
+
+	.pipe {
+		margin-left: 50px;
+		width: 10px;
+		height: 60px;
+		margin-top: -20px;
+		margin-bottom: -20px;
+		background-color: lightgray;
+	}
+
+</style>
+
+
+@code {
+	private List<Node> Nodes = new();
+	protected override void OnInitialized()
+	{
+		if (!AppSettings.IsLoggedIn)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+		if (!SBDictionary.IsLoadedCorrectly)
+			NavigationManager.NavigateTo("top", false);
+	}
+}

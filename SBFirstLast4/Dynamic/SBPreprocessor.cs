@@ -17,7 +17,7 @@ public static partial class SBPreprocessor
         {
             foreach (var module in new[]
             {
-                "Standard", "Lists", "Killers", "Tools"
+                "Standard", "Lists", "Killers", "Tools", "Operators"
             })
                 await LoadModule(module, client);
 
@@ -28,7 +28,7 @@ public static partial class SBPreprocessor
 
     private static async Task LoadModule(string moduleName, HttpClient client)
     {
-        var module = await client.GetStringAsync($"sblibs/{moduleName}.sbmdl");
+		var module = await client.GetStringAsync($"https://raw.githubusercontent.com/lighter-depth/SBFirstLast4/sbmdl/modules/{moduleName}.sbmdl");
         ModuleManager.AddModule(Module.Compile(module));
     }
 

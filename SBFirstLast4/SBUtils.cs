@@ -101,6 +101,8 @@ public static class JSHelper
 
 	public static ValueTask<T> GetElementValueById<T>(this IJSRuntime jsRuntime, string id) => jsRuntime.InvokeAsync<T>("eval", $"document.getElementById('{id}').value");
 
+	public static ValueTask SetElementValueById<T>(this IJSRuntime jSRuntime, string id, T value) => jSRuntime.InvokeVoidAsync("eval", $"document.getElementById('{id}').value = '{value}'");
+
 	public static ValueTask ClearElementValueById(this IJSRuntime jsRuntime, string id) => jsRuntime.InvokeVoidAsync("eval", $"document.getElementById('{id}').value = ''");
 
 	public static ValueTask<T> GetProperty<T>(this IJSObjectReference jsRef, string key) => jsRef.InvokeAsync<T>("getProperty", key);
@@ -189,4 +191,6 @@ public static class CollectionHelper
 	public static string Stringify<T>(this IEnumerable<T> values, string separator) => string.Join(separator, values);
 	
 	public static string Stringify<T>(this IEnumerable<T> values) => string.Join(", ", values);
+
+	public static IEnumerable<(T, int)> WithIndex<T>(this IEnumerable<T> source) => source.Select((x, i) => (x, i));
 }

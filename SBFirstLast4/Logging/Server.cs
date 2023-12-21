@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 
 namespace SBFirstLast4.Logging;
 

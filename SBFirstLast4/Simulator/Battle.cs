@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace SBFirstLast4.Simulator;
@@ -82,7 +81,6 @@ public partial class Battle
 			else
 				OnDefault(order, Cancellation);
 
-			// 出力処理
 			await Out(Buffer);
 
 		}
