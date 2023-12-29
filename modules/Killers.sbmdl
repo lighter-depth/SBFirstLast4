@@ -10,6 +10,10 @@ requires: STD;
 #define XEROF(_X, _Y) @TW.Where(Start == "_X".LastChar && \cl(/_X/d) * (Length > 6 ? 2 : (Length == 6 || \c($G) || \c($B) || \c($Q) || \c($P) || \c($Z) || \c($R)) ? 1.5 : 1) _Y)
 #define XEDBY(_X, _Y) @TW.Where(End == "_X".FirstChar && /_X/d.\cl(@item) * ("_X".Length > 6 ? 2 : ("_X".Length == 6 || /_X/d.\c($G) || /_X/d.\c($B) || /_X/d.\c($Q) || /_X/d.\c($P) || /_X/d.\c($Z) || /_X/d.\c($R)) ? 1.5 : 1) _Y)
 
+#define XEROF2(_X, _Y, _Z) @TW.Where(Start == "_X".LastChar && \cl(/_X/d) * (Length > 6 ? 2 : (Length == 6 || \c($G) || \c($B) || \c($Q) || \c($P) || \c($Z) || \c($R)) ? 1.5 : 1) _Y && \cl(/_X/d) * (Length > 6 ? 2 : (Length == 6 || \c($G) || \c($B) || \c($Q) || \c($P) || \c($Z) || \c($R)) ? 1.5 : 1) _Z)
+#define XEDBY2(_X, _Y, _Z) @TW.Where(End == "_X".FirstChar && /_X/d.\cl(@item) * ("_X".Length > 6 ? 2 : ("_X".Length == 6 || /_X/d.\c($G) || /_X/d.\c($B) || /_X/d.\c($Q) || /_X/d.\c($P) || /_X/d.\c($Z) || /_X/d.\c($R)) ? 1.5 : 1) _Y && /_X/d.\cl(@item) * ("_X".Length > 6 ? 2 : ("_X".Length == 6 || /_X/d.\c($G) || /_X/d.\c($B) || /_X/d.\c($Q) || /_X/d.\c($P) || /_X/d.\c($Z) || /_X/d.\c($R)) ? 1.5 : 1) _Z)
+
+
 #define SEMIKILLEROF(_X) XEROF(_X, >5)
 #define SEMIKILLEDBY(_X) XEDBY(_X, >5)
 
