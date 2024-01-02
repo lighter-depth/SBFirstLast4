@@ -9,6 +9,8 @@ requires: STD;
 #define DAIFUGO(_X) @TW.Where(Start == "_X".LastChar && Length > 1).Where((Length - "_X".Length > 0 && Length - "_X".Length < 3) || ("_X".Length > 6 && (Length == 2 || Length == 3))).OrderBy(Length)
 #define DAIFUGOR(_X) @TW.Where(Start == "_X".LastChar && Length > 1).Where((Length - "_X".Length > -3 && Length - "_X".Length < 0) || ("_X".Length < 3 && Length > 5)).OrderBy(Length)
 
+#define OSHARACE(_X) @TW.Where(Start == "_X".LastChar).Where("_X".\c(Name.End) && Length > 2)
+
 #define STARTS(_X) @TW.Where(Start == '_X')
 #define ENDS(_X) @TW.Where(`_Xー*$`.\~(Name))
 #define STARTSN(_X) @NN.Where(FirstChar == '_X')
