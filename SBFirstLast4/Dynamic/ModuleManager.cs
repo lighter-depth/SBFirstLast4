@@ -218,10 +218,7 @@ public partial class Module : IEquatable<Module>
 			.Select(s => s.Trim())
 			.ToArray();
 
-		var contentReader = new ContentReader(name);
-
-		contentReader.ReadContents(contents);
-
+		var contentReader = new ContentReader(name).ReadContents(contents);
 
 		return new()
 		{
@@ -274,7 +271,7 @@ file class ContentReader
 	}
 
 
-	internal void ReadContents(string[] contents)
+	internal ContentReader ReadContents(string[] contents)
 	{
 		foreach (var content in contents)
 			ProcessDirective(content);
@@ -307,6 +304,7 @@ file class ContentReader
 				default:
 					break;
 			}
+		return this;
 	}
 
 

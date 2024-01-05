@@ -65,7 +65,11 @@ public static partial class SBInterpreter
 		["\\cl("] = $"{nameof(Word.CalcEffectiveDmg)}(",
 		["\\t2c("] = $"{nameof(WordTypeEx.TypeToChar)}(",
 		["\\t2s("] = $"{nameof(WordTypeEx.TypeToString)}(",
+		["\\c2t("] = $"{nameof(WordTypeEx.CharToType)}(",
+		["\\s2t("] = $"{nameof(WordTypeEx.StringToType)}(",
 		["Sort()"] = "OrderBy(it)",
+		["Shuffle()"] = "OrderBy(Guid.NewGuid())",
+		["Flatten()"] = "SelectMany(it)",
 		["\\$("] = "string.Format(",
 		["\\~("] = "IsMatch("
 	};
@@ -82,13 +86,19 @@ public static partial class SBInterpreter
 
 		input = input.Trim();
 
-		foreach(var (key, value) in EscapeCharacters)
-			input = input.Replace(key, value);
+		var varMatch = VariableDeclarationRegex().Match(input);
+
+		if (varMatch.Success) 
+		{
+		}
+
+        foreach (var (key, value) in EscapeCharacters)
+			input = input.ReplaceFreeChar(key, value);
 
 		input = ExpandMacro(input);
 
 
-		input = input.Replace("@item", "it");
+		input = input.ReplaceFreeString("@item", "it");
 
 		var commentIndex = input.IndexOf("//");
 		if (commentIndex != -1 && !IsInsideStringLiteral(commentIndex, 2, input)) input = input[..commentIndex];
@@ -142,8 +152,8 @@ public static partial class SBInterpreter
 		input = input[(selectorIndex + 1)..];
 
 
-		if (input.Contains('['))
-			input = ReplaceCollectionLiteral(input);
+		/*if (input.Contains('['))
+			input = ReplaceCollectionLiteral(input);*/
 
 		if (input.Contains('`'))
 			input = ReplaceRegexLiteral(input);
@@ -156,15 +166,17 @@ public static partial class SBInterpreter
 
 		if (input.Contains('$'))
 			foreach (var (key, value) in WordTypeLiteral)
-				input = input.Replace(key, value);
+				input = input.ReplaceFreeString(key, value);
 
 		if (input.Contains('@'))
 			foreach (var (key, value) in DictionaryLiteral)
-				input = input.Replace(key, value);
+				input = input.ReplaceFreeString(key, value);
 
+		if (input.Contains('&'))
+			input = WideVariableRegex().Replace(input, m => WideVariable.GetFormattedString(m.Groups["name"].Value));
 
 		foreach (var (key, value) in ExtensionProperties)
-			input = input.Replace(key, value);
+			input = input.ReplaceFreeString(key, value);
 
 
 		translated = input;
@@ -189,7 +201,7 @@ public static partial class SBInterpreter
 
 		if (!DictionaryLiteral.ContainsKey(selector))
 		{
-			errorMsg = $"Invalid dictionary selector: {input[..selectorIndex]}";
+			errorMsg = $"Invalid dictionary selector: {input.AsSpan()[..selectorIndex]}";
 			return false;
 		}
 
@@ -218,10 +230,9 @@ public static partial class SBInterpreter
 				continue;
 			}
 			if (macro is ObjectLikeMacro objectLikeMacro)
-				input = input.Replace(objectLikeMacro.Name, objectLikeMacro.Body);
+				input = input.ReplaceFreeString(objectLikeMacro.Name, objectLikeMacro.Body);
 		}
 		return input;
-
 	}
 
 	private static string ReplaceGenericMethods(string input)
@@ -309,13 +320,13 @@ public static partial class SBInterpreter
 		return builder.ToString();
 	}
 
-	private static bool IsInsideStringLiteral(int startIndex, int length, string source)
+	internal static bool IsInsideStringLiteral(int startIndex, int length, string source)
 	{
 		if (startIndex < 0 || length < 0 || startIndex + length > source.Length)
 			return false;
 
 		int quoteCount = 0;
-		for (int i = 0; i < startIndex; i++)
+		for (var i = 0; i < startIndex; i++)
 			if (source[i] == '"')
 				quoteCount++;
 
@@ -343,4 +354,13 @@ public static partial class SBInterpreter
 
 	[GeneratedRegex(@"static_cast<(?<type>.*?)>\((?<operand>.*?)\)")]
 	private static partial Regex StaticCastRegex();
+
+	[GeneratedRegex(@"&(?<name>[A-Za-z][0-9A-Z_a-z]*)")]
+	private static partial Regex WideVariableRegex();
+
+	[GeneratedRegex(@"^\s*&(?<name>[A-Za-z][0-9A-Z_a-z]*)\s*=(?<expr>.*)$")]
+	internal static partial Regex VariableDeclarationRegex();
+
+	[GeneratedRegex(@"^\s*delete\s*&(?<name>[A-Za-z][0-9A-Z_a-z]*)")]
+	internal static partial Regex DeleteVariableRegex();
 }

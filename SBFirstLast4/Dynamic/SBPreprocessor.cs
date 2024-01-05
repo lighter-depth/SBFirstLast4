@@ -11,19 +11,22 @@ public static partial class SBPreprocessor
     {
         "define", "undef", "show", "clear", "pragma", "include", "exclude", "ifdef", "ifndef", "delete"
     };
+
+    private static readonly string[] ModulesToLoad =
+    {
+		"Standard", "Lists", "Killers", "Tools", "Operators", "MinMax", "Filters"
+	};
+
     public static async Task Initialize(HttpClient client)
     {
         try
         {
-            foreach (var module in new[]
-            {
-                "Standard", "Lists", "Killers", "Tools", "Operators"
-            })
+            foreach (var module in ModulesToLoad)
                 await LoadModule(module, client);
 
             IsInitialized = true;
         }
-        catch { }
+        catch(HttpRequestException){ }
     }
 
     private static async Task LoadModule(string moduleName, HttpClient client)

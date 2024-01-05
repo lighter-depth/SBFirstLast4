@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.JSInterop;
+using SBFirstLast4.Dynamic;
 using SBFirstLast4.Simulator;
 
 namespace SBFirstLast4;
@@ -86,6 +87,18 @@ public static class SBUtils
 
 	public static bool IsWild(this string name) => name.Contains('*') || name.Contains('＊');
 
+	public static string ReplaceFreeChar(this string input, char oldValue, char newValue) => input.ReplaceFreeString(oldValue.ToString(), newValue.ToString());
+
+	public static string ReplaceFreeString(this string input, string oldValue, string newValue)
+		=> Regex.Replace(input, Regex.Escape(oldValue), m =>
+		{
+			if (SBInterpreter.IsInsideStringLiteral(m.Index, m.Length, input))
+				return m.Value;
+
+			return newValue;
+		});
+
+
 	public static string Stringify(this Exception ex) => $"{ex.GetType().Name}: {ex.Message}";
 
 	public static bool IsDefault<T>(this T value) where T : struct => value.Equals(default(T));
@@ -134,15 +147,15 @@ public static class CollectionHelper
 	public static void Add(this List<AnnotatedString> list, Notice notice, int player1HP, int player2HP) => list.Add(new(string.Empty, notice) { Params = new[] { player1HP, player2HP } });
 
 	public static void Add(this List<AnnotatedString> list, Notice notice, BattleData data) => list.Add(new(string.Empty, notice) { Data = data });
-	
+
 	public static void AddMany(this List<AnnotatedString> list, IEnumerable<AnnotatedString> msgs)
 	{
 		foreach (var msg in msgs)
 			list.Add(msg);
 	}
-	
+
 	public static Span<T> AsSpan<T>(this List<T> list) => CollectionsMarshal.AsSpan(list);
-	
+
 	public static List<string[]> SplitToChunks(this List<string> source, int chunkSize)
 	{
 		const int chunksize = 10000;
@@ -179,17 +192,17 @@ public static class CollectionHelper
 		result.AddRange(words.Where(x => x.Length < 6).Select(x => $"({x})"));
 		return result;
 	}
-	
+
 	public static T? At<T>(this IEnumerable<T> source, int index) => source.ElementAtOrDefault(index);
-	
+
 	public static T? At<T>(this IEnumerable<T> source, Index index) => source.ElementAtOrDefault(index);
-	
+
 	public static char At(this string source, int index) => index < 0 || index >= source.Length ? default : source[index];
-	
+
 	public static char At(this string source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];
-	
+
 	public static string Stringify<T>(this IEnumerable<T> values, string separator) => string.Join(separator, values);
-	
+
 	public static string Stringify<T>(this IEnumerable<T> values) => string.Join(", ", values);
 
 	public static IEnumerable<(T, int)> WithIndex<T>(this IEnumerable<T> source) => source.Select((x, i) => (x, i));

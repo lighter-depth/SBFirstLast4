@@ -324,7 +324,7 @@
 			background-size: auto 100%;
 			background-position: center;
 			height: 100%;
-			margin-left: -27px;			/*z-index: -1;*/
+			margin-left: -27px; /*z-index: -1;*/
 		}
 
 		#alter {
@@ -585,7 +585,7 @@
 
 		#form {
 			/*position: fixed;
-																																																																	bottom: 0;*/
+																																																																			bottom: 0;*/
 			z-index: 1;
 			text-align: center;
 		}
@@ -1142,7 +1142,7 @@
 			line-height: 150px;
 		}
 
-		#history{
+		#history {
 			position: absolute;
 			display: flex;
 			flex-flow: row;
@@ -1153,7 +1153,7 @@
 			margin-left: 60%;
 		}
 
-		.history-command{
+		.history-command {
 			color: #555555;
 			background-color: white;
 			cursor: pointer;
@@ -1163,9 +1163,11 @@
 			width: 30px;
 			border-radius: 5px;
 		}
-		.history-command:active{
-			background-color: #DDDDDD
-		}
+
+			.history-command:active {
+				background-color: #DDDDDD
+			}
+
 		#exit {
 			top: 500px;
 			margin-left: 25%;
@@ -1905,14 +1907,14 @@
 		internal bool Barrier { get; set; } = Barrier;
 		internal bool Portal { get; set; } = Portal;
 		internal bool Rewind { get; set; } = Rewind;
-		internal static ShowAnimationInternal Default => new(false, false, false, false, false, false);
+		internal static ShowAnimationInternal Default { get; } = new(false, false, false, false, false, false);
 	}
 
 	private record ShowPlayerAnimation(ShowAnimationInternal Player1, ShowAnimationInternal Player2)
 	{
 		internal ShowAnimationInternal Player1 { get; set; } = Player1;
 		internal ShowAnimationInternal Player2 { get; set; } = Player2;
-		internal static ShowPlayerAnimation Default => new(ShowAnimationInternal.Default, ShowAnimationInternal.Default);
+		internal static ShowPlayerAnimation Default { get; } = new(ShowAnimationInternal.Default, ShowAnimationInternal.Default);
 	}
 }
 

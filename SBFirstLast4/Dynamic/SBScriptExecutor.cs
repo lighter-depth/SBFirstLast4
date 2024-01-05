@@ -14,11 +14,29 @@ public static class SBScriptExecutor
 			_ => QueryOverSingleton(translated)
 		});
 	}
+
+	public static Task<dynamic> ExecuteDynamicAsync(string translated, string selector)
+	{
+		var dicType = SelectorHelper.GetDictionaryType(selector);
+		return Task.Run(() => dicType switch
+		{
+			DictionaryType.String => QueryOverStringDictionaryDynamic(translated, selector),
+			DictionaryType.Word => QueryOverWordDictionaryDynamic(translated, selector),
+			_ => QueryOverSingletonDynamic(translated)
+		});
+	}
+
+
 	private static string QueryOverWordDictionary(string input, string selector)
 	{
 		try
 		{
-			var config = new ParsingConfig { CustomTypeProvider = new SBCustomTypeProvider() };
+			var config = new ParsingConfig 
+			{
+				CustomTypeProvider = new SBCustomTypeProvider(),
+				ResolveTypesBySimpleName = true,
+				AllowNewToEvaluateAnyType = true
+			};
 			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<Word>, object>(config, false, input);
 
 			var result = expression.Compile().Invoke(SelectorHelper.ToWordEnumerable(selector));
@@ -34,7 +52,12 @@ public static class SBScriptExecutor
 	{
 		try
 		{
-			var config = new ParsingConfig { CustomTypeProvider = new SBCustomTypeProvider() };
+			var config = new ParsingConfig 
+			{
+				CustomTypeProvider = new SBCustomTypeProvider(), 
+				ResolveTypesBySimpleName = true,
+				AllowNewToEvaluateAnyType = true
+			};
 			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<string>, object>(config, false, input);
 
 			var result = expression.Compile().Invoke(SelectorHelper.ToStringEnumerable(selector));
@@ -50,12 +73,75 @@ public static class SBScriptExecutor
 	{
 		try
 		{
-			var config = new ParsingConfig { CustomTypeProvider = new SBCustomTypeProvider() };
+			var config = new ParsingConfig 
+			{
+				CustomTypeProvider = new SBCustomTypeProvider(), 
+				ResolveTypesBySimpleName = true,
+				AllowNewToEvaluateAnyType = true
+			};
 			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<int>, object>(config, false, input);
 
 			var result = expression.Compile().Invoke(_singletonEnumerable);
 
 			return ResultObjectToString(result);
+		}
+		catch (Exception ex)
+		{
+			return $"Error: {ex.GetType().Name}: {ex.Message}";
+		}
+	}
+
+	private static dynamic QueryOverWordDictionaryDynamic(string input, string selector)
+	{
+		try
+		{
+			var config = new ParsingConfig
+			{
+				CustomTypeProvider = new SBCustomTypeProvider(),
+				ResolveTypesBySimpleName = true,
+				AllowNewToEvaluateAnyType = true
+			};
+			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<Word>, object>(config, false, input);
+
+			return expression.Compile().Invoke(SelectorHelper.ToWordEnumerable(selector));
+		}
+		catch (Exception ex)
+		{
+			return $"Error: {ex.GetType().Name}: {ex.Message}";
+		}
+	}
+	private static dynamic QueryOverStringDictionaryDynamic(string input, string selector)
+	{
+		try
+		{
+			var config = new ParsingConfig
+			{
+				CustomTypeProvider = new SBCustomTypeProvider(),
+				ResolveTypesBySimpleName = true,
+				AllowNewToEvaluateAnyType = true
+			};
+			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<string>, object>(config, false, input);
+
+			return expression.Compile().Invoke(SelectorHelper.ToStringEnumerable(selector));
+		}
+		catch (Exception ex)
+		{
+			return $"Error: {ex.GetType().Name}: {ex.Message}";
+		}
+	}
+	private static dynamic QueryOverSingletonDynamic(string input)
+	{
+		try
+		{
+			var config = new ParsingConfig
+			{
+				CustomTypeProvider = new SBCustomTypeProvider(),
+				ResolveTypesBySimpleName = true,
+				AllowNewToEvaluateAnyType = true
+			};
+			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<int>, object>(config, false, input);
+
+			return expression.Compile().Invoke(_singletonEnumerable);
 		}
 		catch (Exception ex)
 		{

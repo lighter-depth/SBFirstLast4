@@ -12,6 +12,7 @@ public class SBCustomTypeProvider : DefaultDynamicLinqCustomTypeProvider, IDynam
 	{
 		var types = base.GetCustomTypes();
 		types = types.Concat(typeof(System.Text.RegularExpressions.Regex).Assembly.GetTypes()).ToHashSet();
-        return types;
+        
+		return types;
 	}
 }

@@ -94,8 +94,8 @@ public class AbilityManager
 		var result = new List<Ability>();
 		var subClasses = Assembly.GetAssembly(typeof(Ability))?.GetTypes()
 			.Where(x => x.IsSubclassOf(typeof(Ability)) && !x.IsAbstract).ToArray() ?? Array.Empty<Type>();
-		foreach (var i in subClasses) 
-			if(Activator.CreateInstance(i) is Ability ability) 
+		foreach (var i in subClasses)
+			if (Activator.CreateInstance(i) is Ability ability)
 				result.Add(ability);
 		return result;
 	}
@@ -163,8 +163,7 @@ public abstract class Ability
 	public abstract void Execute(Contract c);
 	public new abstract string ToString();
 
-	public static Ability Default => _default;
-	private static readonly Ability _default = new Debugger();
+	public static Ability Default { get; } = new Debugger();
 	public int Serialize()
 	{
 		foreach (var (ability, i) in AbilityManager.Abilities.WithIndex())

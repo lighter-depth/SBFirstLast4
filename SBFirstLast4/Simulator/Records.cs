@@ -20,8 +20,7 @@ public record BattleData(PlayerData Player1, PlayerData Player2, PlayerData PreA
 	public Word CurrentWord => IsPlayer1sTurn ? Player1.CurrentWord : Player2.CurrentWord;
 
 	public bool IsEdited { get; set; }
-	public static BattleData Default => _default;
-	private static readonly BattleData _default = new(PlayerData.Default, PlayerData.Default, PlayerData.Default, PlayerData.Default, default, 0, new());
+	public static BattleData Default { get; } = new(PlayerData.Default, PlayerData.Default, PlayerData.Default, PlayerData.Default, default, 0, new());
 
 	public override string ToString() => Serialize();
 
@@ -87,8 +86,7 @@ public record PlayerData(string Name, int AbilityIndex, int HP, int ATKIndex, in
 			)
 		);
 
-	public static PlayerData Default => _default;
-	private static readonly PlayerData _default = new(string.Empty, 0, 0, 0, 0, Word.Default, default, PlayerArgs.Default);
+	public static PlayerData Default { get; } = new(string.Empty, 0, 0, 0, 0, Word.Default, default, PlayerArgs.Default);
 
 	public string Serialize()
 	{
@@ -149,8 +147,7 @@ public record PlayerData(string Name, int AbilityIndex, int HP, int ATKIndex, in
 
 public record PlayerArgs(int FoodRem, int CureRem, int PoisonDmg, int SeedRem, int SkillRem) : IEnumerable<int>
 {
-	public static PlayerArgs Default => _default;
-	private static readonly PlayerArgs _default = new(0, 0, 0, 0, 0);
+	public static PlayerArgs Default { get; } = new(0, 0, 0, 0, 0);
 
 	public IEnumerator<int> GetEnumerator()
 	{
