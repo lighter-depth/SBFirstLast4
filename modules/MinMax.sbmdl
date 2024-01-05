@@ -1,0 +1,4 @@
+module STD_MINMAX;
+requires: STD;
+
+#define STD_MINMAX
