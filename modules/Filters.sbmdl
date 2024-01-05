@@ -1,0 +1,17 @@
+module STD_FILTERS;
+requires: STD;
+
+#define STD_FILTERS
+
+#define _Starts(_X) Where(Start == '_X')
+#define _Ends(_X) Where(End == '_X')
+#define _Length(_C) Where(Length _C)
+#define _Length2(_C1, _C2) Where(Length _C1 && Length _C2)
+
+#transient __CONTAINS__(_T) \c("_T".Length == 1 && "_T" != "虫" ? '_T'.CharToType() : "_T".StringToType())
+
+#define _HasType(_T) Where(__CONTAINS__(_T))
+#define _HasTypes(_T1, _T2) Where(__CONTAINS__(_T1) || __CONTAINS__(_T2))
+
+#define _Before(_X) Where(End == "_X".FirstChar)
+#define _After(_X) Where(Start == "_X".LastChar)
