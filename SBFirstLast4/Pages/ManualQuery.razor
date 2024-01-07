@@ -38,7 +38,7 @@
 @if (moduleFiles != null)
 {
 	<div style="display: flex; flex-flow: column;">
-		@foreach (var(file, i) in moduleFiles.WithIndex())
+		@foreach (var (file, i) in moduleFiles.WithIndex())
 		{
 			<div>
 				<span class="file-name">@file.Name</span>
@@ -76,7 +76,7 @@
 			Date = DateTime.Now
 		});
 	}
-	<a href="https://github.com/lighter-depth/FirstLast4Sample/wiki" rel="nofollow" target="_blank" @onclick="() => Href_OnClick(true)">ドキュメント　<span class="oi oi-external-link" style="font-size: 12px;"/></a>
+	<a href="https://github.com/lighter-depth/FirstLast4Sample/wiki" rel="nofollow" target="_blank" @onclick="() => Href_OnClick(true)">ドキュメント　<span class="oi oi-external-link" style="font-size: 12px;" /></a>
 	<a href="https://github.com/lighter-depth/FirstLast4Sample/wiki/SBFirstLast4%E3%81%AE%E7%B5%84%E3%81%BF%E8%BE%BC%E3%81%BF%E3%83%A2%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB" rel="nofollow" target="_blank" @onclick="() => Href_OnClick(false)">マクロ一覧　<span class="oi oi-external-link" style="font-size: 12px;" /></a>
 </div>
 <style>
@@ -137,6 +137,8 @@
 </style>
 
 @code {
+	private QueryAgent Agent = new();
+
 	private string translatedStr = string.Empty;
 
 	internal static bool IsReflect { get; set; }
@@ -190,7 +192,8 @@
 
 	private List<(string Content, string Type)> outputBuffer = new() { ("Welcome to manual query for SB.", string.Empty) };
 
-	private async void HandleInput(KeyboardEventArgs e)
+
+	private async Task HandleInput(KeyboardEventArgs e)
 	{
 		try
 		{
@@ -199,162 +202,17 @@
 			await JSRuntime.ClearElementValueById("console-input");
 			outputBuffer.Add(($"> {input}", "Cmd"));
 			StateHasChanged();
-			await Task.Delay(1);
+
 			if (string.IsNullOrWhiteSpace(input))
 				return;
 
-			if (input.Trim() == "#pragma monitor $ALL")
-			{
-				var info = await Server.GetAsync();
-				var infoSplit = info.Split("00\"},");
-				outputBuffer.AddRange(infoSplit.Select((x, i) => (x + (i == infoSplit.Length - 1 ? string.Empty : "00\"}"), (i & 1) == 1 ? string.Empty : "Monitor")));
-				outputBuffer.Add((infoSplit.Length.ToString(), "Safe"));
-				StateHasChanged();
-				Server.Log(new
-				{
-					Type = "MONITOR",
-					UserInfo = new
-					{
-						Name = AppSettings.UserName,
-						Guid = AppSettings.Guid,
-						Hash = AppSettings.Hash
-					},
-					Date = DateTime.Now
-				});
-				return;
-			}
-
-			if (input.Trim() == "#pragma monitor")
-			{
-				var info = await Server.GetAsync();
-				var infoSplit = info.Split("00\"},").TakeLast(10).ToArray();
-				outputBuffer.AddRange(infoSplit.Select((x, i) => (x + (i == infoSplit.Length - 1 ? string.Empty : "00\"}"), (i & 1) == 1 ? string.Empty : "Monitor")));
-				outputBuffer.Add((info.Split("00\"},").Length.ToString(), "Safe"));
-				StateHasChanged();
-				Server.Log(new
-				{
-					Type = "MONITOR",
-					UserInfo = new
-					{
-						Name = AppSettings.UserName,
-						Guid = AppSettings.Guid,
-						Hash = AppSettings.Hash
-					},
-					Date = DateTime.Now
-				});
-				return;
-			}
-
-			if(input.Trim() == "#clear screen")
-			{
-				outputBuffer.Clear();
-				StateHasChanged();
-				return;
-			}
-
-			if (input.Trim().At(0) == '#')
-			{
-				if (!SBPreprocessor.TryPreprocess(input, out var status, out var errorMsgPreprocess))
-				{
-					outputBuffer.Add(($"Error: SBPreprocessException: {errorMsgPreprocess}", "Error"));
-					StateHasChanged();
-					return;
-				}
-				outputBuffer.AddRange(status.Select(x => (x, string.Empty)));
-				StateHasChanged();
-
-				Server.Log(new
-				{
-					Type = "QUERY",
-					Order = input.Trim(),
-					UserInfo = new
-					{
-						Name = AppSettings.UserName,
-						Guid = AppSettings.Guid,
-						Hash = AppSettings.Hash
-					},
-					Date = DateTime.Now
-				});
-
-				if (input.Trim().StartsWith("#delete"))
-					await HandleDeletedFiles();
-
-				return;
-			}
-
-			if (SBInterpreter.VariableDeclarationRegex().Match(input.Trim()) is var varMatch && varMatch.Success)
-			{
-				var name = varMatch.Groups["name"].Value;
-				var expr = varMatch.Groups["expr"].Value;
-				if(!SBInterpreter.TryInterpret(expr, out var translatedExpr, out var selectorExpr, out var errorMsgVar))
-				{
-					outputBuffer.Add(($"Error: SBProcessException: {errorMsgVar}", "Error"));
-					StateHasChanged();
-					return;
-				}
-				translatedStr = translatedExpr;
-				var outputExpr = await SBScriptExecutor.ExecuteDynamicAsync(translatedExpr, selectorExpr);
-
-				WideVariable.Variables[name] = outputExpr;
-
-				if (IsReflect)
-					outputBuffer.Add((translatedExpr, "Monitor"));
-
-				StateHasChanged();
-				Server.Log(new
-				{
-					Type = "QUERY",
-					Order = input.Trim(),
-					UserInfo = new
-					{
-						Name = AppSettings.UserName,
-						Guid = AppSettings.Guid,
-						Hash = AppSettings.Hash
-					},
-					Date = DateTime.Now
-				});
-				return;
-			}
-
-			if(SBInterpreter.DeleteVariableRegex().Match(input.Trim()) is var deleteMatch && deleteMatch.Success)
-			{
-				var name = deleteMatch.Groups["name"].Value;
-				var success = WideVariable.Variables.Remove(name);
-				outputBuffer.Add(success ? ($"Successfully deleted variable {name}.", string.Empty) : ($"Specified variable {name} does not exist.", "Error"));
-				StateHasChanged();
-				Server.Log(new
-				{
-					Type = "QUERY",
-					Order = input.Trim(),
-					UserInfo = new
-					{
-						Name = AppSettings.UserName,
-						Guid = AppSettings.Guid,
-						Hash = AppSettings.Hash
-					},
-					Date = DateTime.Now
-				});
-				return;
-			}
-
-			if (!SBInterpreter.TryInterpret(input, out var translated, out var selector, out var errorMsg))
-			{
-				outputBuffer.Add(($"Error: SBProcessException: {errorMsg}", "Error"));
-				StateHasChanged();
-				return;
-			}
-			translatedStr = translated;
-			var output = await SBScriptExecutor.ExecuteAsync(translated, selector);
-			outputBuffer.Add((output, output.Contains("Error:") ? "Error" : string.Empty));
-
-			if (IsReflect)
-				outputBuffer.Add((translated, "Monitor"));
+			await Agent.RunAsync(input, outputBuffer, s => translatedStr = s, HandleDeletedFiles);
 
 			StateHasChanged();
 
 			Server.Log(new
 			{
-				Type = "QUERY",
+				Type = Agent.Context == "Monitor" ? "MONITOR" : "QUERY",
 				Order = input.Trim(),
 				UserInfo = new
 				{

@@ -5,15 +5,15 @@ namespace SBFirstLast4.Dynamic;
 [DynamicLinqType]
 public static class WideVariable
 {
-	public static readonly Dictionary<string, dynamic> Variables = new();
+	public static readonly Dictionary<string, object?> Variables = new();
 
-	public static dynamic GetValue(string name) => Variables[name];
+	public static object? GetValue(string name) => Variables[name];
 
-	public static string SetValue(string name, dynamic value)
+	public static string SetValue(string name, object? value)
 	{
 		Variables[name] = value;
 		return string.Empty;
 	}
 
-	internal static string GetFormattedString(string name) => $"\"{Variables[name].GetType().FullName}\"({nameof(WideVariable)}.{nameof(GetValue)}(\"{name}\"))";
+	internal static string GetFormattedString(string name) => $"\"{Variables[name]?.GetType().FullName}\"({nameof(WideVariable)}.{nameof(GetValue)}(\"{name}\"))";
 }

@@ -86,17 +86,8 @@ public static partial class SBInterpreter
 
 		input = input.Trim();
 
-		var varMatch = VariableDeclarationRegex().Match(input);
-
-		if (varMatch.Success) 
-		{
-		}
-
         foreach (var (key, value) in EscapeCharacters)
 			input = input.ReplaceFreeChar(key, value);
-
-		input = ExpandMacro(input);
-
 
 		input = input.ReplaceFreeString("@item", "it");
 
@@ -210,7 +201,7 @@ public static partial class SBInterpreter
 		return true;
 	}
 
-	private static string ExpandMacro(string input)
+	internal static string ExpandMacro(string input)
 	{
 		foreach (var macro in ModuleManager.Macros.Reverse())
 		{

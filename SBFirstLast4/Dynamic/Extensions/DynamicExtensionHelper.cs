@@ -24,10 +24,6 @@ public static class DynamicExtensionHelper
 
 	public static Regex ToRegex(this string pattern, RegexOptions options, TimeSpan matchTimeout) => new(pattern, options, matchTimeout);
 
-	public static T? At<T>(this IEnumerable<T> source, int index) => source.ElementAtOrDefault(index);
-
-	public static T? At<T>(this IEnumerable<T> source, Index index) => source.ElementAtOrDefault(index);
-
 	public static char At(this string source, int index) => index < 0 || index >= source.Length ? default : source[index];
 
 	public static char At(this string source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];

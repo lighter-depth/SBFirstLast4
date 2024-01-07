@@ -9,7 +9,7 @@ public static partial class SBPreprocessor
 
     private static readonly string[] ValidDirectives =
     {
-        "define", "undef", "show", "clear", "pragma", "include", "exclude", "ifdef", "ifndef", "delete"
+        "define", "undef", "show", "clear", "pragma", "include", "exclude", "ifdef", "ifndef", "delete", "ephemeral", "evaporate"
     };
 
     private static readonly string[] ModulesToLoad =
@@ -252,6 +252,18 @@ public static partial class SBPreprocessor
             errorMsg = deleteStatus;
             return false;
         }
+
+        if(symbol is "evaporate")
+        {
+            errorMsg = "Ephemeral macros are not currently supported.";
+            return false;
+        }
+
+        if(symbol is "ephemeral")
+        {
+			errorMsg = "Ephemeral macros are not currently supported.";
+			return false;
+		}
 
 
         if (symbol is "undef")
