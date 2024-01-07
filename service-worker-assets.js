@@ -525,7 +525,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-+sb8sB8fEo3fQcFegB4ql5jShFHv6aQ+\/zUxKIuENz8=",
+      "hash": "sha256-0UpMr0h6EzCQ3W8AvGLTgq3EbS2FD2n6QBeo7h\/I4iA=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -551,10 +551,6 @@
     {
       "hash": "sha256-DLpXs1BkYSwNP\/zUyVp3njCajWfHMxNFoGBxyxRy8U4=",
       "url": "_framework\/Microsoft.AspNetCore.Components.WebAssembly.dll"
-    },
-    {
-      "hash": "sha256-cXpwM2bygBNjuOTimKQrRyOFZ6rLPst0MJz1U73JPvQ=",
-      "url": "_framework\/Microsoft.CSharp.dll"
     },
     {
       "hash": "sha256-X\/f4fDl2cuIRXeWHhK\/f2UqQbFioD+RU4a4CEh0zrrQ=",
@@ -605,7 +601,7 @@
       "url": "_framework\/netstandard.dll"
     },
     {
-      "hash": "sha256-LcjhsHaihiBnPICPhWnGB3r+UFMHSWM2HbNcr9zFdRA=",
+      "hash": "sha256-eqht6IKbHDgccTi\/66JcfDYLwRzibhc6sjW6xMgizrs=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -665,7 +661,7 @@
       "url": "_framework\/System.Linq.Dynamic.Core.dll"
     },
     {
-      "hash": "sha256-dT7qZhYozaXiM15zDaZZ1MgstAkbb1CcBCvo75Hhca8=",
+      "hash": "sha256-8r3dXkUh0creY26XhlM9MegtE4hPVJQdUyMHs\/uvCCs=",
       "url": "_framework\/System.Linq.Expressions.dll"
     },
     {
@@ -697,7 +693,7 @@
       "url": "_framework\/System.ObjectModel.dll"
     },
     {
-      "hash": "sha256-YtH7ahUw7aPWmwrHW5NOxMcWtMUw27UecAKLLf+sgsQ=",
+      "hash": "sha256-7HBJQr5wVADHISyhLsNDBn3C5i\/EvXddb5wgiVPUD+c=",
       "url": "_framework\/System.Private.CoreLib.dll"
     },
     {
@@ -721,7 +717,7 @@
       "url": "_framework\/System.Reflection.Primitives.dll"
     },
     {
-      "hash": "sha256-xHpdts6zgzZFidhSfnNJvqp8k+hulsjr2NhwolddFhw=",
+      "hash": "sha256-BGs+cbCPfSC4Fq90xJHDfoXgvH+RrZ4tcLqZYjcSlHI=",
       "url": "_framework\/System.Runtime.dll"
     },
     {
@@ -749,7 +745,7 @@
       "url": "_framework\/System.Text.Json.dll"
     },
     {
-      "hash": "sha256-mST1DNKZhQOuJbFg\/EIGOpUkdUkOqUFY7mhe2r+oBwM=",
+      "hash": "sha256-yuPx9GE4sVdGXTazasdCfhTIWnalGG2YIDWQaA\/6N4U=",
       "url": "_framework\/System.Text.RegularExpressions.dll"
     },
     {
@@ -765,5 +761,5 @@
       "url": "_content\/BlazorDownloadFile\/BlazorDownloadFileScript.js"
     }
   ],
-  "version": "RbJ663Ie"
+  "version": "3TdX4Fli"
 };
