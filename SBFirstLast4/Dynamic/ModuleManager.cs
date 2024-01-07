@@ -11,9 +11,9 @@ public static class ModuleManager
 
 	public static string[] ModuleNames => Modules.Select(x => x.Name).Except(ExcludedModules).ToArray();
 
-	public static Macro[] Macros => Modules.Where(m => !ExcludedModules.Contains(m.Name)).SelectMany(m => m.Macros).Concat(UserDefined.Macros).DistinctBy(m => m.Name).ToArray();
+	public static Macro[] Macros => Modules.Where(m => !ExcludedModules.Contains(m.Name)).SelectMany(m => m.Macros).Concat(UserDefined.Macros).ToArray();
 
-	public static Macro[] Ephemerals => Modules.Where(m => !ExcludedModules.Contains(m.Name)).SelectMany(m => m.Ephemerals).Concat(UserDefined.Ephemerals).DistinctBy(m => m.Name).ToArray();
+	public static Macro[] Ephemerals => Modules.Where(m => !ExcludedModules.Contains(m.Name)).SelectMany(m => m.Ephemerals).Concat(UserDefined.Ephemerals).ToArray();
 
 	public static string[] Symbols => Modules.Where(m => !ExcludedModules.Contains(m.Name)).SelectMany(m => m.Symbols).Concat(UserDefined.Symbols).Distinct().ToArray();
 
