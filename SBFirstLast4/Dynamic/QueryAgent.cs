@@ -17,13 +17,17 @@ public partial class QueryAgent
 	{
 		Context = string.Empty;
 
-		if (input.Trim() is var inputTrim && inputTrim.StartsWith("#pragma monitor"))
+		var inputTrim = input.Trim();
+
+		inputTrim = SBInterpreter.ExpandEphemeral(inputTrim);
+
+		if (inputTrim.StartsWith("#pragma monitor"))
 		{
 			await PragmaMonitorAsync(inputTrim, outputBuffer);
 			return;
 		}
 
-		if (inputTrim == "#clearscreen")
+		if (inputTrim == "#clear")
 		{
 			outputBuffer.Clear();
 			return;

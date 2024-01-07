@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 
 namespace SBFirstLast4.Dynamic;
 
@@ -12,9 +13,11 @@ public static class ModuleManager
 
 	public static Macro[] Macros => Modules.Where(m => !ExcludedModules.Contains(m.Name)).SelectMany(m => m.Macros).Concat(UserDefined.Macros).DistinctBy(m => m.Name).ToArray();
 
+	public static Macro[] Ephemerals => Modules.Where(m => !ExcludedModules.Contains(m.Name)).SelectMany(m => m.Ephemerals).Concat(UserDefined.Ephemerals).DistinctBy(m => m.Name).ToArray();
+
 	public static string[] Symbols => Modules.Where(m => !ExcludedModules.Contains(m.Name)).SelectMany(m => m.Symbols).Concat(UserDefined.Symbols).Distinct().ToArray();
 
-	public static string[] ContentNames => Macros.Select(x => x.Name).Concat(Symbols).ToArray();
+	public static string[] ContentNames => Macros.Select(x => x.Name).Concat(Ephemerals.Select(x => x.Name)).Concat(Symbols).ToArray();
 
 	public static List<string> ExcludedModules { get; private set; } = new();
 
@@ -194,6 +197,8 @@ public partial class Module : IEquatable<Module>
 
 	public List<Macro> Macros { get; init; } = new();
 
+	public List<Macro> Ephemerals { get; init; } = new();
+
 	public bool IsRuntime { get; init; }
 
 	public string? RuntimeName { get; init; }
@@ -218,7 +223,7 @@ public partial class Module : IEquatable<Module>
 			.Select(s => s.Trim())
 			.ToArray();
 
-		var contentReader = new ContentReader(name).ReadContents(contents);
+		var reader = new ContentReader(name).ReadContents(contents);
 
 		return new()
 		{
@@ -226,8 +231,9 @@ public partial class Module : IEquatable<Module>
 			Requires = string.IsNullOrWhiteSpace(requires)
 						? Array.Empty<string>()
 						: requires.Trim().Split(",").Select(s => s.Trim()).ToArray(),
-			Symbols = contentReader.Symbols,
-			Macros = contentReader.Macros,
+			Symbols = reader.Symbols,
+			Macros = reader.Macros,
+			Ephemerals = reader.Ephemerals,
 			IsRuntime = isRuntime,
 			RuntimeName = runtimeName
 		};
@@ -244,6 +250,12 @@ public partial class Module : IEquatable<Module>
 	[GeneratedRegex(@"define\s+(?<name>\w+)\((?<parameters>[^)]+)\)\s+(?<body>.+)")]
 	internal static partial Regex DefineFunctionLikeMacroRegex();
 
+	[GeneratedRegex(@"ephemeral\s+(?<key>[^\s]+)\s+(?<value>.*)")]
+	internal static partial Regex EphemeralObjectLikeMacroRegex();
+
+	[GeneratedRegex(@"ephemeral\s+(?<name>\w+)\((?<parameters>[^)]+)\)\s+(?<body>.+)")]
+	internal static partial Regex EphemeralFunctionLikeMacroRegex();
+
 	[GeneratedRegex(@"transient\s+(?<key>[^\s]+)\s+(?<value>.*)")]
 	internal static partial Regex TransientObjectLikeMacroRegex();
 
@@ -259,6 +271,7 @@ file class ContentReader
 
 	internal List<string> Symbols { get; private set; } = new();
 	internal List<Macro> Macros { get; private set; } = new();
+	internal List<Macro> Ephemerals { get; private set; } = new();
 
 	private readonly List<Macro> Transients = new();
 	private readonly List<string> OmitSymbols = new();
@@ -358,6 +371,46 @@ file class ContentReader
 					OmitSymbols.Add(symbol);
 					Symbols.RemoveAll(s => s == symbol);
 					Macros.RemoveAll(m => m.Name == symbol);
+					break;
+				}
+			case "#ephemeral":
+				{
+					if (IsDisabled.Peek() || directive.Length < 3)
+						break;
+
+					var match = Module.EphemeralFunctionLikeMacroRegex().Match(directiveStr);
+					if (match.Success)
+					{
+						var functionLikeMacro = new FunctionLikeMacro
+						{
+							Name = match.Groups["name"].Value,
+							Parameters = match.Groups["parameters"].Value.Split(',').Select(p => p.Trim()).ToList(),
+							Body = match.Groups["body"].Value,
+							ModuleName = ModuleName
+						};
+						Ephemerals.Add(functionLikeMacro);
+						break;
+					}
+
+					var groups = Module.EphemeralObjectLikeMacroRegex().Match(directiveStr).Groups;
+					var objectLikeMacro = new ObjectLikeMacro
+					{
+						Name = groups["key"].Value,
+						Body = groups["value"].Value,
+						ModuleName = ModuleName
+					};
+					Ephemerals.Add(objectLikeMacro);
+					break;
+				}
+			case "#evaporate":
+				{
+					if (IsDisabled.Peek() || directive.Length < 2)
+						break;
+
+					var symbol = directive[1];
+					OmitSymbols.Add(symbol);
+					Symbols.RemoveAll(s => s == symbol);
+					Ephemerals.RemoveAll(m => m.Name == symbol);
 					break;
 				}
 			case "#transient":
