@@ -1,4 +1,5 @@
-﻿using SBFirstLast4.Pages;
+﻿using Microsoft.VisualBasic;
+using SBFirstLast4.Pages;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SBFirstLast4.Dynamic;
@@ -33,6 +34,82 @@ public static partial class SBPreprocessor
 	{
 		var module = await client.GetStringAsync($"https://raw.githubusercontent.com/lighter-depth/SBFirstLast4/sbmdl/modules/{moduleName}.sbmdl");
 		ModuleManager.AddModule(Module.Compile(module));
+	}
+
+	public static bool TryProcessEphemerals(string input, [NotNullWhen(true)] out string[]? status, [NotNullWhen(false)] out string? errorMsg, string moduleName = "USER_DEFINED")
+	{
+		(status, errorMsg) = (null, null);
+		input = input.Trim();
+		if (input.Length < 2)
+		{
+			errorMsg = "The directive was empty.";
+			return false;
+		}
+		input = input[(input.IndexOf('#') + 1)..];
+
+		var contents = input.Split();
+		var symbol = contents.At(0);
+
+		if (symbol is "evaporate")
+		{
+			if (contents.Length != 2)
+			{
+				errorMsg = "Invalid syntax: #evaporate syntax must have one argument.";
+				return false;
+			}
+			if (contents[1] == "$ALL")
+			{
+				ModuleManager.UserDefined.Ephemerals.Clear();
+				status = new[] { "Cleared up the USER_DEFINED Ephemeral Dictionary." };
+				return true;
+			}
+			var count = ModuleManager.UserDefined.Ephemerals.RemoveAll(m => m.Name == contents[1]);
+			if (count < 1)
+			{
+				errorMsg = $"Specified ephemeral '{contents[1]}' does not exist in the USER_DEFINED module.";
+				return false;
+			}
+			status = new[] { $"Successfully removed ephemeral '{contents[1]}' from the dictionary." };
+			return true;
+		}
+
+		if (symbol is "ephemeral")
+		{
+			var match = Module.EphemeralFunctionLikeMacroRegex().Match(input);
+			if (match.Success)
+			{
+				var functionLikeMacro = new FunctionLikeMacro
+				{
+					Name = match.Groups["name"].Value,
+					Parameters = match.Groups["parameters"].Value.Split(',').Select(p => p.Trim()).ToList(),
+					Body = match.Groups["body"].Value,
+					ModuleName = moduleName
+				};
+				ModuleManager.UserDefined.Ephemerals.Add(functionLikeMacro);
+				status = new[] { $"Successfully added ephemeral '{match.Groups["name"]}' to the dictionary." };
+				return true;
+			}
+
+			if (contents.Length < 3)
+			{
+				errorMsg = "Invalid syntax: #ephemeral syntax must have more than two arguments.";
+				return false;
+			}
+
+			var groups = Module.EphemeralObjectLikeMacroRegex().Match(input).Groups;
+			var objectLikeMacro = new ObjectLikeMacro
+			{
+				Name = groups["key"].Value,
+				Body = groups["value"].Value,
+				ModuleName = moduleName
+			};
+			ModuleManager.UserDefined.Ephemerals.Add(objectLikeMacro);
+
+			status = new[] { $"Successfully added ephemeral '{contents[1]}' to the dictionary." };
+			return true;
+		}
+		errorMsg = $"Invalid directive: {input}";
+		return false;
 	}
 
 
@@ -266,66 +343,6 @@ public static partial class SBPreprocessor
 			errorMsg = deleteStatus;
 			return false;
 		}
-
-		if (symbol is "evaporate")
-		{
-			if (contents.Length != 2)
-			{
-				errorMsg = "Invalid syntax: #evaporate syntax must have one argument.";
-				return false;
-			}
-			if (contents[1] == "$ALL")
-			{
-				ModuleManager.UserDefined.Ephemerals.Clear();
-				status = new[] { "Cleared up the USER_DEFINED Ephemeral Dictionary." };
-				return true;
-			}
-			var count = ModuleManager.UserDefined.Ephemerals.RemoveAll(m => m.Name == contents[1]);
-			if (count < 1)
-			{
-				errorMsg = $"Specified ephemeral '{contents[1]}' does not exist in the USER_DEFINED module.";
-				return false;
-			}
-			status = new[] { $"Successfully removed ephemeral '{contents[1]}' from the dictionary." };
-			return true;
-		}
-
-		if (symbol is "ephemeral")
-		{
-			var match = Module.EphemeralFunctionLikeMacroRegex().Match(input);
-			if (match.Success)
-			{
-				var functionLikeMacro = new FunctionLikeMacro
-				{
-					Name = match.Groups["name"].Value,
-					Parameters = match.Groups["parameters"].Value.Split(',').Select(p => p.Trim()).ToList(),
-					Body = match.Groups["body"].Value,
-					ModuleName = moduleName
-				};
-				ModuleManager.UserDefined.Ephemerals.Add(functionLikeMacro);
-				status = new[] { $"Successfully added ephemeral '{match.Groups["name"]}' to the dictionary." };
-				return true;
-			}
-
-			if (contents.Length < 3)
-			{
-				errorMsg = "Invalid syntax: #ephemeral syntax must have more than two arguments.";
-				return false;
-			}
-
-			var groups = Module.EphemeralObjectLikeMacroRegex().Match(input).Groups;
-			var objectLikeMacro = new ObjectLikeMacro
-			{
-				Name = groups["key"].Value,
-				Body = groups["value"].Value,
-				ModuleName = moduleName
-			};
-			ModuleManager.UserDefined.Ephemerals.Add(objectLikeMacro);
-
-			status = new[] { $"Successfully added ephemeral '{contents[1]}' to the dictionary." };
-			return true;
-		}
-
 
 		if (symbol is "undef")
 		{

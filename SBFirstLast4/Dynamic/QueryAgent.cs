@@ -19,6 +19,12 @@ public partial class QueryAgent
 
 		var inputTrim = input.Trim();
 
+		if(inputTrim.StartsWith("#ephemeral") || inputTrim.StartsWith("#evaporate"))
+		{
+			ProcessEphemeral(inputTrim, outputBuffer);
+			return;
+		}
+
 		inputTrim = SBInterpreter.ExpandEphemeral(inputTrim);
 
 		if (inputTrim.StartsWith("#pragma monitor"))
@@ -122,6 +128,16 @@ public partial class QueryAgent
 		outputBuffer.Add((info.Split("00\"},").Length.ToString(), "Safe"));
 	}
 
+	private static void ProcessEphemeral(string input, Buffer outputBuffer)
+	{
+		if (!SBPreprocessor.TryProcessEphemerals(input, out var status, out var errorMsg))
+		{
+			outputBuffer.Add(($"Error: SBPreprocessException: {errorMsg}", "Error"));
+			return;
+		}
+
+		outputBuffer.AddRange(status.Select(x => (x, string.Empty)));
+	}
 
 	private static async Task PreprocessAsync(string input, Buffer outputBuffer, Func<Task> handleDeletedFiles)
 	{
