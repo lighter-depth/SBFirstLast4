@@ -42,6 +42,10 @@ public class Player
 	public Proceeds Proceeds { get; internal set; } = Proceeds.Random;
 
 	public List<BredString> BrdBuf { get; set; } = new();
+
+	public bool IsPoisoned => State.HasFlag(PlayerState.Poison);
+
+	public bool IsSeeded => State.HasFlag(PlayerState.Seed);
 	#endregion
 
 	public Player(Ability ability) => Ability = ability;

@@ -45,7 +45,7 @@ public static class ModuleManager
 		}
 
 		WaitingQueue.ReplaceOrAdd(module);
-		status = $"Added module {module.Name} to waiting queue. requires: [{module.Requires.Stringify()}], requiring: [{module.Requires.Except(ModuleNames).Stringify()}]";
+		status = $"Added module {module.Name} to waiting queue. requires: [{module.Requires.StringJoin()}], requiring: [{module.Requires.Except(ModuleNames).StringJoin()}]";
 		return true;
 	}
 

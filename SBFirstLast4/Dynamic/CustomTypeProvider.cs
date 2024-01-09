@@ -2,10 +2,10 @@
 
 namespace SBFirstLast4.Dynamic;
 
-public class SBCustomTypeProvider : DefaultDynamicLinqCustomTypeProvider, IDynamicLinkCustomTypeProvider
+public class CustomTypeProvider : DefaultDynamicLinqCustomTypeProvider, IDynamicLinkCustomTypeProvider
 {
 
-	public SBCustomTypeProvider(bool cacheCustomTypes = true) : base(cacheCustomTypes) { }
+	public CustomTypeProvider(bool cacheCustomTypes = true) : base(cacheCustomTypes) { }
 
 
 	public override HashSet<Type> GetCustomTypes()

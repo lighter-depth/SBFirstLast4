@@ -12,6 +12,8 @@ public partial class QueryAgent
 
 	private readonly List<string> _statements = new();
 
+	private readonly List<string> _newlineBuffer = new();
+
 	[MemberNotNull(nameof(Context))]
 	public async Task RunAsync(string input, Buffer outputBuffer, Action<string> setTranslated, Func<Task> handleDeletedFiles)
 	{
@@ -19,13 +21,23 @@ public partial class QueryAgent
 
 		var inputTrim = input.Trim();
 
+		if (inputTrim.EndsWith('\\'))
+		{
+			_newlineBuffer.Add(inputTrim[..^1]);
+			return;
+		}
+
+		inputTrim = _newlineBuffer.Append(inputTrim).StringJoin(string.Empty);
+
+		_newlineBuffer.Clear();
+
 		if(inputTrim.StartsWith("#ephemeral") || inputTrim.StartsWith("#evaporate"))
 		{
 			ProcessEphemeral(inputTrim, outputBuffer);
 			return;
 		}
 
-		inputTrim = SBInterpreter.ExpandEphemeral(inputTrim);
+		inputTrim = Interpreter.ExpandEphemeral(inputTrim);
 
 		if (inputTrim.StartsWith("#pragma monitor"))
 		{
@@ -45,7 +57,7 @@ public partial class QueryAgent
 			return;
 		}
 
-		inputTrim = SBInterpreter.ExpandMacro(inputTrim);
+		inputTrim = Interpreter.ExpandMacro(inputTrim);
 
 		var statements = SplitSemicolonRegex()
 						.Split(inputTrim)
@@ -67,7 +79,7 @@ public partial class QueryAgent
 		foreach (var statement in _statements.Concat(formattedStatements))
 			try
 			{
-				await RunStatementAsync(statement, outputBuffer, setTranslated, handleDeletedFiles);
+				RunStatement(statement, outputBuffer, setTranslated);
 			}
 			catch(Exception ex) 
 			{
@@ -78,30 +90,49 @@ public partial class QueryAgent
 	}
 
 
-	private static async Task RunStatementAsync(string input, Buffer outputBuffer, Action<string> setTranslated, Func<Task> handleDeletedFiles)
+	private static void RunStatement(string input, Buffer outputBuffer, Action<string> setTranslated)
 	{
 		var inputTrim = input.Trim();
 
-		if (SBInterpreter.VariableDeclarationRegex().Match(inputTrim) is var varMatch && varMatch.Success)
+		if (WideVariableRegex.Declaration().Match(inputTrim) is var varMatch && varMatch.Success)
 		{
-			await DefineVariableAsync(varMatch, outputBuffer, setTranslated);
+			DefineVariable(varMatch, outputBuffer, setTranslated);
 			return;
 		}
 
-		if (SBInterpreter.DeleteVariableRegex().Match(inputTrim) is var deleteMatch && deleteMatch.Success)
+		if (WideVariableRegex.Deletion().Match(inputTrim) is var deleteMatch && deleteMatch.Success)
 		{
 			DeleteVariable(deleteMatch, outputBuffer);
 			return;
 		}
 
-		if (!SBInterpreter.TryInterpret(input, out var translated, out var selector, out var errorMsg))
+		if(WideVariableRegex.IncrementStatement().Match(inputTrim) is var increment && increment.Success)
+		{
+			WideVariable.Increment(increment.Groups["name"].Value);
+			return;
+		}
+
+		if (WideVariableRegex.DecrementStatement().Match(inputTrim) is var decrement && decrement.Success)
+		{
+			WideVariable.Decrement(decrement.Groups["name"].Value);
+			return;
+		}
+
+		foreach (var(regex, type) in WideVariableRegex.Assignments)
+			if(regex.Match(inputTrim) is var assignMatch && assignMatch.Success)
+			{
+				AssignVariable(assignMatch, outputBuffer, setTranslated, type);
+				return;
+			}
+
+		if (!Interpreter.TryInterpret(input, out var translated, out var selector, out var errorMsg))
 		{
 			outputBuffer.Add(($"Error: SBProcessException: {errorMsg}", "Error"));
 			return;
 		}
 
 		setTranslated(translated);
-		var output = await SBScriptExecutor.ExecuteAsync(translated, selector);
+		var output = ScriptExecutor.Execute(translated, selector);
 		outputBuffer.Add((output, output.Contains("Error:") ? "Error" : string.Empty));
 
 		if (ManualQuery.IsReflect)
@@ -130,7 +161,7 @@ public partial class QueryAgent
 
 	private static void ProcessEphemeral(string input, Buffer outputBuffer)
 	{
-		if (!SBPreprocessor.TryProcessEphemerals(input, out var status, out var errorMsg))
+		if (!Preprocessor.TryProcessEphemerals(input, out var status, out var errorMsg))
 		{
 			outputBuffer.Add(($"Error: SBPreprocessException: {errorMsg}", "Error"));
 			return;
@@ -141,7 +172,7 @@ public partial class QueryAgent
 
 	private static async Task PreprocessAsync(string input, Buffer outputBuffer, Func<Task> handleDeletedFiles)
 	{
-		if (!SBPreprocessor.TryPreprocess(input, out var status, out var errorMsg))
+		if (!Preprocessor.TryPreprocess(input, out var status, out var errorMsg))
 		{
 			outputBuffer.Add(($"Error: SBPreprocessException: {errorMsg}", "Error"));
 			return;
@@ -153,17 +184,17 @@ public partial class QueryAgent
 			await handleDeletedFiles();
 	}
 
-	private static async Task DefineVariableAsync(Match varMatch, Buffer outputBuffer, Action<string> setTranslated)
+	private static void DefineVariable(Match match, Buffer outputBuffer, Action<string> setTranslated)
 	{
-		var name = varMatch.Groups["name"].Value;
-		var expr = varMatch.Groups["expr"].Value;
-		if (!SBInterpreter.TryInterpret(expr, out var translated, out var selector, out var errorMsg))
+		var name = match.Groups["name"].Value;
+		var expr = match.Groups["expr"].Value;
+		if (!Interpreter.TryInterpret(expr, out var translated, out var selector, out var errorMsg))
 		{
 			outputBuffer.Add(($"Error: SBProcessException: {errorMsg}", "Error"));
 			return;
 		}
 		setTranslated(translated);
-		var output = await SBScriptExecutor.ExecuteDynamicAsync(translated, selector);
+		var output = ScriptExecutor.ExecuteDynamic(translated, selector);
 
 		WideVariable.Variables[name] = output;
 
@@ -183,6 +214,73 @@ public partial class QueryAgent
 
 		if (ManualQuery.IsReflect)
 			outputBuffer.Add(($"Successfully deleted variable '{name}'.", string.Empty));
+	}
+
+	private static void AssignVariable(Match match, Buffer outputBuffer, Action<string> setTranslated, AssignmentType assignmentType)
+	{
+		var name = match.Groups["name"].Value;
+		var expr = match.Groups["expr"].Value;
+		if (!Interpreter.TryInterpret(expr, out var translated, out var selector, out var errorMsg))
+		{
+			outputBuffer.Add(($"Error: SBProcessException: {errorMsg}", "Error"));
+			return;
+		}
+		setTranslated(translated);
+
+		var output = (dynamic?)ScriptExecutor.ExecuteDynamic(translated, selector);
+
+		switch (assignmentType)
+		{
+			case AssignmentType.Add:
+				WideVariable.Variables[name] += output;
+				break;
+
+			case AssignmentType.Subtract:
+				WideVariable.Variables[name] -= output;
+				break;
+
+			case AssignmentType.Multiply:
+				WideVariable.Variables[name] *= output;
+				break;
+
+			case AssignmentType.Divide:
+				WideVariable.Variables[name] /= output;
+				break;
+
+			case AssignmentType.Modulus:
+				WideVariable.Variables[name] %= output;
+				break;
+
+			case AssignmentType.And:
+				WideVariable.Variables[name] &= output;
+				break;
+
+			case AssignmentType.Or:
+				WideVariable.Variables[name] |= output;
+				break;
+
+			case AssignmentType.Xor:
+				WideVariable.Variables[name] ^= output;
+				break;
+
+			case AssignmentType.LeftShift:
+				WideVariable.Variables[name] <<= output;
+				break;
+
+			case AssignmentType.RightShift:
+				WideVariable.Variables[name] >>= output;
+				break;
+
+			case AssignmentType.Coarse:
+				WideVariable.Variables[name] ??= output;
+				break;
+
+			default:
+				break;
+		}
+
+		if (ManualQuery.IsReflect)
+			outputBuffer.Add((translated, "Monitor"));
 	}
 
 	[GeneratedRegex("(?<=;)")]

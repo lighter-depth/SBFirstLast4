@@ -162,7 +162,7 @@
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
-		await SBPreprocessor.Initialize(Http);
+		await Preprocessor.Initialize(Http);
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)

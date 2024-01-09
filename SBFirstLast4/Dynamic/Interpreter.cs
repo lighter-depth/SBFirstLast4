@@ -5,7 +5,7 @@ using static SBFirstLast4.Dynamic.SelectorConstants;
 
 namespace SBFirstLast4.Dynamic;
 
-public static partial class SBInterpreter
+public static partial class Interpreter
 {
 
 	private static readonly Dictionary<char, char> EscapeCharacters = new()
@@ -76,6 +76,8 @@ public static partial class SBInterpreter
 
 	internal static bool IsAuto { get; set; } = true;
 
+	internal static bool EasyArrayInitializer { get; set; } = true;
+
 
 	public static bool TryInterpret(string input, [NotNullWhen(true)] out string? translated, [NotNullWhen(true)] out string? selector, [NotNullWhen(false)] out string? errorMsg)
 	{
@@ -86,7 +88,7 @@ public static partial class SBInterpreter
 
 		input = input.Trim();
 
-        foreach (var (key, value) in EscapeCharacters)
+		foreach (var (key, value) in EscapeCharacters)
 			input = input.ReplaceFreeChar(key, value);
 
 		input = input.ReplaceFreeString("@item", "it");
@@ -96,31 +98,7 @@ public static partial class SBInterpreter
 
 
 		if (input.At(0) != '@')
-		{
-			var lastBracketIndex = input.LastIndexOf('(');
-			var lastOpenIndex = input.LastIndexOf('[');
-			var lastCloseIndex = input.LastIndexOf(']');
-			var isNotCollection = (lastBracketIndex >= 5 && input[(lastBracketIndex - 5)..lastBracketIndex] == "First")
-							   || (lastBracketIndex >= 14 && input[(lastBracketIndex - 14)..lastBracketIndex] == "FirstOrDefault")
-							   || (lastBracketIndex >= 4 && input[(lastBracketIndex - 4)..lastBracketIndex] == "Last")
-							   || (lastBracketIndex >= 13 && input[(lastBracketIndex - 13)..lastBracketIndex] == "LastOrDefault")
-							   || (lastBracketIndex >= 6 && input[(lastBracketIndex - 6)..lastBracketIndex] == "Single")
-							   || (lastBracketIndex >= 15 && input[(lastBracketIndex - 15)..lastBracketIndex] == "SingleOrDefault")
-							   || (lastBracketIndex >= 3 && input[(lastBracketIndex - 3)..lastBracketIndex] == "Sum")
-							   || (lastBracketIndex >= 7 && input[(lastBracketIndex - 7)..lastBracketIndex] == "Average")
-							   || (lastBracketIndex >= 3 && input[(lastBracketIndex - 3)..lastBracketIndex] == "All")
-							   || (lastBracketIndex >= 3 && input[(lastBracketIndex - 3)..lastBracketIndex] == "Any")
-							   || (lastBracketIndex >= 3 && input[(lastBracketIndex - 3)..lastBracketIndex] == "Min")
-							   || (lastBracketIndex >= 3 && input[(lastBracketIndex - 3)..lastBracketIndex] == "Max")
-							   || (lastBracketIndex >= 8 && input[(lastBracketIndex - 8)..lastBracketIndex] == "Contains")
-							   || (lastBracketIndex >= 5 && input[(lastBracketIndex - 5)..lastBracketIndex] == "Count")
-							   || (lastBracketIndex >= 9 && input[(lastBracketIndex - 9)..lastBracketIndex] == "LongCount")
-							   || (lastOpenIndex >= 1 && lastOpenIndex < lastCloseIndex && !input[lastOpenIndex..lastCloseIndex].Contains(','));
-
-			input = !input.Contains('[') || isNotCollection
-				? $"@SO.Select(x => {input}).First()"
-				: $"@SO.Except([0]).Cast(\"Object\").Union({input}.Cast(\"Object\"))";
-		}
+			input = $"@SO.Select(x => {input}).First()";
 
 		var selectorIndex = input.IndexOf('.');
 
@@ -146,6 +124,9 @@ public static partial class SBInterpreter
 		/*if (input.Contains('['))
 			input = ReplaceCollectionLiteral(input);*/
 
+		if (input.Contains('{'))
+			input = ReplaceArrayInitializer(input);
+
 		if (input.Contains('`'))
 			input = ReplaceRegexLiteral(input);
 
@@ -163,8 +144,14 @@ public static partial class SBInterpreter
 			foreach (var (key, value) in DictionaryLiteral)
 				input = input.ReplaceFreeString(key, value);
 
+		if (input.Contains("++"))
+			input = WideVariableRegex.Increment().Replace(input, m => WideVariable.GetIncrementString(m.Groups["name"].Value));
+
+		if (input.Contains("--"))
+			input = WideVariableRegex.Decrement().Replace(input, m => WideVariable.GetDecrementString(m.Groups["name"].Value));
+
 		if (input.Contains('&'))
-			input = WideVariableRegex().Replace(input, m => WideVariable.GetFormattedString(m.Groups["name"].Value));
+			input = WideVariableRegex.Reference().Replace(input, m => WideVariable.GetFormattedString(m.Groups["name"].Value));
 
 		foreach (var (key, value) in ExtensionProperties)
 			input = input.ReplaceFreeString(key, value);
@@ -295,6 +282,14 @@ public static partial class SBInterpreter
 		return sb.ToString();
 	}
 
+	private static string ReplaceArrayInitializer(string input)
+	{
+		if (EasyArrayInitializer)
+			return input.ReplaceFreeString("{", "new[]{");
+
+		return input;
+	}
+
 	private static string ReplaceRegexLiteral(string input)
 	{
 		var builder = new StringBuilder(input);
@@ -341,7 +336,7 @@ public static partial class SBInterpreter
 		if (startIndex < 0 || length < 0 || startIndex + length > source.Length)
 			return false;
 
-		int quoteCount = 0;
+		var quoteCount = 0;
 		for (var i = 0; i < startIndex; i++)
 			if (source[i] == '"')
 				quoteCount++;
@@ -370,13 +365,4 @@ public static partial class SBInterpreter
 
 	[GeneratedRegex(@"static_cast<(?<type>.*?)>\((?<operand>.*?)\)")]
 	private static partial Regex StaticCastRegex();
-
-	[GeneratedRegex(@"&(?<name>[A-Za-z][0-9A-Z_a-z]*)")]
-	private static partial Regex WideVariableRegex();
-
-	[GeneratedRegex(@"^\s*&(?<name>[A-Za-z][0-9A-Z_a-z]*)\s*=(?<expr>.*)$")]
-	internal static partial Regex VariableDeclarationRegex();
-
-	[GeneratedRegex(@"^\s*delete\s*&(?<name>[A-Za-z][0-9A-Z_a-z]*)")]
-	internal static partial Regex DeleteVariableRegex();
 }

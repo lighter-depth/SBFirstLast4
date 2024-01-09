@@ -585,7 +585,7 @@
 
 		#form {
 			/*position: fixed;
-																																																																			bottom: 0;*/
+																																																																					bottom: 0;*/
 			z-index: 1;
 			text-align: center;
 		}
@@ -1227,7 +1227,7 @@
 
 	private bool ShowAlter;
 
-	private ShowPlayerAnimation ShowAnimation = ShowPlayerAnimation.Default;
+	private ShowPlayerAnimation ShowAnimation = ShowPlayerAnimation.Default with { };
 
 
 	private Word Player1Word = Word.Default;
@@ -1877,6 +1877,7 @@
 		HPWidth = ((double)Battle.Player1.HP / Player.MaxHP * 100, (double)Battle.Player2.HP / Player.MaxHP * 100);
 		Player1Word = Battle.Player1.CurrentWord;
 		Player2Word = Battle.Player2.CurrentWord;
+		IsPoisoned = (Battle.Player1.IsPoisoned, Battle.Player2.IsPoisoned);
 		StateHasChanged();
 	}
 
@@ -1914,7 +1915,7 @@
 	{
 		internal ShowAnimationInternal Player1 { get; set; } = Player1;
 		internal ShowAnimationInternal Player2 { get; set; } = Player2;
-		internal static ShowPlayerAnimation Default { get; } = new(ShowAnimationInternal.Default, ShowAnimationInternal.Default);
+		internal static ShowPlayerAnimation Default { get; } = new(ShowAnimationInternal.Default with { }, ShowAnimationInternal.Default with { });
 	}
 }
 

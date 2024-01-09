@@ -560,10 +560,10 @@
 						"おまかせ（弱）" => "WEAK",
 						"おまかせ（中）" => "MID",
 						"おまかせ（強）" => "HEAVY",
-						"カスタム" => $"[{AppliedCategoryFilters.Stringify()}]",
+						"カスタム" => $"[{AppliedCategoryFilters.StringJoin()}]",
 						_ => "EMPTY"
 					},
-					Char = SelectedCharFilterItem == "なし" ? "EMPTY" : $"[{AppliedEndFilters.Stringify()}]"
+					Char = SelectedCharFilterItem == "なし" ? "EMPTY" : $"[{AppliedEndFilters.StringJoin()}]"
 				},
 				UserInfo = new
 				{

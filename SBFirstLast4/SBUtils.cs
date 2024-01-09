@@ -92,7 +92,7 @@ public static class SBUtils
 	public static string ReplaceFreeString(this string input, string oldValue, string newValue)
 		=> Regex.Replace(input, Regex.Escape(oldValue), m =>
 		{
-			if (SBInterpreter.IsInsideStringLiteral(m.Index, m.Length, input))
+			if (Interpreter.IsInsideStringLiteral(m.Index, m.Length, input))
 				return m.Value;
 
 			return newValue;
@@ -201,9 +201,9 @@ public static class CollectionHelper
 
 	public static char At(this string source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];
 
-	public static string Stringify<T>(this IEnumerable<T> values, string separator) => string.Join(separator, values);
+	public static string StringJoin<T>(this IEnumerable<T> values, string separator) => string.Join(separator, values);
 
-	public static string Stringify<T>(this IEnumerable<T> values) => string.Join(", ", values);
+	public static string StringJoin<T>(this IEnumerable<T> values) => string.Join(", ", values);
 
 	public static IEnumerable<(T, int)> WithIndex<T>(this IEnumerable<T> source) => source.Select((x, i) => (x, i));
 }

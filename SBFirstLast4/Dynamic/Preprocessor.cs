@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace SBFirstLast4.Dynamic;
 
-public static partial class SBPreprocessor
+public static partial class Preprocessor
 {
 	public static bool IsInitialized { get; private set; } = false;
 
@@ -150,14 +150,14 @@ public static partial class SBPreprocessor
 					+ (x is ObjectLikeMacro o
 					? $"Key: {o.Name}, Value: {o.Body}"
 					: x is FunctionLikeMacro f
-					? $"Sign: {f.Name}({f.Parameters.Stringify()}), Body: {f.Body}"
+					? $"Sign: {f.Name}({f.Parameters.StringJoin()}), Body: {f.Body}"
 					: "NULL"))
 					.Concat(ModuleManager.UserDefined.Ephemerals
 					.Select(x => $"Module: {x.ModuleName}, "
 					+ (x is ObjectLikeMacro o
 					? $"[[Ephemeral]] Key: {o.Name}, Value: {o.Body}"
 					: x is FunctionLikeMacro f
-					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.Stringify()}), Body: {f.Body}"
+					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.StringJoin()}), Body: {f.Body}"
 					: "NULL")))
 					.Concat(ModuleManager.UserDefined.Symbols.Select(x => $"Symbol: {x}"))
 					.ToArray();
@@ -189,14 +189,14 @@ public static partial class SBPreprocessor
 					+ (x is ObjectLikeMacro o
 					? $"Key: {o.Name}, Value: {o.Body}"
 					: x is FunctionLikeMacro f
-					? $"Sign: {f.Name}({f.Parameters.Stringify()}), Body: {f.Body}"
+					? $"Sign: {f.Name}({f.Parameters.StringJoin()}), Body: {f.Body}"
 					: "NULL"))
 					.Concat(ModuleManager.Ephemerals
 					.Select(x => $"Module: {x.ModuleName}, "
 					+ (x is ObjectLikeMacro o
 					? $"[[Ephemeral]] Key: {o.Name}, Value: {o.Body}"
 					: x is FunctionLikeMacro f
-					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.Stringify()}), Body: {f.Body}"
+					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.StringJoin()}), Body: {f.Body}"
 					: "NULL")))
 					.Concat(ModuleManager.Symbols.Select(x => $"Symbol: {x}"))
 					.ToArray();
@@ -216,14 +216,14 @@ public static partial class SBPreprocessor
 					+ (x is ObjectLikeMacro o
 					? $"Key: {o.Name}, Value: {o.Body}"
 					: x is FunctionLikeMacro f
-					? $"Sign: {f.Name}({f.Parameters.Stringify()}), Body: {f.Body}"
+					? $"Sign: {f.Name}({f.Parameters.StringJoin()}), Body: {f.Body}"
 					: "NULL"))
 					.Concat(module.Ephemerals
 					.Select(x => $"Module: {x.ModuleName}, "
 					+ (x is ObjectLikeMacro o
 					? $"[[Ephemeral]] Key: {o.Name}, Value: {o.Body}"
 					: x is FunctionLikeMacro f
-					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.Stringify()}), Body: {f.Body}"
+					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.StringJoin()}), Body: {f.Body}"
 					: "NULL")))
 					.Concat(module.Symbols.Select(x => $"Symbol: {x}"))
 					.ToArray();
@@ -233,7 +233,7 @@ public static partial class SBPreprocessor
 		if (symbol is "pragma")
 		{
 			var pragma = contents.At(1);
-			if (pragma is not ("auto" or "reflect" or "monitor"))
+			if (pragma is not ("auto" or "reflect" or "monitor" or "easyarray"))
 			{
 				errorMsg = "Invalid syntax: No applicable pragma found.";
 				return false;
@@ -247,20 +247,20 @@ public static partial class SBPreprocessor
 				}
 				if (contents[2] == "enable")
 				{
-					SBInterpreter.IsAuto = true;
+					Interpreter.IsAuto = true;
 					status = new[] { "Auto processing enabled." };
 					return true;
 				}
 				if (contents[2] == "disable")
 				{
-					SBInterpreter.IsAuto = false;
+					Interpreter.IsAuto = false;
 					status = new[] { "Auto processing disabled." };
 					return true;
 				}
 				if (contents[2] == "toggle")
 				{
-					SBInterpreter.IsAuto = !SBInterpreter.IsAuto;
-					status = new[] { $"Auto processing {(SBInterpreter.IsAuto ? "enabled" : "disabled")}." };
+					Interpreter.IsAuto = !Interpreter.IsAuto;
+					status = new[] { $"Auto processing {(Interpreter.IsAuto ? "enabled" : "disabled")}." };
 					return true;
 				}
 				errorMsg = "Invalid syntax: invalid argument for #pragma auto directive.";
@@ -292,6 +292,34 @@ public static partial class SBPreprocessor
 					return true;
 				}
 				errorMsg = "Invalid syntax: invalid argument for #pragma reflect directive.";
+				return false;
+			}
+			if (pragma is "easyarray")
+			{
+				if (contents.Length != 3)
+				{
+					errorMsg = "Invalid syntax: #pragma easyarray syntax must have one argument.";
+					return false;
+				}
+				if (contents[2] == "enable")
+				{
+					Interpreter.EasyArrayInitializer = true;
+					status = new[] { "Easy array enabled." };
+					return true;
+				}
+				if (contents[2] == "disable")
+				{
+					Interpreter.EasyArrayInitializer = false;
+					status = new[] { "Easy array disabled." };
+					return true;
+				}
+				if (contents[2] == "toggle")
+				{
+					Interpreter.EasyArrayInitializer = !Interpreter.EasyArrayInitializer;
+					status = new[] { $"Easy array {(Interpreter.EasyArrayInitializer ? "enabled" : "disabled")}." };
+					return true;
+				}
+				errorMsg = "Invalid syntax: invalid argument for #pragma easyarray directive.";
 				return false;
 			}
 			errorMsg = "Invalid syntax: invalid argument for #pragma monitor directive.";

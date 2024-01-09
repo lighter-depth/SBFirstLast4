@@ -2,40 +2,18 @@
 
 namespace SBFirstLast4.Dynamic;
 
-public static class SBScriptExecutor
+public static class ScriptExecutor
 {
-	public static Task<string> ExecuteAsync(string translated, string selector)
-	{
-		var dicType = SelectorHelper.GetDictionaryType(selector);
-		return Task.Run(() => dicType switch
-		{
-			DictionaryType.String => QueryOverStringDictionary(translated, selector),
-			DictionaryType.Word => QueryOverWordDictionary(translated, selector),
-			_ => QueryOverSingleton(translated)
-		});
-	}
+	public static string Execute(string translated, string selector)
+		=> ResultObjectToString(ExecuteDynamic(translated, selector));
 
-	public static Task<object?> ExecuteDynamicAsync(string translated, string selector)
-	{
-		var dicType = SelectorHelper.GetDictionaryType(selector);
-		return Task.Run(() => dicType switch
+	public static object? ExecuteDynamic(string translated, string selector)
+		=> SelectorHelper.GetDictionaryType(selector) switch
 		{
 			DictionaryType.String => QueryOverStringDictionaryDynamic(translated, selector),
 			DictionaryType.Word => QueryOverWordDictionaryDynamic(translated, selector),
 			_ => QueryOverSingletonDynamic(translated)
-		});
-	}
-
-
-	private static string QueryOverWordDictionary(string input, string selector)
-		=> ResultObjectToString(QueryOverWordDictionaryDynamic(input, selector));
-
-	private static string QueryOverStringDictionary(string input, string selector) 
-		=> ResultObjectToString(QueryOverStringDictionaryDynamic(input, selector));
-
-	private static string QueryOverSingleton(string input) 
-		=> ResultObjectToString(QueryOverSingletonDynamic(input));
-	
+		};
 
 	private static object? QueryOverWordDictionaryDynamic(string input, string selector)
 	{
@@ -43,7 +21,7 @@ public static class SBScriptExecutor
 		{
 			var config = new ParsingConfig
 			{
-				CustomTypeProvider = new SBCustomTypeProvider(),
+				CustomTypeProvider = new CustomTypeProvider(),
 				ResolveTypesBySimpleName = true,
 				AllowNewToEvaluateAnyType = true
 			};
@@ -62,7 +40,7 @@ public static class SBScriptExecutor
 		{
 			var config = new ParsingConfig
 			{
-				CustomTypeProvider = new SBCustomTypeProvider(),
+				CustomTypeProvider = new CustomTypeProvider(),
 				ResolveTypesBySimpleName = true,
 				AllowNewToEvaluateAnyType = true
 			};
@@ -81,7 +59,7 @@ public static class SBScriptExecutor
 		{
 			var config = new ParsingConfig
 			{
-				CustomTypeProvider = new SBCustomTypeProvider(),
+				CustomTypeProvider = new CustomTypeProvider(),
 				ResolveTypesBySimpleName = true,
 				AllowNewToEvaluateAnyType = true
 			};
@@ -98,9 +76,10 @@ public static class SBScriptExecutor
 	private static string ResultObjectToString(object? result)
 	{
 		if (result is System.Collections.IEnumerable enumerable and not string)
-			return $"[{enumerable.Cast<object>().Select(ResultObjectToString).Stringify()}]";
+			return $"[{enumerable.Cast<object>().Select(ResultObjectToString).StringJoin()}]";
 
 		return result?.ToString() ?? "null";
 	}
-	private static readonly int[] _singletonEnumerable = new[] { 0 };
+
+	private static readonly int[] _singletonEnumerable = { 0 };
 }

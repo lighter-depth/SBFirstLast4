@@ -92,7 +92,7 @@ public record PlayerData(string Name, int AbilityIndex, int HP, int ATKIndex, in
 	{
 		var sb = new StringBuilder();
 		sb.Append("||");
-		sb.Append(this.Stringify("/p/"));
+		sb.Append(this.StringJoin("/p/"));
 		sb.Append("||");
 		return sb.ToString();
 	}
