@@ -11,7 +11,7 @@
 
 @if (IsLoading)
 {
-	<p>読み込み中...</p>
+	<p>@LoadingMsg</p>
 	return;
 }
 <p id="desc">ユーザー名を入力</p>
@@ -144,6 +144,7 @@
 @code {
 
 	private bool IsLoading = true;
+	private string LoadingMsg = "読み込み中...";
 	private bool IsAccepted;
 	private bool IsDisabled = true;
 	private string UserNameModel = string.Empty;
@@ -157,12 +158,19 @@
 	{
 		try
 		{
+			LoadingMsg = "ユーザー情報を読み込み中...";
 			await AppSettings.InitUserInfoAsync(LocalStorage);
+			LoadingMsg = "設定を同期中...";
+			StateHasChanged();
 			await AppSettings.SetupAsync(LocalStorage);
 
 			if (AppSettings.IsLoggedIn)
 			{
-				await AppSettings.RefreshHashAsync(Http, LocalStorage);
+				LoadingMsg = "ハッシュを初期化中...";
+				StateHasChanged();
+				await Task.WhenAny(AppSettings.RefreshHashAsync(Http, LocalStorage), Task.Delay(3000));
+				LoadingMsg = "準備中...";
+				StateHasChanged();
 				Server.Log(new
 				{
 					Type = "LOGIN",

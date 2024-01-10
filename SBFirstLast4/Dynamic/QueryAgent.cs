@@ -94,6 +94,12 @@ public partial class QueryAgent
 	{
 		var inputTrim = input.Trim();
 
+		if(RecordRegex.Statement().Match(inputTrim) is var recordMatch && recordMatch.Success)
+		{
+			Record.Emit(recordMatch.Groups["name"].Value, recordMatch.Groups["expr"].Value);
+			return;
+		}
+
 		if (WideVariableRegex.Declaration().Match(inputTrim) is var varMatch && varMatch.Success)
 		{
 			DefineVariable(varMatch, outputBuffer, setTranslated);

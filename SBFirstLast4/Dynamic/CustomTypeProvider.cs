@@ -11,7 +11,10 @@ public class CustomTypeProvider : DefaultDynamicLinqCustomTypeProvider, IDynamic
 	public override HashSet<Type> GetCustomTypes()
 	{
 		var types = base.GetCustomTypes();
-		types = types.Concat(typeof(System.Text.RegularExpressions.Regex).Assembly.GetTypes()).ToHashSet();
+		types = types
+				.Concat(typeof(System.Text.RegularExpressions.Regex).Assembly.GetTypes())
+				.Concat(Record.Types)
+				.ToHashSet();
         
 		return types;
 	}

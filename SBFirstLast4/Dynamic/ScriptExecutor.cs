@@ -22,7 +22,6 @@ public static class ScriptExecutor
 			var config = new ParsingConfig
 			{
 				CustomTypeProvider = new CustomTypeProvider(),
-				ResolveTypesBySimpleName = true,
 				AllowNewToEvaluateAnyType = true
 			};
 			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<Word>, object>(config, false, input);
@@ -41,7 +40,6 @@ public static class ScriptExecutor
 			var config = new ParsingConfig
 			{
 				CustomTypeProvider = new CustomTypeProvider(),
-				ResolveTypesBySimpleName = true,
 				AllowNewToEvaluateAnyType = true
 			};
 			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<string>, object>(config, false, input);

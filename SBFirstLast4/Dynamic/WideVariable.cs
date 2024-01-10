@@ -34,10 +34,17 @@ public static class WideVariable
 	}
 
 
-	private static string GetString(string name, string functionName) 
-		=> Variables[name]?.GetType().FullName is string typename && !string.IsNullOrEmpty(typename)
-		? $"\"{typename}\"({nameof(WideVariable)}.{functionName}(\"{name}\"))"
-		: "null";
+	private static string GetString(string name, string functionName)
+	{
+		var typename = Variables[name]?.GetType().FullName;
+		if (string.IsNullOrEmpty(typename))
+			return "null";
+
+		if (Record.TypeNames.Contains(typename))
+			return $"({typename}({nameof(WideVariable)}.{functionName}(\"{name}\")))";
+
+		return $"(\"{typename}\"({nameof(WideVariable)}.{functionName}(\"{name}\")))";
+	}
 
 	internal static string GetFormattedString(string name) => GetString(name, nameof(GetValue));
 

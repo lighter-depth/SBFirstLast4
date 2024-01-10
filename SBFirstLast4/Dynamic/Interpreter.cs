@@ -98,7 +98,7 @@ public static partial class Interpreter
 
 
 		if (input.At(0) != '@')
-			input = $"@SO.Select(x => {input}).First()";
+			input = $"@SO.Select({input}).First()";
 
 		var selectorIndex = input.IndexOf('.');
 
