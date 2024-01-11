@@ -212,7 +212,7 @@
 
 			Server.Log(new
 			{
-				Type = Agent.Context == "Monitor" ? "MONITOR" : "QUERY",
+				Type = Agent.StatementKind == "Monitor" ? "MONITOR" : "QUERY",
 				Order = input.Trim(),
 				UserInfo = new
 				{

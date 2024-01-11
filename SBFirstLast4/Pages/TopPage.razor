@@ -204,14 +204,12 @@
 		if (AppSettings.SkipFlag) token = DictionaryInitializationToken.Skip;
 		try
 		{
-			var progress = new Progress<string>(async s =>
+			await SBDictionary.Initialize(async s =>
 			{
 				Content = s;
 				StateHasChanged();
-				await Task.Delay(1);
-			});
-
-			await SBDictionary.Initialize(progress, LocalStorage, token);
+				await Task.Delay(1);		
+			}, LocalStorage, token);
 		}
 		catch (Exception e)
 		{

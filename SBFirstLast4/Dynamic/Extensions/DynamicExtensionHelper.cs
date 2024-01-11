@@ -28,5 +28,9 @@ public static class DynamicExtensionHelper
 
 	public static char At(this string source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];
 
+	/// <summary>
+	/// 辞書リテラル用のSO辞書
+	/// </summary>
+	/// <seealso cref="ScriptExecutor._singletonEnumerable"/>
 	public static int[] GetSingleton() => new[] { 0 };
 }

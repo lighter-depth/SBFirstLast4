@@ -1,5 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
+using Progress = System.Func<string, System.Threading.Tasks.Task>;
 
 namespace SBFirstLast4;
 
@@ -51,63 +52,66 @@ public class SBDictionary
 	internal const string HAS_LOADED = "hasLoaded";
 	internal const string TYPED_WORDS = "typedWords";
 
-	public static async Task Initialize(IProgress<string> progress, ILocalStorageService localStorage, DictionaryInitializationToken token)
+	public static async Task Initialize(Progress progress, ILocalStorageService localStorage, DictionaryInitializationToken token)
 	{
 		if (token is DictionaryInitializationToken.Skip)
 		{
-			progress.Report("読み込みをスキップしています...");
+			await progress("読み込みをスキップしています...");
 			_loadSkip = true;
 			NoTypeWords.AddRange(_dummyData);
 			return;
 		}
 
-		progress.Report("読み込みを開始しています...");
+		await progress("読み込みを開始しています...");
 
 		await LoadDataFromOnline(progress, localStorage, token);
-		progress.Report("読み込みを完了しています...");
+		await progress("読み込みを完了しています...");
 	}
-	private static async Task LoadDataFromOnline(IProgress<string> progress, ILocalStorageService localStorage, DictionaryInitializationToken token)
+	private static async Task LoadDataFromOnline(Progress progress, ILocalStorageService localStorage, DictionaryInitializationToken token)
 	{
 		if (token is DictionaryInitializationToken.Full)
 		{
-			progress.Report("完全版辞書を読み込んでいます...");
+			await progress("完全版辞書を読み込んでいます...");
+
 			await FullLoading(progress, localStorage);
 			return;
 		}
 
 		if (token is DictionaryInitializationToken.Lite)
 		{
-			progress.Report("ライト版辞書を読み込んでいます...");
+			await progress("ライト版辞書を読み込んでいます...");
+
 			await LoadTypedWordsFromOnline(progress, localStorage);
-			progress.Report("リストを分割しています...");
+			await progress("リストを分割しています...");
 
 			await Task.Run(InitSplitList);
 		}
 	}
-	private static async Task FullLoading(IProgress<string> progress, ILocalStorageService localStorage)
+	private static async Task FullLoading(Progress progress, ILocalStorageService localStorage)
 	{
 		await LoadNoTypeWordsFromOnline(progress);
 
 		await LoadTypedWordsFromOnline(progress, localStorage);
 
-		progress.Report("リストを分割しています...");
-		await Task.Run(InitSplitList);
-		progress.Report("タイプレス リストを分離しています...");
+		await progress("リストを分割しています...");
 
+		await Task.Run(InitSplitList);
+		await progress("タイプレス リストを分離しています...");
 
 		await Task.Run(ExceptDictionaries);
 	}
 
-	private static async Task LoadNoTypeWordsFromOnline(IProgress<string> progress)
+	private static async Task LoadNoTypeWordsFromOnline(Progress progress)
 	{
-		progress.Report("タイプレス ワードを読み込んでいます...");
+		await progress("タイプレス ワードを読み込んでいます...");
 
 		var tasks = new List<Task>();
 
 		for (var i = 0; i < 240; i++)
 		{
 			var localParameter = i;
-			progress.Report($"タイプレス ワードを読み込んでいます... ({i}/240)");
+			await progress($"タイプレス ワードを読み込んでいます... ({i}/240)");
+
 			tasks.Add(ReadNoTypeWords(localParameter));
 			if (i % 42 != 0 && i != 239) continue;
 			try
@@ -121,13 +125,13 @@ public class SBDictionary
 			tasks.Clear();
 		}
 	}
-	private static async Task LoadTypedWordsFromOnline(IProgress<string> progress, ILocalStorageService localStorage)
+	private static async Task LoadTypedWordsFromOnline(Progress progress, ILocalStorageService localStorage)
 	{
 
-		progress.Report("タイプ付き ワードを読み込んでいます...");
+		await progress("タイプ付き ワードを読み込んでいます...");
 		if (await localStorage.GetItemAsync<bool>(HAS_LOADED))
 		{
-			progress.Report("キャッシュを読み込んでいます...");
+			await progress("キャッシュを読み込んでいます...");
 			TypedWords = await localStorage.GetItemAsync<List<Word>>(TYPED_WORDS);
 			return;
 		}
@@ -140,7 +144,7 @@ public class SBDictionary
 			tasks.Add(ReadTypedWords(localParameter));
 			if (typedCount % 10 == 0)
 			{
-				progress.Report($"タイプ付き ワードを読み込んでいます... ({typedCount / 10}/7)");
+				await progress($"タイプ付き ワードを読み込んでいます... ({typedCount / 10}/7)");
 				try
 				{
 					await Task.WhenAll(tasks);
@@ -153,10 +157,10 @@ public class SBDictionary
 			}
 			typedCount++;
 		}
-		progress.Report("タイプ付き ワードを読み込んでいます... (7/7)");
+		await progress("タイプ付き ワードを読み込んでいます... (7/7)");
 		await Task.WhenAll(tasks);
 		TypedWords = TypedWords.AsEnumerable().Reverse().DistinctBy(w => w.Name).Reverse().ToList();
-		progress.Report("キャッシュを保存しています...");
+		await progress("キャッシュを保存しています...");
 		await localStorage.SetItemAsync(TYPED_WORDS, TypedWords);
 		await localStorage.SetItemAsync(HAS_LOADED, true);
 	}

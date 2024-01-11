@@ -18,7 +18,7 @@ public static class Record
 
 	internal static readonly List<string> TypeNames = new();
 
-	internal static Dictionary<string, Type> TypeMap = GetTypeMap();
+	internal static readonly Dictionary<string, Type> BuiltInTypeMap = GetTypeMap();
 
 	private static Dictionary<string, Type> GetTypeMap()
 	{
@@ -69,9 +69,10 @@ public static class Record
 			var typeStr = paramMatch.Groups["type"].Value;
 			var name = paramMatch.Groups["name"].Value;
 
-			var type = TypeMap.TryGetValue(typeStr, out var value) 
+			var type = BuiltInTypeMap.TryGetValue(typeStr, out var value) 
 						? value
 						: provider.ResolveTypeBySimpleName(typeStr) 
+						?? provider.ResolveType(typeStr)
 						?? typeof(object);
 
 			paramTypes.Add(type);
@@ -81,40 +82,35 @@ public static class Record
 
 		var ctor = builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, paramTypes.ToArray());
 
-		var ctorIL = ctor.GetILGenerator();
-
-		DefineConstructor(ctorIL, fields);
+		DefineConstructor(ctor.GetILGenerator(), fields);
 
 
 		var printMembers = builder.DefineMethod("PrintMembers", MethodAttributes.Public | MethodAttributes.Virtual, typeof(bool), new[] { typeof(StringBuilder) });
-		var printIL = printMembers.GetILGenerator();
-		DefinePrintMembers(printIL, fields);
+		DefinePrintMembers(printMembers.GetILGenerator(), fields);
 
 		var toString = builder.DefineMethod("ToString", MethodAttributes.Public | MethodAttributes.Virtual, typeof(string), null);
-		var il = toString.GetILGenerator();
-		DefineToString(il, builder.Name, printMembers);
+		DefineToString(toString.GetILGenerator(), builder.Name, printMembers);
 
-		var result = builder.CreateType();
 
-		Types.Add(result);
+		Types.Add(builder.CreateType());
 		TypeNames.Add(recordName);
 
 		return string.Empty;
 	}
 
-	private static void DefineConstructor(ILGenerator ctorIL, IList<FieldBuilder> fields)
+	private static void DefineConstructor(ILGenerator il, IList<FieldBuilder> fields)
 	{
-		ctorIL.Emit(OpCodes.Ldarg_0);
-		ctorIL.Emit(OpCodes.Call, typeof(object).GetConstructor(Type.EmptyTypes)!);
+		il.Emit(OpCodes.Ldarg_0);
+		il.Emit(OpCodes.Call, typeof(object).GetConstructor(Type.EmptyTypes)!);
 
 		foreach (var (field, i) in fields.WithIndex())
 		{
-			ctorIL.Emit(OpCodes.Ldarg_0);
-			ctorIL.Emit(OpCodes.Ldarg, i + 1);
-			ctorIL.Emit(OpCodes.Stfld, field);
+			il.Emit(OpCodes.Ldarg_0);
+			il.Emit(OpCodes.Ldarg, i + 1);
+			il.Emit(OpCodes.Stfld, field);
 		}
 
-		ctorIL.Emit(OpCodes.Ret);
+		il.Emit(OpCodes.Ret);
 	}
 
 	private static void DefinePrintMembers(ILGenerator il, IList<FieldBuilder> fields)

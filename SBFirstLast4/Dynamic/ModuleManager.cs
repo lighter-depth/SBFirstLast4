@@ -187,7 +187,7 @@ public static class ModuleManager
 	}
 }
 
-public partial class Module : IEquatable<Module>
+public class Module : IEquatable<Module>
 {
 	public required string Name { get; init; }
 
@@ -211,7 +211,7 @@ public partial class Module : IEquatable<Module>
 
     public static Module? Compile(string moduleContent, bool isRuntime = false, string? runtimeName = null)
 	{
-		var match = ModuleRegex().Match(moduleContent);
+		var match = ModuleRegex.Module().Match(moduleContent);
 		if (!match.Success) return null;
 
 		var name = match.Groups["name"].Value;
@@ -238,29 +238,30 @@ public partial class Module : IEquatable<Module>
 			RuntimeName = runtimeName
 		};
 	}
+}
 
-
-
+internal static partial class ModuleRegex
+{
 	[GeneratedRegex(@"^[\s\r\n]*module\s+(?<name>\w+)[\s\r\n]*;[\s\r\n]*(?:requires:(?<requires>[\s\S]*?);[\s\r\n]*)?(?<contents>[\s\S]*)$")]
-	internal static partial Regex ModuleRegex();
+	internal static partial Regex Module();
 
 	[GeneratedRegex(@"define\s+(?<key>[^\s]+)\s+(?<value>.*)")]
-	internal static partial Regex DefineObjectLikeMacroRegex();
+	internal static partial Regex DefineObjectLikeMacro();
 
 	[GeneratedRegex(@"define\s+(?<name>\w+)\((?<parameters>[^)]+)\)\s+(?<body>.+)")]
-	internal static partial Regex DefineFunctionLikeMacroRegex();
+	internal static partial Regex DefineFunctionLikeMacro();
 
 	[GeneratedRegex(@"ephemeral\s+(?<key>[^\s]+)\s+(?<value>.*)")]
-	internal static partial Regex EphemeralObjectLikeMacroRegex();
+	internal static partial Regex EphemeralObjectLikeMacro();
 
 	[GeneratedRegex(@"ephemeral\s+(?<name>\w+)\((?<parameters>[^)]+)\)\s+(?<body>.+)")]
-	internal static partial Regex EphemeralFunctionLikeMacroRegex();
+	internal static partial Regex EphemeralFunctionLikeMacro();
 
 	[GeneratedRegex(@"transient\s+(?<key>[^\s]+)\s+(?<value>.*)")]
-	internal static partial Regex TransientObjectLikeMacroRegex();
+	internal static partial Regex TransientObjectLikeMacro();
 
 	[GeneratedRegex(@"transient\s+(?<name>\w+)\((?<parameters>[^)]+)\)\s+(?<body>.+)")]
-	internal static partial Regex TransientFunctionLikeMacroRegex();
+	internal static partial Regex TransientFunctionLikeMacro();
 }
 
 file class ContentReader
@@ -338,7 +339,7 @@ file class ContentReader
 						break;
 					}
 
-					var match = Module.DefineFunctionLikeMacroRegex().Match(directiveStr);
+					var match = ModuleRegex.DefineFunctionLikeMacro().Match(directiveStr);
 					if (match.Success)
 					{
 						var functionLikeMacro = new FunctionLikeMacro
@@ -352,7 +353,7 @@ file class ContentReader
 						break;
 					}
 
-					var groups = Module.DefineObjectLikeMacroRegex().Match(directiveStr).Groups;
+					var groups = ModuleRegex.DefineObjectLikeMacro().Match(directiveStr).Groups;
 					var objectLikeMacro = new ObjectLikeMacro
 					{
 						Name = groups["key"].Value,
@@ -378,7 +379,7 @@ file class ContentReader
 					if (IsDisabled.Peek() || directive.Length < 3)
 						break;
 
-					var match = Module.EphemeralFunctionLikeMacroRegex().Match(directiveStr);
+					var match = ModuleRegex.EphemeralFunctionLikeMacro().Match(directiveStr);
 					if (match.Success)
 					{
 						var functionLikeMacro = new FunctionLikeMacro
@@ -392,7 +393,7 @@ file class ContentReader
 						break;
 					}
 
-					var groups = Module.EphemeralObjectLikeMacroRegex().Match(directiveStr).Groups;
+					var groups = ModuleRegex.EphemeralObjectLikeMacro().Match(directiveStr).Groups;
 					var objectLikeMacro = new ObjectLikeMacro
 					{
 						Name = groups["key"].Value,
@@ -424,7 +425,7 @@ file class ContentReader
 						break;
 					}
 
-					var match = Module.TransientFunctionLikeMacroRegex().Match(directiveStr);
+					var match = ModuleRegex.TransientFunctionLikeMacro().Match(directiveStr);
 					if (match.Success)
 					{
 						var functionLikeTransient = new FunctionLikeMacro
@@ -438,7 +439,7 @@ file class ContentReader
 						break;
 					}
 
-					var groups = Module.TransientObjectLikeMacroRegex().Match(directiveStr).Groups;
+					var groups = ModuleRegex.TransientObjectLikeMacro().Match(directiveStr).Groups;
 					var objectLikeMacro = new ObjectLikeMacro
 					{
 						Name = groups["key"].Value,

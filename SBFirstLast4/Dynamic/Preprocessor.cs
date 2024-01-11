@@ -75,7 +75,7 @@ public static partial class Preprocessor
 
 		if (symbol is "ephemeral")
 		{
-			var match = Module.EphemeralFunctionLikeMacroRegex().Match(input);
+			var match = ModuleRegex.EphemeralFunctionLikeMacro().Match(input);
 			if (match.Success)
 			{
 				var functionLikeMacro = new FunctionLikeMacro
@@ -96,7 +96,7 @@ public static partial class Preprocessor
 				return false;
 			}
 
-			var groups = Module.EphemeralObjectLikeMacroRegex().Match(input).Groups;
+			var groups = ModuleRegex.EphemeralObjectLikeMacro().Match(input).Groups;
 			var objectLikeMacro = new ObjectLikeMacro
 			{
 				Name = groups["key"].Value,
@@ -180,6 +180,21 @@ public static partial class Preprocessor
 			{
 				status = ModuleManager.RuntimeModules.Select(m => m.Name).ToArray();
 				return true;
+			}
+
+			if(selector is "$VARIABLE" or "$VAR")
+			{
+				status = WideVariable.Variables
+						.Select(kv => $"Name: {kv.Key}, Value: {StringUtil.ToString(kv.Value)}")
+						.ToArray();
+				return true;
+			}
+
+			if(selector is "$RECORD" or "$RCD")
+			{
+				status = Record.Types
+						.Select(t => $"Name: {t.Name}, Fields: [{t.GetFields().Select(f => $"{{Sign: {f.Name}, Type: {f.FieldType.Name}}}").StringJoin()}]")
+						.ToArray();
 			}
 
 			if (selector is "$ALL")
@@ -400,7 +415,7 @@ public static partial class Preprocessor
 		if (symbol is "define")
 		{
 
-			var match = Module.DefineFunctionLikeMacroRegex().Match(input);
+			var match = ModuleRegex.DefineFunctionLikeMacro().Match(input);
 			if (match.Success)
 			{
 				var functionLikeMacro = new FunctionLikeMacro
@@ -428,7 +443,7 @@ public static partial class Preprocessor
 				return true;
 			}
 
-			var groups = Module.DefineObjectLikeMacroRegex().Match(input).Groups;
+			var groups = ModuleRegex.DefineObjectLikeMacro().Match(input).Groups;
 			var objectLikeMacro = new ObjectLikeMacro
 			{
 				Name = groups["key"].Value,

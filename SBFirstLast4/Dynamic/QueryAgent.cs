@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using SBFirstLast4.Logging;
 using SBFirstLast4.Pages;
 using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
@@ -8,17 +7,33 @@ namespace SBFirstLast4.Dynamic;
 
 public partial class QueryAgent
 {
-	public string? Context { get; private set; }
+	public QueryContext CurrentContext => ContextStack.Peek();
+
+	private readonly Stack<QueryContext> ContextStack = ((Func<Stack<QueryContext>>)(() =>
+	{
+		var stack = new Stack<QueryContext>();
+		stack.Push(QueryContext.Script);
+		return stack;
+	}))();
+
+	public string StatementKind { get; private set; } = string.Empty;
 
 	private readonly List<string> _statements = new();
 
 	private readonly List<string> _newlineBuffer = new();
 
-	[MemberNotNull(nameof(Context))]
+	private Procedure? _currentProcedure;
+
+	public static object? EvaluateExpression(string expression)
+	{
+		if (!Interpreter.TryInterpret(expression, out var translated, out var selector, out _))
+			return null;
+
+		return ScriptExecutor.ExecuteDynamic(translated, selector);
+	}
+
 	public async Task RunAsync(string input, Buffer outputBuffer, Action<string> setTranslated, Func<Task> handleDeletedFiles)
 	{
-		Context = string.Empty;
-
 		var inputTrim = input.Trim();
 
 		if (inputTrim.EndsWith('\\'))
@@ -28,10 +43,66 @@ public partial class QueryAgent
 		}
 
 		inputTrim = _newlineBuffer.Append(inputTrim).StringJoin(string.Empty);
-
 		_newlineBuffer.Clear();
 
-		if(inputTrim.StartsWith("#ephemeral") || inputTrim.StartsWith("#evaporate"))
+		if (inputTrim.StartsWith('.'))
+		{
+			var context = inputTrim[1..];
+			SwitchContext(context, outputBuffer, setTranslated, handleDeletedFiles);
+			return;
+		}
+
+		if (CurrentContext == QueryContext.Script)
+			await RunScriptAsync(inputTrim, outputBuffer, setTranslated, handleDeletedFiles);
+
+		if (CurrentContext == QueryContext.Procedure)
+			_currentProcedure?.Push(inputTrim);
+	}
+
+	private async void SwitchContext(string contextStr, Buffer outputBuffer, Action<string> setTranslated, Func<Task> handleDeletedFiles)
+	{
+		if (contextStr == "end" && ContextStack.Count > 1)
+		{
+			if (CurrentContext == QueryContext.Procedure && _currentProcedure is not null)
+				await _currentProcedure.FlushAsync(outputBuffer, setTranslated, handleDeletedFiles);
+			ContextStack.Pop();
+			notify(outputBuffer, $"Switched context to {CurrentContext}.");
+			return;
+		}
+		if (contextStr == "default")
+		{
+			ContextStack.Clear();
+			ContextStack.Push(QueryContext.Script);
+			notify(outputBuffer, $"Switched context to {CurrentContext}.");
+		}
+		if (contextStr == "script" && CurrentContext != QueryContext.Script)
+		{
+			ContextStack.Push(QueryContext.Script);
+			notify(outputBuffer, $"Switched context to {CurrentContext}.");
+			return;
+		}
+		if (contextStr is "proc" or "procedure" && CurrentContext != QueryContext.Procedure)
+		{
+			_currentProcedure = new();
+			ContextStack.Push(QueryContext.Procedure);
+			notify(outputBuffer, $"Switched context to {CurrentContext}.");
+			return;
+		}
+
+		static void notify(Buffer buffer, string str)
+		{
+			if (ManualQuery.IsReflect)
+				buffer.Add((str, "Monitor"));
+		}
+	}
+
+	public async Task RunScriptAsync(string input, Buffer outputBuffer, Action<string> setTranslated, Func<Task> handleDeletedFiles)
+	{
+		StatementKind = string.Empty;
+
+		var inputTrim = input.Trim();
+
+		if (inputTrim.StartsWith("#ephemeral") || inputTrim.StartsWith("#evaporate"))
 		{
 			ProcessEphemeral(inputTrim, outputBuffer);
 			return;
@@ -81,7 +152,7 @@ public partial class QueryAgent
 			{
 				RunStatement(statement, outputBuffer, setTranslated);
 			}
-			catch(Exception ex) 
+			catch (Exception ex)
 			{
 				outputBuffer.Add(($"InternalException({ex.GetType().Name}): {ex.Message}", "Error"));
 			}
@@ -89,12 +160,11 @@ public partial class QueryAgent
 		_statements.Clear();
 	}
 
-
 	private static void RunStatement(string input, Buffer outputBuffer, Action<string> setTranslated)
 	{
 		var inputTrim = input.Trim();
 
-		if(RecordRegex.Statement().Match(inputTrim) is var recordMatch && recordMatch.Success)
+		if (RecordRegex.Statement().Match(inputTrim) is var recordMatch && recordMatch.Success)
 		{
 			Record.Emit(recordMatch.Groups["name"].Value, recordMatch.Groups["expr"].Value);
 			return;
@@ -112,7 +182,7 @@ public partial class QueryAgent
 			return;
 		}
 
-		if(WideVariableRegex.IncrementStatement().Match(inputTrim) is var increment && increment.Success)
+		if (WideVariableRegex.IncrementStatement().Match(inputTrim) is var increment && increment.Success)
 		{
 			WideVariable.Increment(increment.Groups["name"].Value);
 			return;
@@ -124,8 +194,8 @@ public partial class QueryAgent
 			return;
 		}
 
-		foreach (var(regex, type) in WideVariableRegex.Assignments)
-			if(regex.Match(inputTrim) is var assignMatch && assignMatch.Success)
+		foreach (var (regex, type) in WideVariableRegex.Assignments)
+			if (regex.Match(inputTrim) is var assignMatch && assignMatch.Success)
 			{
 				AssignVariable(assignMatch, outputBuffer, setTranslated, type);
 				return;
@@ -150,7 +220,7 @@ public partial class QueryAgent
 		var info = await Server.GetAsync();
 		string[] infoSplit;
 
-		Context = "Monitor";
+		StatementKind = "Monitor";
 
 		if (input == "#pragma monitor $ALL")
 		{
@@ -219,7 +289,7 @@ public partial class QueryAgent
 		}
 
 		if (ManualQuery.IsReflect)
-			outputBuffer.Add(($"Successfully deleted variable '{name}'.", string.Empty));
+			outputBuffer.Add(($"Successfully deleted variable '{name}'.", "Monitor"));
 	}
 
 	private static void AssignVariable(Match match, Buffer outputBuffer, Action<string> setTranslated, AssignmentType assignmentType)
@@ -233,7 +303,7 @@ public partial class QueryAgent
 		}
 		setTranslated(translated);
 
-		var output = (dynamic?)ScriptExecutor.ExecuteDynamic(translated, selector);
+		var output = ScriptExecutor.ExecuteDynamic(translated, selector) as dynamic;
 
 		switch (assignmentType)
 		{
@@ -292,5 +362,9 @@ public partial class QueryAgent
 	[GeneratedRegex("(?<=;)")]
 	private static partial Regex SplitSemicolonRegex();
 
+}
 
+public enum QueryContext
+{
+	Script, Module, Procedure
 }

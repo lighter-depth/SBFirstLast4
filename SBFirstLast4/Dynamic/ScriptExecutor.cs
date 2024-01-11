@@ -5,7 +5,7 @@ namespace SBFirstLast4.Dynamic;
 public static class ScriptExecutor
 {
 	public static string Execute(string translated, string selector)
-		=> ResultObjectToString(ExecuteDynamic(translated, selector));
+		=> StringUtil.ToString(ExecuteDynamic(translated, selector));
 
 	public static object? ExecuteDynamic(string translated, string selector)
 		=> SelectorHelper.GetDictionaryType(selector) switch
@@ -71,13 +71,21 @@ public static class ScriptExecutor
 		}
 	}
 
-	private static string ResultObjectToString(object? result)
+
+	/// <summary>
+	/// クエリ ソース用のSO辞書
+	/// </summary>
+	/// <seealso cref="Extensions.DynamicExtensionHelper.GetSingleton"/>
+	private static readonly int[] _singletonEnumerable = { 0 };
+}
+
+internal class StringUtil
+{
+	internal static string ToString(object? result)
 	{
 		if (result is System.Collections.IEnumerable enumerable and not string)
-			return $"[{enumerable.Cast<object>().Select(ResultObjectToString).StringJoin()}]";
+			return $"[{enumerable.Cast<object>().Select(ToString).StringJoin()}]";
 
 		return result?.ToString() ?? "null";
 	}
-
-	private static readonly int[] _singletonEnumerable = { 0 };
 }

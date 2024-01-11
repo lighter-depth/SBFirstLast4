@@ -1,6 +1,5 @@
 ﻿using System.Linq.Dynamic.Core.CustomTypeProviders;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace SBFirstLast4.Dynamic;
 
@@ -70,7 +69,6 @@ internal static partial class WideVariableRegex
 		(CoarseAssign(), AssignmentType.Coarse)
 	};
 
-	// lang=regex
 	private const string VariablePattern = "&(?<name>[A-Za-z][0-9A-Z_a-z]*)";
 
 	[GeneratedRegex(VariablePattern)]
