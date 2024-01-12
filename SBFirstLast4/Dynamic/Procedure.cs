@@ -24,15 +24,22 @@ public class Procedure
 
 		var tokens = lexerResult.Tokens;
 
-
-		var context = TokenReaderContext.Semicolon;
-
 		for(var i = 0; i < tokens.Count;)
 		{
-			Token<ProcedureToken> token() => tokens[i];
-			var id = token().TokenID;
-			context = Token.ControlFlow.Contains(id) ? TokenReaderContext.Block : TokenReaderContext.Semicolon;
-			
+			var id = tokens[i].TokenID;
+			var context = Token.ControlFlow.Contains(id) ? TokenReaderContext.Block : TokenReaderContext.Semicolon;
+			if(context == TokenReaderContext.Semicolon)
+			{
+				var currentToken = tokens[i];
+				var tokenBuffer = new List<string>();
+				while(currentToken.TokenID != ProcedureToken.SEMICOLON && i < tokens.Count)
+				{
+					currentToken = tokens[i];
+					tokenBuffer.Add(currentToken.Value);
+					i++;
+				}
+				await agent.RunScriptAsync(tokenBuffer.StringJoin(string.Empty), outputBuffer, setTranslated, handleDeletedFiles);
+			}
 		}
 	}
 

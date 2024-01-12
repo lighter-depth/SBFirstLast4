@@ -69,13 +69,25 @@ internal static partial class WideVariableRegex
 		(CoarseAssign(), AssignmentType.Coarse)
 	};
 
-	private const string VariablePattern = "&(?<name>[A-Za-z][0-9A-Z_a-z]*)";
+	private const string VariablePattern = "&(?<name>[A-Z_a-z][0-9A-Z_a-z]*)";
 
 	[GeneratedRegex(VariablePattern)]
 	internal static partial Regex Reference();
 
 	[GeneratedRegex($@"^\s*{VariablePattern}\s*=(?<expr>.*)$")]
 	internal static partial Regex Declaration();
+
+	[GeneratedRegex($@"^\s*{VariablePattern}\s*=\s*%\s*{{(?<expr>.*)}}\s*$")]
+	internal static partial Regex Hash();
+
+	[GeneratedRegex(@"%\s*{(?<expr>.*?)}\s*(?:[()\[\].\\]|$)")]
+	internal static partial Regex HashExpression();
+
+	[GeneratedRegex(@"(?<key>.*?)\s*=\s*(?<value>.*?)(?:,|$)")]
+	internal static partial Regex HashInitializer();
+
+	[GeneratedRegex(@"(?<key>.*?)\s*=\s*(?<value>.*?)(?:}\s*,|}\s*$)")]
+	internal static partial Regex HashArrayInitializer();
 
 	[GeneratedRegex($@"^\s*delete\s*{VariablePattern}")]
 	internal static partial Regex Deletion();

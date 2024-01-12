@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 using SBFirstLast4.Logging;
 using SBFirstLast4.Pages;
 using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
@@ -130,6 +131,19 @@ public partial class QueryAgent
 
 		inputTrim = Interpreter.ExpandMacro(inputTrim);
 
+		var hashMatches = WideVariableRegex.HashExpression().Matches(inputTrim).Cast<Match>().ToArray();
+		var hashVariableIndex = 0;
+		if (hashMatches.Length > 0)
+			foreach(var (match, i) in hashMatches.WithIndex())
+			{
+				var variableName = $"&__hash_{hashVariableIndex++}_generated";
+				var length = match.Value.At(^1) is '}' or ' ' ? match.Length : match.Length - 1;
+				var sb = new StringBuilder(inputTrim);
+				sb.Remove(match.Index, length);
+				sb.Insert(match.Index, variableName);
+				inputTrim = $"{variableName} = %{{{match.Groups["expr"]}}}; {sb}; delete {variableName}";
+			}
+
 		var statements = SplitSemicolonRegex()
 						.Split(inputTrim)
 						.Where(s => !string.IsNullOrWhiteSpace(s))
@@ -167,6 +181,12 @@ public partial class QueryAgent
 		if (RecordRegex.Statement().Match(inputTrim) is var recordMatch && recordMatch.Success)
 		{
 			Record.Emit(recordMatch.Groups["name"].Value, recordMatch.Groups["expr"].Value);
+			return;
+		}
+
+		if (WideVariableRegex.Hash().Match(inputTrim) is var hashMatch && hashMatch.Success)
+		{
+			DefineHash(hashMatch);
 			return;
 		}
 
@@ -258,6 +278,50 @@ public partial class QueryAgent
 
 		if (input.StartsWith("#delete"))
 			await handleDeletedFiles();
+	}
+
+	private static void DefineHash(Match hashMatch)
+	{
+		var name = hashMatch.Groups["name"].Value;
+		var expr = hashMatch.Groups["expr"].Value;
+
+		var isCollection = false;
+
+		var matchSample = WideVariableRegex.HashInitializer().Match(expr);
+		if (matchSample.Groups["value"].Value.StartsWith('{'))
+			isCollection = true;
+
+
+		var matches = (isCollection ? WideVariableRegex.HashArrayInitializer() : WideVariableRegex.HashInitializer()).Matches(expr).Cast<Match>().ToArray();
+
+		if (matches.Length == 0)
+		{
+			var objHash = typeof(Dictionary<,>).MakeGenericType(typeof(object), typeof(object));
+			WideVariable.Variables[name] = Activator.CreateInstance(objHash);
+			return;
+		}
+		var sample = matches[0];
+
+		var collectionEnd = isCollection ? "}" : string.Empty;
+
+		var keySample = EvaluateExpression(sample.Groups["key"].Value) ?? new object();
+		var valueSample = EvaluateExpression(sample.Groups["value"].Value + collectionEnd) ?? new object();
+
+		var hashType = typeof(Dictionary<,>).MakeGenericType(keySample.GetType(), valueSample.GetType());
+
+		var hashBase = Activator.CreateInstance(hashType);
+
+		var add = hashType.GetMethod("Add");
+
+		foreach (var match in matches)
+		{
+			var key = EvaluateExpression(match.Groups["key"].Value);
+			var value = EvaluateExpression(match.Groups["value"].Value + collectionEnd);
+
+			add?.Invoke(hashBase, new[] { key, value });
+		}
+
+		WideVariable.Variables[name] = hashBase;
 	}
 
 	private static void DefineVariable(Match match, Buffer outputBuffer, Action<string> setTranslated)

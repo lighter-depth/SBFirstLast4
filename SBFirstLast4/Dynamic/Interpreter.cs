@@ -344,6 +344,23 @@ public static partial class Interpreter
 		return quoteCount % 2 == 1;
 	}
 
+	internal static bool IsInsideBrace(int startIndex, int length, string source, char braceStart, char braceEnd)
+	{
+		if (startIndex < 0 || length < 0 || startIndex + length > source.Length)
+			return false;
+
+		var braceCount = 0;
+		for (var i = 0; i < startIndex; i++)
+		{
+			if (source[i] == braceStart)
+				braceCount++;
+			else if (source[i] == braceEnd)
+				braceCount--;
+		}
+
+		return braceCount % 2 == 1;
+	}
+
 	[GeneratedRegex(@"`(?<pattern>.*?)`")]
 	private static partial Regex RegexLiteralRegex();
 
