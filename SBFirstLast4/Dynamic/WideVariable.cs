@@ -74,7 +74,7 @@ internal static partial class WideVariableRegex
 	[GeneratedRegex(VariablePattern)]
 	internal static partial Regex Reference();
 
-	[GeneratedRegex($@"^\s*{VariablePattern}\s*=(?<expr>.*)$")]
+	[GeneratedRegex($@"^\s*{VariablePattern}\s*=(?<expr>[^=].*)$")]
 	internal static partial Regex Declaration();
 
 	[GeneratedRegex($@"^\s*{VariablePattern}\s*=\s*%\s*{{(?<expr>.*)}}\s*$")]

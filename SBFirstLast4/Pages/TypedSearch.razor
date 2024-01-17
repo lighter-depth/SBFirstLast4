@@ -445,7 +445,7 @@
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
-		if (!SBDictionary.IsLoadedCorrectly)
+		if (!Words.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 	}
 	private void SearchButton_Click()
@@ -480,7 +480,7 @@
 			ShowLastCharWarning = false;
 			StateHasChanged();
 		}
-		if (isRegex && !SBUtils.IsValidRegex(RegexPattern))
+		if (isRegex && !Utils.IsValidRegex(RegexPattern))
 		{
 			RegexWarning = "無効な構文です";
 			ShowRegexWarning = true;

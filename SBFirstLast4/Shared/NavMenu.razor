@@ -96,7 +96,7 @@
 	}
 	private async void GoToHomeBtn_Click()
 	{
-		if (SBDictionary.IsLite)
+		if (Words.IsLite)
 		{
 			if (await JSRuntime.Confirm("完全版の辞書が読み込まれていないため、辞書選択画面に戻ります。よろしいですか？"))
 				NavigationManager.NavigateTo("top", false);

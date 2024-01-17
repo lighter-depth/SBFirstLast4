@@ -3,10 +3,11 @@ using System.Text.RegularExpressions;
 using Microsoft.JSInterop;
 using SBFirstLast4.Dynamic;
 using SBFirstLast4.Simulator;
+using System.Linq;
 
 namespace SBFirstLast4;
 
-public static class SBUtils
+public static class Utils
 {
 	public static Random Random { get; set; } = new();
 
@@ -92,7 +93,7 @@ public static class SBUtils
 	public static string ReplaceFreeString(this string input, string oldValue, string newValue)
 		=> Regex.Replace(input, Regex.Escape(oldValue), m =>
 		{
-			if (Interpreter.IsInsideStringLiteral(m.Index, m.Length, input))
+			if (Is.InsideStringLiteral(m.Index, m.Length, input))
 				return m.Value;
 
 			return newValue;
@@ -148,12 +149,6 @@ public static class CollectionHelper
 
 	public static void Add(this List<AnnotatedString> list, Notice notice, BattleData data) => list.Add(new(string.Empty, notice) { Data = data });
 
-	public static void AddMany(this List<AnnotatedString> list, IEnumerable<AnnotatedString> msgs)
-	{
-		foreach (var msg in msgs)
-			list.Add(msg);
-	}
-
 	public static Span<T> AsSpan<T>(this List<T> list) => CollectionsMarshal.AsSpan(list);
 
 	public static List<string[]> SplitToChunks(this List<string> source, int chunkSize)
@@ -197,13 +192,21 @@ public static class CollectionHelper
 
 	public static T? At<T>(this IEnumerable<T> source, Index index) => source.ElementAtOrDefault(index);
 
+	public static T? At<T>(this T[] source, int index) => index < 0 || index >= source.Length ? default : source[index];
+
+	public static T? At<T>(this T[] source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];
+
+	public static T? At<T>(this IList<T> source, int index) => index < 0 || index >= source.Count ? default : source[index];
+
+	public static T? At<T>(this IList<T> source, Index index) => index.Value < 0 || index.Value >= source.Count ? default : source[index];
+
 	public static char At(this string source, int index) => index < 0 || index >= source.Length ? default : source[index];
 
 	public static char At(this string source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];
 
 	public static string StringJoin<T>(this IEnumerable<T> values, string separator) => string.Join(separator, values);
 
-	public static string StringJoin<T>(this IEnumerable<T> values) => string.Join(", ", values);
+	public static string StringJoin<T>(this IEnumerable<T> values) => string.Join(string.Empty, values);
 
 	public static IEnumerable<(T, int)> WithIndex<T>(this IEnumerable<T> source) => source.Select((x, i) => (x, i));
 }

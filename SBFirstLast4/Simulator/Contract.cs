@@ -393,7 +393,7 @@ internal class AttackContract : Contract
 	{
 		State = AbilityType.CritDecided;
 		if (Word.IsCritable)
-			CritFlag = SBUtils.Random.Next(5) == 0;
+			CritFlag = Utils.Random.Next(5) == 0;
 		if (Actor.Ability.Type.HasFlag(State))
 			Actor.Ability.Execute(this);
 	}
@@ -425,7 +425,7 @@ internal class AttackContract : Contract
 		// 4倍弱点 × 急所 でダメージを与えると 51 - 58 ダメージ出る。
 		var critDmg = CritFlag ? Player.CritDmg : 1;
 		var randomFlag = !(Actor.CurrentWord.Type1 == WordType.Empty || Receiver.CurrentWord.Type1 == WordType.Empty);
-		var random = randomFlag ? 0.85 + SBUtils.Random.Next(15) * 0.01 : 1;
+		var random = randomFlag ? 0.85 + Utils.Random.Next(15) * 0.01 : 1;
 		var damage = (int)(critDmg * (int)(AmpDmg * BrdDmg * (int)(BaseDmg * PropDmg * MtpDmg * random)));
 		Receiver.HP -= damage;
 		if (Receiver.Ability.Type.HasFlag(State))

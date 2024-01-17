@@ -33,6 +33,9 @@ public partial class QueryAgent
 		return ScriptExecutor.ExecuteDynamic(translated, selector);
 	}
 
+	public static T EvaluateExpression<T>(string expression) where T : struct 
+		=> (T?)EvaluateExpression(expression) ?? default;
+
 	public async Task RunAsync(string input, Buffer outputBuffer, Action<string> setTranslated, Func<Task> handleDeletedFiles)
 	{
 		var inputTrim = input.Trim();
@@ -109,7 +112,7 @@ public partial class QueryAgent
 			return;
 		}
 
-		inputTrim = Interpreter.ExpandEphemeral(inputTrim);
+		inputTrim = Macro.ExpandEphemeral(inputTrim);
 
 		if (inputTrim.StartsWith("#pragma monitor"))
 		{
@@ -129,7 +132,7 @@ public partial class QueryAgent
 			return;
 		}
 
-		inputTrim = Interpreter.ExpandMacro(inputTrim);
+		inputTrim = Macro.Expand(inputTrim);
 
 		var hashMatches = WideVariableRegex.HashExpression().Matches(inputTrim).Cast<Match>().ToArray();
 		var hashVariableIndex = 0;
@@ -268,7 +271,7 @@ public partial class QueryAgent
 
 	private static async Task PreprocessAsync(string input, Buffer outputBuffer, Func<Task> handleDeletedFiles)
 	{
-		if (!Preprocessor.TryPreprocess(input, out var status, out var errorMsg))
+		if (!Preprocessor.TryProcess(input, out var status, out var errorMsg))
 		{
 			outputBuffer.Add(($"Error: SBPreprocessException: {errorMsg}", "Error"));
 			return;

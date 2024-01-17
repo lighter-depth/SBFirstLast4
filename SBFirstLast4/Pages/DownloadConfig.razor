@@ -1,6 +1,5 @@
 ﻿@page "/download-config"
 @using BlazorDownloadFile
-@using System.Text
 @using SBFirstLast4.Logging
 @inject NavigationManager NavigationManager
 @inject IBlazorDownloadFileService BlazorDownloadFileService
@@ -345,7 +344,7 @@ else
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
-		if (!SBDictionary.IsLoadedCorrectly)
+		if (!Words.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 	}
 	private async void DownloadFile()
@@ -456,5 +455,6 @@ else
 		await BlazorDownloadFileService.DownloadFileFromText(fileName, content, encoding, "text/plain");
 
 		isDownloading = false;
+		StateHasChanged();
 	}
 }

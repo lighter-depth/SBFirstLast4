@@ -5,7 +5,7 @@ using Progress = System.Func<string, System.Threading.Tasks.Task>;
 namespace SBFirstLast4;
 
 [DynamicLinqType]
-public class SBDictionary
+public class Words
 {
 	public static List<string> NoTypeWords { get; internal set; } = new(3_000_000);
 	public static List<Word> TypedWords { get; internal set; } = new(20_000);
@@ -138,9 +138,9 @@ public class SBDictionary
 
 		var tasks = new List<Task>();
 		var typedCount = 0;
-		while (typedCount < SBUtils.KanaListSpread.Length) // 67
+		while (typedCount < Utils.KanaListSpread.Length) // 67
 		{
-			var localParameter = SBUtils.KanaListSpread[typedCount];
+			var localParameter = Utils.KanaListSpread[typedCount];
 			tasks.Add(ReadTypedWords(localParameter));
 			if (typedCount % 10 == 0)
 			{
@@ -166,9 +166,9 @@ public class SBDictionary
 	}
 	private static void InitSplitList()
 	{
-		foreach (var i in SBUtils.KanaListSpread) SplitList.Add(TypedWords.Where(x => x.Name.At(0) == i[0]).ToList());
+		foreach (var i in Utils.KanaListSpread) SplitList.Add(TypedWords.Where(x => x.Name.At(0) == i[0]).ToList());
 	}
-	public static List<Word> GetSplitList(char startChar) => SplitList.At(SBUtils.KanaListSpread.ToList().IndexOf(startChar.ToString())) ?? Enumerable.Empty<Word>().ToList();
+	public static List<Word> GetSplitList(char startChar) => SplitList.At(Utils.KanaListSpread.ToList().IndexOf(startChar.ToString())) ?? Enumerable.Empty<Word>().ToList();
 
 	private static async Task ReadNoTypeWords(int arg)
 	{

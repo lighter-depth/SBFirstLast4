@@ -121,7 +121,7 @@
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
-		if (!SBDictionary.IsLoadedCorrectly)
+		if (!Words.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 
 		Server.Log(new
@@ -152,7 +152,7 @@
 		}
 
 		var keyChar = wordText[0];
-		if (!SBUtils.KanaListSpread.Contains(keyChar.ToString()))
+		if (!Utils.KanaListSpread.Contains(keyChar.ToString()))
 		{
 			WordResult = "無効な開始文字です。";
 			StateHasChanged();
@@ -168,13 +168,13 @@
 			await Task.Delay(1);
 			return;
 		}
-		if (!SBDictionary.IsLite && !AppSettings.UseExists)
+		if (!Words.IsLite && !AppSettings.UseExists)
 		{
 			WordResult = "Loading...";
 			StateHasChanged();
 			await Task.Delay(1);
 
-			if (!SBDictionary.PerfectNameDic.Contains(wordText))
+			if (!Words.PerfectNameDic.Contains(wordText))
 			{
 				result += "辞書にない単語です。";
 				WordResult = result;
@@ -184,8 +184,8 @@
 			}
 		}
 
-		var resultWord = SBDictionary.GetSplitList(keyChar).Find(x => x.Name == wordText);
-		if (!AppSettings.UseExists && SBDictionary.IsLite && resultWord == default)
+		var resultWord = Words.GetSplitList(keyChar).Find(x => x.Name == wordText);
+		if (!AppSettings.UseExists && Words.IsLite && resultWord == default)
 		{
 			result += "辞書にないか、無属性です。";
 			WordResult = result;

@@ -169,7 +169,7 @@
 	{
 		if (!firstRender)
 			return;
-		await SBAudioManager.Initialize(JSRuntime);
+		await AudioManager.Initialize(JSRuntime);
 	}
 
 	private async Task LiteDictionaryBtn_Click()
@@ -204,7 +204,7 @@
 		if (AppSettings.SkipFlag) token = DictionaryInitializationToken.Skip;
 		try
 		{
-			await SBDictionary.Initialize(async s =>
+			await Words.Initialize(async s =>
 			{
 				Content = s;
 				StateHasChanged();

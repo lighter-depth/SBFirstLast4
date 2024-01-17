@@ -42,16 +42,16 @@ public static partial class Interpreter
 
 	private static readonly Dictionary<string, string> DictionaryLiteral = new()
 	{
-		[NoTypeNames] = $"{nameof(SBDictionary)}.{nameof(SBDictionary.NoTypeWords)}",
-		[NoTypeWords] = $"{nameof(SBDictionary)}.{nameof(SBDictionary.WordNoTypeWords)}",
-		[TypedNames] = $"{nameof(SBDictionary)}.{nameof(SBDictionary.TypedWordNames)}",
-		[TypedWords] = $"{nameof(SBDictionary)}.{nameof(SBDictionary.TypedWords)}",
-		[PerfectWords] = $"{nameof(SBDictionary)}.{nameof(SBDictionary.PerfectDic)}",
-		[PerfectNames] = $"{nameof(SBDictionary)}.{nameof(SBDictionary.PerfectNameDic)}",
-		[Killable] = $"{nameof(SBAuxLists)}.{nameof(SBAuxLists.Killable)}",
-		[Semikillable] = $"{nameof(SBAuxLists)}.{nameof(SBAuxLists.SemiKillable)}",
-		[Danger4] = $"{nameof(SBAuxLists)}.{nameof(SBAuxLists.Danger4)}",
-		[CanBe4xed] = $"{nameof(SBAuxLists)}.{nameof(SBAuxLists.CanBe4xed)}",
+		[NoTypeNames] = $"{nameof(Words)}.{nameof(Words.NoTypeWords)}",
+		[NoTypeWords] = $"{nameof(Words)}.{nameof(Words.WordNoTypeWords)}",
+		[TypedNames] = $"{nameof(Words)}.{nameof(Words.TypedWordNames)}",
+		[TypedWords] = $"{nameof(Words)}.{nameof(Words.TypedWords)}",
+		[PerfectWords] = $"{nameof(Words)}.{nameof(Words.PerfectDic)}",
+		[PerfectNames] = $"{nameof(Words)}.{nameof(Words.PerfectNameDic)}",
+		[Killable] = $"{nameof(AuxLists)}.{nameof(AuxLists.Killable)}",
+		[Semikillable] = $"{nameof(AuxLists)}.{nameof(AuxLists.SemiKillable)}",
+		[Danger4] = $"{nameof(AuxLists)}.{nameof(AuxLists.Danger4)}",
+		[CanBe4xed] = $"{nameof(AuxLists)}.{nameof(AuxLists.CanBe4xed)}",
 		[Singleton] = $"{nameof(Extensions.DynamicExtensionHelper)}.{nameof(Extensions.DynamicExtensionHelper.GetSingleton)}()"
 	};
 
@@ -94,7 +94,7 @@ public static partial class Interpreter
 		input = input.ReplaceFreeString("@item", "it");
 
 		var commentIndex = input.IndexOf("//");
-		if (commentIndex != -1 && !IsInsideStringLiteral(commentIndex, 2, input)) input = input[..commentIndex];
+		if (commentIndex != -1 && !Is.InsideStringLiteral(commentIndex, 2, input)) input = input[..commentIndex];
 
 
 		if (input.At(0) != '@')
@@ -188,75 +188,25 @@ public static partial class Interpreter
 		return true;
 	}
 
-	internal static string ExpandEphemeral(string input)
-	{
-		foreach (var macro in ModuleManager.Ephemerals.Reverse())
-		{
-			if (macro is FunctionLikeMacro functionLikeMacro)
-			{
-				input = Regex.Replace(input, $@"{functionLikeMacro.Name}\((?<parameters>[^)]+)\)", m =>
-				{
-					if (IsInsideStringLiteral(m.Index, m.Length, input))
-						return m.Value;
-
-					var args = m.Groups["parameters"].Value.Split(',').Select(arg => arg.Trim()).ToList();
-					var body = functionLikeMacro.Body;
-					for (var i = 0; i < functionLikeMacro.Parameters.Count; i++)
-						body = body.Replace(functionLikeMacro.Parameters[i], args[i]);
-					return body;
-				});
-				continue;
-			}
-			if (macro is ObjectLikeMacro objectLikeMacro)
-				input = input.ReplaceFreeString(objectLikeMacro.Name, objectLikeMacro.Body);
-		}
-		return input;
-	}
-
-	internal static string ExpandMacro(string input)
-	{
-		foreach (var macro in ModuleManager.Macros.Reverse())
-		{
-			if (macro is FunctionLikeMacro functionLikeMacro)
-			{
-				input = Regex.Replace(input, $@"{functionLikeMacro.Name}\((?<parameters>[^)]+)\)", m =>
-				{
-					if (IsInsideStringLiteral(m.Index, m.Length, input))
-						return m.Value;
-
-					var args = m.Groups["parameters"].Value.Split(',').Select(arg => arg.Trim()).ToList();
-					var body = functionLikeMacro.Body;
-					for (var i = 0; i < functionLikeMacro.Parameters.Count; i++)
-						body = body.Replace(functionLikeMacro.Parameters[i], args[i]);
-					return body;
-				});
-				continue;
-			}
-			if (macro is ObjectLikeMacro objectLikeMacro)
-				input = input.ReplaceFreeString(objectLikeMacro.Name, objectLikeMacro.Body);
-		}
-		return input;
-	}
-
 	private static string ReplaceGenericMethods(string input)
 	{
 		if (!input.Contains(".Cast<") && !input.Contains(".OfType<") && !input.Contains("static_cast<")) return input;
 
 		var builder = new StringBuilder(input);
 
-		foreach (var match in CastCallRegex().Matches(input).Where(m => !IsInsideStringLiteral(m.Index, m.Length, input)).Reverse())
+		foreach (var match in CastCallRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
 		{
 			builder.Remove(match.Index, match.Length);
 			builder.Insert(match.Index, $".Cast(\"{match.Groups["type"].Value}\")");
 		}
 
-		foreach (var match in OfTypeCallRegex().Matches(input).Where(m => !IsInsideStringLiteral(m.Index, m.Length, input)).Reverse())
+		foreach (var match in OfTypeCallRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
 		{
 			builder.Remove(match.Index, match.Length);
 			builder.Insert(match.Index, $".OfType(\"{match.Groups["type"].Value}\")");
 		}
 
-		foreach (var match in StaticCastRegex().Matches(input).Where(m => !IsInsideStringLiteral(m.Index, m.Length, input)).Reverse())
+		foreach (var match in StaticCastRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
 		{
 			builder.Remove(match.Index, match.Length);
 			builder.Insert(match.Index, $"{match.Groups["type"].Value}({match.Groups["operand"].Value})");
@@ -270,7 +220,7 @@ public static partial class Interpreter
 	{
 		var sb = new StringBuilder();
 		var index = 0;
-		foreach (var match in CollectionLiteralRegex().Matches(input).Where(m => !IsInsideStringLiteral(m.Index, m.Length, input)).Cast<Match>())
+		foreach (var match in CollectionLiteralRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Cast<Match>())
 		{
 			sb.Append(input.AsSpan(index, match.Index - index));
 			var items = match.Groups["items"].Value;
@@ -293,7 +243,7 @@ public static partial class Interpreter
 	private static string ReplaceRegexLiteral(string input)
 	{
 		var builder = new StringBuilder(input);
-		foreach (var match in RegexLiteralRegex().Matches(input).Where(m => !IsInsideStringLiteral(m.Index, m.Length, input)).Reverse())
+		foreach (var match in RegexLiteralRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
 		{
 			builder.Remove(match.Index, match.Length);
 			builder.Insert(match.Index, $"\"{match.Groups["pattern"].Value}\".ToRegex()");
@@ -303,7 +253,7 @@ public static partial class Interpreter
 	private static string ReplaceWordLiteral(string input)
 	{
 		var builder = new StringBuilder(input);
-		foreach (Match match in WordLiteralRegex().Matches(input).Where(m => !IsInsideStringLiteral(m.Index, m.Length, input)).Reverse())
+		foreach (Match match in WordLiteralRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
 		{
 			var groups = match.Groups;
 			var isEmpty = !groups["type1"].Success;
@@ -323,42 +273,12 @@ public static partial class Interpreter
 	private static string ReplaceDeduceLiteral(string input)
 	{
 		var builder = new StringBuilder(input);
-		foreach (var match in DeduceLiteralRegex().Matches(input).Where(m => !IsInsideStringLiteral(m.Index, m.Length, input)).Reverse())
+		foreach (var match in DeduceLiteralRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
 		{
 			builder.Remove(match.Index, match.Length);
 			builder.Insert(match.Index, $"\"{match.Groups["name"].Value}\".Deduce()");
 		}
 		return builder.ToString();
-	}
-
-	internal static bool IsInsideStringLiteral(int startIndex, int length, string source)
-	{
-		if (startIndex < 0 || length < 0 || startIndex + length > source.Length)
-			return false;
-
-		var quoteCount = 0;
-		for (var i = 0; i < startIndex; i++)
-			if (source[i] == '"')
-				quoteCount++;
-
-		return quoteCount % 2 == 1;
-	}
-
-	internal static bool IsInsideBrace(int startIndex, int length, string source, char braceStart, char braceEnd)
-	{
-		if (startIndex < 0 || length < 0 || startIndex + length > source.Length)
-			return false;
-
-		var braceCount = 0;
-		for (var i = 0; i < startIndex; i++)
-		{
-			if (source[i] == braceStart)
-				braceCount++;
-			else if (source[i] == braceEnd)
-				braceCount--;
-		}
-
-		return braceCount % 2 == 1;
 	}
 
 	[GeneratedRegex(@"`(?<pattern>.*?)`")]

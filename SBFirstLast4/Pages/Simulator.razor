@@ -184,13 +184,13 @@
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
-		if (!SBDictionary.IsLoadedCorrectly)
+		if (!Words.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 	}
 
 	private async Task SetEquipment(PlayerSelector selector)
 	{
-		await SBAudioManager.PlayAudio("pera");
+		await AudioManager.PlayAudio("pera");
 		SimulatorSkill.Selector = selector;
 		SimulatorSkill.CurrentAbility = selector == PlayerSelector.Player1 ? Player1Ability : Player2Ability;
 		NavigationManager.NavigateTo("simulator-skill");

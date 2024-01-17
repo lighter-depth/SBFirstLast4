@@ -264,7 +264,7 @@
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
-		if (!SBDictionary.IsLoadedCorrectly)
+		if (!Words.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 
 		Server.Log(new
@@ -303,7 +303,7 @@
 			return default;
 		}
 		var keyChar = wordText[0];
-		if (!SBUtils.KanaListSpread.Contains(keyChar.ToString()))
+		if (!Utils.KanaListSpread.Contains(keyChar.ToString()))
 		{
 			update("無効な開始文字です。");
 			StateHasChanged();
@@ -315,26 +315,26 @@
 			StateHasChanged();
 			return default;
 		}
-		if (!SBDictionary.IsLite)
+		if (!Words.IsLite)
 		{
 			update("Loading...");
 			StateHasChanged();
 			await Task.Delay(1);
 		}
-		if (!SBDictionary.IsLite && !SBDictionary.PerfectNameDic.Contains(wordText))
+		if (!Words.IsLite && !Words.PerfectNameDic.Contains(wordText))
 		{
 			update("辞書にない単語です。");
 			StateHasChanged();
 			return default;
 		}
 
-		var resultWord = SBDictionary.GetSplitList(keyChar).Find(x => x.Name == wordText);
+		var resultWord = Words.GetSplitList(keyChar).Find(x => x.Name == wordText);
 
 		var typeIndicatorResult = "タイプ：";
 		var (type1, type2) = (resultWord.Type1, resultWord.Type2);
 		typeIndicatorResult += (type1, type2) switch
 		{
-			(WordType.Empty, WordType.Empty) when SBDictionary.IsLite && resultWord == default => "辞書にない、または無属性",
+			(WordType.Empty, WordType.Empty) when Words.IsLite && resultWord == default => "辞書にない、または無属性",
 			(WordType.Empty, WordType.Empty) => "無属性",
 			(var type, WordType.Empty) => $"{type.TypeToString()}",
 			(WordType.Empty, var type) => $"{type.TypeToString()}",

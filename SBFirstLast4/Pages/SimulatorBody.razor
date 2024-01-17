@@ -1266,7 +1266,7 @@
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
-		if (!SBDictionary.IsLoadedCorrectly)
+		if (!Words.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 
 		Battle = new
@@ -1441,7 +1441,7 @@
 				return;
 			}
 		ShowModalMessage("とくせいを変更した！");
-		await SBAudioManager.PlayAudio("concent");
+		await AudioManager.PlayAudio("concent");
 	}
 
 	private static List<AnnotatedString> GetMessages(IEnumerable<AnnotatedString> list)
@@ -1467,7 +1467,7 @@
 		StateHasChanged();
 		await Task.Delay(20);
 
-		await SBAudioManager.PlayAudio(word.Type1.TypeToAudio());
+		await AudioManager.PlayAudio(word.Type1.TypeToAudio());
 		await FadeInWord(Battle.WasPlayer1sTurn);
 		StateHasChanged();
 	}
@@ -1479,18 +1479,18 @@
 		foreach (var msg in msgs)
 		{
 			if (!msg.IsInvisible) MessageText = msg.Text;
-			if (SoundDic.TryGetValue(msg.Notice, out var soundName)) SBAudioManager.PlayAudioForget(soundName);
+			if (SoundDic.TryGetValue(msg.Notice, out var soundName)) AudioManager.PlayAudioForget(soundName);
 
 			if (msg.Notice == Notice.Alter)
 			{
-				await SBAudioManager.PlayAudio("glitch");
+				await AudioManager.PlayAudio("glitch");
 				ShowAlter = true;
 				StateHasChanged();
 				Battle.AlterTo(msg.Data);
 				AlterUI();
 				await Task.Delay(200);
 				ShowAlter = false;
-				await SBAudioManager.SeizeAudio("glitch");
+				await AudioManager.SeizeAudio("glitch");
 			}
 
 			if (msg.Notice == Notice.HPUpdated)
@@ -1565,8 +1565,8 @@
 			if (msg.Notice == Notice.DeathInfo)
 			{
 				await Task.Delay(500);
-				await SBAudioManager.PlayAudio("end");
-				await SBAudioManager.SeizeAudio(AppSettings.BattleBgm);
+				await AudioManager.PlayAudio("end");
+				await AudioManager.SeizeAudio(AppSettings.BattleBgm);
 			}
 			StateHasChanged();
 			if (msg.Notice != Notice.Alter)
@@ -1740,7 +1740,7 @@
 
 	private async void ShowSituationModal()
 	{
-		await SBAudioManager.PlayAudio("pera");
+		await AudioManager.PlayAudio("pera");
 		ShowModal.Situation = true;
 		for (var i = 0.0; i < 1; i += 0.04)
 		{
@@ -1754,7 +1754,7 @@
 
 	private async void HideSituationModal()
 	{
-		await SBAudioManager.PlayAudio("pera");
+		await AudioManager.PlayAudio("pera");
 		for (var i = 0.0; i < 1; i += 0.04)
 		{
 			ModalOpacities.Situation = 1 - i;
@@ -1777,7 +1777,7 @@
 
 	private async void ShowSkillModal()
 	{
-		await SBAudioManager.PlayAudio("pera");
+		await AudioManager.PlayAudio("pera");
 		ShowModal.Skill = true;
 		for (var i = 0.0; i < 1; i += 0.04)
 		{
@@ -1791,7 +1791,7 @@
 
 	private async void HideSkillModal()
 	{
-		await SBAudioManager.PlayAudio("pera");
+		await AudioManager.PlayAudio("pera");
 		for (var i = 0.0; i < 1; i += 0.04)
 		{
 			ModalOpacities.Skill = 1 - i;
@@ -1809,7 +1809,7 @@
 		if (!await JSRuntime.Confirm("シミュレーションを終了しますか？"))
 			return;
 
-		await SBAudioManager.CancelAudio();
+		await AudioManager.CancelAudio();
 		NavigationManager.NavigateTo("simulator");
 	}
 
@@ -1829,7 +1829,7 @@
 			return;
 
 		SkillSelector = selector;
-		await SBAudioManager.PlayAudio("concent");
+		await AudioManager.PlayAudio("concent");
 		StateHasChanged();
 	}
 

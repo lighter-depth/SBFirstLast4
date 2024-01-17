@@ -113,7 +113,7 @@ public static partial class Preprocessor
 	}
 
 
-	public static bool TryPreprocess(string input, [NotNullWhen(true)] out string[]? status, [NotNullWhen(false)] out string? errorMsg, string moduleName = "USER_DEFINED")
+	public static bool TryProcess(string input, [NotNullWhen(true)] out string[]? status, [NotNullWhen(false)] out string? errorMsg, string moduleName = "USER_DEFINED")
 	{
 		(status, errorMsg) = (null, null);
 		input = input.Trim();
@@ -150,14 +150,14 @@ public static partial class Preprocessor
 					+ (x is ObjectLikeMacro o
 					? $"Key: {o.Name}, Value: {o.Body}"
 					: x is FunctionLikeMacro f
-					? $"Sign: {f.Name}({f.Parameters.StringJoin()}), Body: {f.Body}"
+					? $"Sign: {f.Name}({f.Parameters.StringJoin(", ")}), Body: {f.Body}"
 					: "NULL"))
 					.Concat(ModuleManager.UserDefined.Ephemerals
 					.Select(x => $"Module: {x.ModuleName}, "
 					+ (x is ObjectLikeMacro o
 					? $"[[Ephemeral]] Key: {o.Name}, Value: {o.Body}"
 					: x is FunctionLikeMacro f
-					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.StringJoin()}), Body: {f.Body}"
+					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.StringJoin(", ")}), Body: {f.Body}"
 					: "NULL")))
 					.Concat(ModuleManager.UserDefined.Symbols.Select(x => $"Symbol: {x}"))
 					.ToArray();
@@ -185,7 +185,7 @@ public static partial class Preprocessor
 			if(selector is "$VARIABLE" or "$VAR")
 			{
 				status = WideVariable.Variables
-						.Select(kv => $"Name: {kv.Key}, Value: {StringUtil.ToString(kv.Value)}")
+						.Select(kv => $"Name: {kv.Key}, Value: {To.String(kv.Value)}")
 						.ToArray();
 				return true;
 			}
@@ -193,8 +193,9 @@ public static partial class Preprocessor
 			if(selector is "$RECORD" or "$RCD")
 			{
 				status = Record.Types
-						.Select(t => $"Name: {t.Name}, Fields: [{t.GetFields().Select(f => $"{{Sign: {f.Name}, Type: {f.FieldType.Name}}}").StringJoin()}]")
+						.Select(t => $"Name: {t.Name}, Fields: [{t.GetFields().Select(f => $"{{Sign: {f.Name}, Type: {f.FieldType.Name}}}").StringJoin(", ")}]")
 						.ToArray();
+				return true;
 			}
 
 			if (selector is "$ALL")
@@ -204,14 +205,14 @@ public static partial class Preprocessor
 					+ (x is ObjectLikeMacro o
 					? $"Key: {o.Name}, Value: {o.Body}"
 					: x is FunctionLikeMacro f
-					? $"Sign: {f.Name}({f.Parameters.StringJoin()}), Body: {f.Body}"
+					? $"Sign: {f.Name}({f.Parameters.StringJoin(", ")}), Body: {f.Body}"
 					: "NULL"))
 					.Concat(ModuleManager.Ephemerals
 					.Select(x => $"Module: {x.ModuleName}, "
 					+ (x is ObjectLikeMacro o
 					? $"[[Ephemeral]] Key: {o.Name}, Value: {o.Body}"
 					: x is FunctionLikeMacro f
-					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.StringJoin()}), Body: {f.Body}"
+					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.StringJoin(", ")}), Body: {f.Body}"
 					: "NULL")))
 					.Concat(ModuleManager.Symbols.Select(x => $"Symbol: {x}"))
 					.ToArray();
@@ -231,14 +232,14 @@ public static partial class Preprocessor
 					+ (x is ObjectLikeMacro o
 					? $"Key: {o.Name}, Value: {o.Body}"
 					: x is FunctionLikeMacro f
-					? $"Sign: {f.Name}({f.Parameters.StringJoin()}), Body: {f.Body}"
+					? $"Sign: {f.Name}({f.Parameters.StringJoin(", ")}), Body: {f.Body}"
 					: "NULL"))
 					.Concat(module.Ephemerals
 					.Select(x => $"Module: {x.ModuleName}, "
 					+ (x is ObjectLikeMacro o
 					? $"[[Ephemeral]] Key: {o.Name}, Value: {o.Body}"
 					: x is FunctionLikeMacro f
-					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.StringJoin()}), Body: {f.Body}"
+					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.StringJoin(", ")}), Body: {f.Body}"
 					: "NULL")))
 					.Concat(module.Symbols.Select(x => $"Symbol: {x}"))
 					.ToArray();

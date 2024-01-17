@@ -80,7 +80,7 @@
 	private static string AudioName = "denno.mp3";
 	private static string PureAudioName = "denno";
 	private static string RequestedAudioName = "denno";
-	private static int AudioIndex = SBAudioManager.AudioNames.IndexOf("denno") is int result and >= 0 ? result : 0;
+	private static int AudioIndex = AudioManager.AudioNames.IndexOf("denno") is int result and >= 0 ? result : 0;
 	private static bool IsPlaying = false;
 
 	protected override void OnInitialized()
@@ -90,7 +90,7 @@
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
-		if (!SBDictionary.IsLoadedCorrectly)
+		if (!Words.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 
 		Server.Log(new
@@ -110,11 +110,11 @@
 	{
 		var audioName = RequestedAudioName;
 
-		if (!await SBAudioManager.TryPlayAudio(RequestedAudioName))
+		if (!await AudioManager.TryPlayAudio(RequestedAudioName))
 			return;
 
 		if (IsPlaying)
-			await SBAudioManager.PauseAudio(PureAudioName);
+			await AudioManager.PauseAudio(PureAudioName);
 
 		IsPlaying = true;
 		PureAudioName = audioName;
@@ -123,7 +123,7 @@
 
 	private async Task PauseCurrentAudio()
 	{
-		await SBAudioManager.PauseAudio(PureAudioName);
+		await AudioManager.PauseAudio(PureAudioName);
 		IsPlaying = false;
 		AudioName = $"{PureAudioName}.mp3 ⏸︎";
 	}
@@ -132,15 +132,15 @@
 	{
 		AudioIndex--;
 		if (AudioIndex < 0)
-			AudioIndex = SBAudioManager.AudioNames.Length - 1;
+			AudioIndex = AudioManager.AudioNames.Length - 1;
 
 
 		if (IsPlaying)
 		{
-			await SBAudioManager.PauseAudio(PureAudioName);
-			await SBAudioManager.PlayAudio(SBAudioManager.AudioNames[AudioIndex]);
+			await AudioManager.PauseAudio(PureAudioName);
+			await AudioManager.PlayAudio(AudioManager.AudioNames[AudioIndex]);
 		}
-		PureAudioName = SBAudioManager.AudioNames[AudioIndex];
+		PureAudioName = AudioManager.AudioNames[AudioIndex];
 		RequestedAudioName = PureAudioName;
 		AudioName = $"{PureAudioName}.mp3 {(IsPlaying ? '▶' : '⏸')}";
 	}
@@ -148,17 +148,17 @@
 	private async Task GoToNextAudio()
 	{
 		AudioIndex++;
-		if (AudioIndex >= SBAudioManager.AudioNames.Length)
+		if (AudioIndex >= AudioManager.AudioNames.Length)
 		{
 			AudioIndex = 0;
 		}
 
 		if (IsPlaying)
 		{
-			await SBAudioManager.PauseAudio(PureAudioName);
-			await SBAudioManager.PlayAudio(SBAudioManager.AudioNames[AudioIndex]);
+			await AudioManager.PauseAudio(PureAudioName);
+			await AudioManager.PlayAudio(AudioManager.AudioNames[AudioIndex]);
 		}
-		PureAudioName = SBAudioManager.AudioNames[AudioIndex];
+		PureAudioName = AudioManager.AudioNames[AudioIndex];
 		RequestedAudioName = PureAudioName;
 		AudioName = $"{PureAudioName}.mp3 {(IsPlaying ? '▶' : '⏸')}";
 	}

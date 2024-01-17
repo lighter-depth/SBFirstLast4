@@ -9,7 +9,7 @@ public static class ListBuilder
 	{
 		var sb = new StringBuilder();
 		if (formatType != ListFormat.SimulatorCsv) sb.Append($"/*{Environment.NewLine} * このリストは、機械的に生成されたものです。{Environment.NewLine} * 実際のゲーム内容とは差異がある可能性があります。{Environment.NewLine} */{Environment.NewLine}{Environment.NewLine}");
-		foreach (var i in SBUtils.KanaList)
+		foreach (var i in Utils.KanaList)
 		{
 			sb.Append(ToHeader(i[0], formatType));
 			for (var j = 0; j < i.Length; j++)
@@ -35,7 +35,7 @@ public static class ListBuilder
 	{
 		var sb = new StringBuilder();
 		if (formatType != ListFormat.SimulatorCsv) sb.Append($"/*{Environment.NewLine} * このリストは、機械的に生成されたものです。{Environment.NewLine} * 実際のゲーム内容とは差異がある可能性があります。{Environment.NewLine} */{Environment.NewLine}{Environment.NewLine}");
-		foreach (var i in SBUtils.KanaList)
+		foreach (var i in Utils.KanaList)
 		{
 			sb.Append(ToHeader(i[0], formatType));
 			for (var j = 0; j < i.Length; j++)

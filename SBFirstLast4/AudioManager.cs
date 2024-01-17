@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace SBFirstLast4;
 
-public static class SBAudioManager
+public static class AudioManager
 {
 	private static readonly Dictionary<string, IJSObjectReference> audioPlayers = new();
 	public static async Task Initialize(IJSRuntime jsRuntime)

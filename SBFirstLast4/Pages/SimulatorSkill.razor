@@ -283,12 +283,12 @@
 	public static PlayerSelector Selector { get; internal set; } = PlayerSelector.Player1;
 	public static Ability CurrentAbility { get; internal set; } = new Debugger();
 
-	private static Task PlayConcent() => SBAudioManager.PlayAudio("concent");
+	private static Task PlayConcent() => AudioManager.PlayAudio("concent");
 	private bool ShowMessage;
 
 	private async Task BackButton_Click()
 	{
-		await SBAudioManager.PlayAudio("pera");
+		await AudioManager.PlayAudio("pera");
 		NavigationManager.NavigateTo("simulator");
 	}
 }

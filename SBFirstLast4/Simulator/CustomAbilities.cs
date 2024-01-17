@@ -181,7 +181,7 @@ internal class Kakutei : CustomAbility
 	{
 		if (c is not AttackContract ac) return;
 		if (ac.Actor.Ability is not Kakutei) return;
-		if (ac.State == AbilityType.PropCalced && ac.Actor.CurrentWord.Contains(WordType.Body) && SBUtils.Random.Next(5) == 0)
+		if (ac.State == AbilityType.PropCalced && ac.Actor.CurrentWord.Contains(WordType.Body) && Utils.Random.Next(5) == 0)
 		{
 			ac.PropDmg = KAKUTEI;
 			_ketsunaanaFlag = true;

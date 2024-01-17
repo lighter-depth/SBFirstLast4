@@ -101,7 +101,7 @@ public partial class Battle
 
 	private bool InitIsPlayer1sTurn()
 	{
-		var randomFlag = SBUtils.Random.Next(2) == 0;
+		var randomFlag = Utils.Random.Next(2) == 0;
 		var player1Proceeds = Player1.Proceeds;
 		var player2Proceeds = Player2.Proceeds;
 		if (player1Proceeds == player2Proceeds) return randomFlag;
@@ -154,7 +154,7 @@ public partial class Battle
 			_ => throw new ArgumentException($"ContractType \"{ct}\" has not been implemented.")
 		}, Notice.LogActionInfo);
 
-		Buffer.AddMany(c.Message);
+		Buffer.AddRange(c.Message);
 
 		// プレイヤーが死んだかどうかの判定、ターンの交代。
 		if (c.DeadFlag)
@@ -207,10 +207,10 @@ public partial class Battle
 			word = new(name, WordType.Empty, WordType.Empty);
 			return true;
 		}
-		if ((word = SBDictionary.TypedWords.Find(word => word.Name == name)) != default)
+		if ((word = Words.TypedWords.Find(word => word.Name == name)) != default)
 			return true;
 
-		if (SBDictionary.IsLite || SBDictionary.NoTypeWords.Contains(name))
+		if (Words.IsLite || Words.NoTypeWords.Contains(name))
 		{
 			word = new(name, WordType.Empty, WordType.Empty);
 			return true;

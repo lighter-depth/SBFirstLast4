@@ -8,13 +8,7 @@ public enum OrderType
 	None,
 	Action,
 	Change,
-	EnablerOption,
-	NumOption,
-	PlayerNumOption,
-	PlayerStringOption,
-	ModeOption,
 	Show,
-	AI,
 	Reset,
 	Exit,
 	Help,
@@ -32,44 +26,12 @@ public enum PlayerSelector
 	Player1,
 	Player2
 }
-/// <summary>
-/// オプションの種類を表す列挙型です。
-/// </summary>
-public enum Options
-{
-	None,
-	SetMaxHP,
-	SetHP,
-	SetATK,
-	SetDEF,
-	SetCurrentWord,
-	InfiniteSeed,
-	InfiniteCure,
-	AbilChange,
-	Strict,
-	Infer,
-	CustomAbil,
-	CPUDelay,
-	SetAbilCount,
-	SetMaxCureCount,
-	SetMaxFoodCount,
-	SetSeedDmg,
-	SetMaxSeedTurn,
-	SetCritDmgMultiplier,
-	SetInsBufQty,
-	SetMode,
-	SetLuck
-}
 
 public class Order
 {
 	public OrderType Type { get; set; }
 
 	public PlayerSelector Selector { get; set; }
-
-	public Options Option { get; set; }
-
-	public bool Enabler { get; set; }
 
 	public string Body { get; set; } = string.Empty;
 
@@ -84,58 +46,9 @@ public class Order
 
 	static readonly Order DefaultError = new(OrderType.Error) { ErrorMessage = "なにかがおかしいよ" };
 	static readonly Order NoParameterError = new(OrderType.Error) { ErrorMessage = "パラメーターが指定されていません" };
-	static readonly Dictionary<string, Options> OptionDic = new()
-	{
-		["setmaxhp"] = Options.SetMaxHP,
-		["smh"] = Options.SetMaxHP,
-		["sethp"] = Options.SetHP,
-		["sh"] = Options.SetHP,
-		["infiniteseed"] = Options.InfiniteSeed,
-		["is"] = Options.InfiniteSeed,
-		["infinitecure"] = Options.InfiniteCure,
-		["ic"] = Options.InfiniteCure,
-		["abilchange"] = Options.AbilChange,
-		["ac"] = Options.AbilChange,
-		["strict"] = Options.Strict,
-		["s"] = Options.Strict,
-		["infer"] = Options.Infer,
-		["i"] = Options.Infer,
-		["customabil"] = Options.CustomAbil,
-		["ca"] = Options.CustomAbil,
-		["cpudelay"] = Options.CPUDelay,
-		["delay"] = Options.CPUDelay,
-		["cd"] = Options.CPUDelay,
-		["setabilcount"] = Options.SetAbilCount,
-		["sac"] = Options.SetAbilCount,
-		["setmaxcurecount"] = Options.SetMaxCureCount,
-		["smcc"] = Options.SetMaxCureCount,
-		["smc"] = Options.SetMaxCureCount,
-		["setmaxfoodcount"] = Options.SetMaxFoodCount,
-		["smfc"] = Options.SetMaxFoodCount,
-		["smf"] = Options.SetMaxFoodCount,
-		["setseeddmg"] = Options.SetSeedDmg,
-		["ssd"] = Options.SetSeedDmg,
-		["setmaxseedturn"] = Options.SetMaxSeedTurn,
-		["smst"] = Options.SetMaxSeedTurn,
-		["sms"] = Options.SetMaxSeedTurn,
-		["setcritdmgmultiplier"] = Options.SetCritDmgMultiplier,
-		["scdm"] = Options.SetCritDmgMultiplier,
-		["scd"] = Options.SetCritDmgMultiplier,
-		["setinfbufqty"] = Options.SetInsBufQty,
-		["sibq"] = Options.SetInsBufQty,
-		["sib"] = Options.SetInsBufQty,
-		["setmode"] = Options.SetMode,
-		["sm"] = Options.SetMode,
-		["setluck"] = Options.SetLuck,
-		["sl"] = Options.SetLuck
-	};
+
 	public Order(OrderType type = OrderType.None, string body = "", PlayerSelector selector = PlayerSelector.None, params double[] param)
 	=> (Type, Body, Selector, Param) = (type, body, selector, param);
-	public Order(Options option, string body) => (Type, Option, Body) = (OrderType.ModeOption, option, body);
-	public Order(Options option, bool enabler) => (Type, Option, Enabler) = (OrderType.EnablerOption, option, enabler);
-	public Order(Options option, PlayerSelector selector, params double[] param) => (Type, Option, Selector, Param) = (OrderType.PlayerNumOption, option, selector, param);
-	public Order(Options option, string body, PlayerSelector selector) => (Type, Option, Body, Selector) = (OrderType.PlayerStringOption, option, body, selector);
-	public Order(Options option, params double[] param) => (Type, Option, Param) = (OrderType.NumOption, option, param);
 	public Order(string wordName) => (Type, Body) = (OrderType.Action, wordName);
 	public Order(string wordName, string typeName) => (Type, Body, TypeParam) = (OrderType.Action, wordName, typeName);
 	
