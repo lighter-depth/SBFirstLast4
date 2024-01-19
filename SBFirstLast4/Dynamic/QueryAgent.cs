@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
 using SBFirstLast4.Logging;
 using SBFirstLast4.Pages;
@@ -17,26 +17,37 @@ public partial class QueryAgent
 		return stack;
 	}))();
 
-	public string StatementKind { get; private set; } = string.Empty;
+	public string StatementKind { get; private set; } = TextType.General;
 
 	private readonly List<string> _statements = new();
 
 	private readonly List<string> _newlineBuffer = new();
 
-	private Procedure? _currentProcedure;
+	private Procedure _currentProcedure = new();
 
-	public static object? EvaluateExpression(string expression)
+	public static async Task<object?> EvaluateExpression(string expression)
 	{
-		if (!Interpreter.TryInterpret(expression, out var translated, out var selector, out _))
+		expression = expression.Trim();
+
+		if (expression.EndsWith(';'))
+			expression = expression[..^1];
+
+		if (expression.Split().StringJoin() == "input()")
+			return await ManualQuery.GetInputStream();
+
+		if (int.TryParse(expression, out var @int))
+			return @int;
+
+		if (WideVariableRegex.SingleRegerence().Match(expression) is var varMatch && varMatch.Success)
+			return WideVariable.Variables[varMatch.Groups["name"].Value];
+
+		if (await Interpreter.TryInterpretAsync(expression) is var interpret && !interpret.Result)
 			return null;
 
-		return ScriptExecutor.ExecuteDynamic(translated, selector);
+		return ScriptExecutor.ExecuteDynamic(interpret.Translated, interpret.Selector);
 	}
 
-	public static T EvaluateExpression<T>(string expression) where T : struct 
-		=> (T?)EvaluateExpression(expression) ?? default;
-
-	public async Task RunAsync(string input, Buffer outputBuffer, Action<string> setTranslated, Func<Task> handleDeletedFiles)
+	public async Task RunAsync(string input, Buffer output, Action<string> setTranslated, Func<Task> handleDeletedFiles, Func<Task> update)
 	{
 		var inputTrim = input.Trim();
 
@@ -52,63 +63,62 @@ public partial class QueryAgent
 		if (inputTrim.StartsWith('.'))
 		{
 			var context = inputTrim[1..];
-			SwitchContext(context, outputBuffer, setTranslated, handleDeletedFiles);
+			await SwitchContextAsync(context, output, setTranslated, handleDeletedFiles, update);
 			return;
 		}
 
 		if (CurrentContext == QueryContext.Script)
-			await RunScriptAsync(inputTrim, outputBuffer, setTranslated, handleDeletedFiles);
+			await RunScriptAsync(inputTrim, output, setTranslated, handleDeletedFiles);
 
 		if (CurrentContext == QueryContext.Procedure)
 			_currentProcedure?.Push(inputTrim);
 	}
 
-	private async void SwitchContext(string contextStr, Buffer outputBuffer, Action<string> setTranslated, Func<Task> handleDeletedFiles)
+	private async Task SwitchContextAsync(string contextStr, Buffer output, Action<string> setTranslated, Func<Task> handleDeletedFiles, Func<Task> update)
 	{
 		if (contextStr == "end" && ContextStack.Count > 1)
 		{
-			if (CurrentContext == QueryContext.Procedure && _currentProcedure is not null)
-				await _currentProcedure.FlushAsync(outputBuffer, setTranslated, handleDeletedFiles);
+			if (CurrentContext == QueryContext.Procedure)
+			{
+				ContextStack.Push(QueryContext.RunningProcedure);
+				await _currentProcedure.FlushAsync(output, setTranslated, update);
+				ContextStack.Pop();
+			}
+
 			ContextStack.Pop();
-			notify(outputBuffer, $"Switched context to {CurrentContext}.");
+			output.AddReflect($"Switched context to {CurrentContext}.");
 			return;
 		}
 		if (contextStr == "default")
 		{
 			ContextStack.Clear();
 			ContextStack.Push(QueryContext.Script);
-			notify(outputBuffer, $"Switched context to {CurrentContext}.");
+			output.AddReflect($"Switched context to {CurrentContext}.");
 		}
 		if (contextStr == "script" && CurrentContext != QueryContext.Script)
 		{
 			ContextStack.Push(QueryContext.Script);
-			notify(outputBuffer, $"Switched context to {CurrentContext}.");
+			output.AddReflect($"Switched context to {CurrentContext}.");
 			return;
 		}
 		if (contextStr is "proc" or "procedure" && CurrentContext != QueryContext.Procedure)
 		{
-			_currentProcedure = new();
+			_currentProcedure.Clear();
 			ContextStack.Push(QueryContext.Procedure);
-			notify(outputBuffer, $"Switched context to {CurrentContext}.");
+			output.AddReflect($"Switched context to {CurrentContext}.");
 			return;
-		}
-
-		static void notify(Buffer buffer, string str)
-		{
-			if (ManualQuery.IsReflect)
-				buffer.Add((str, "Monitor"));
 		}
 	}
 
-	public async Task RunScriptAsync(string input, Buffer outputBuffer, Action<string> setTranslated, Func<Task> handleDeletedFiles)
+	public async Task RunScriptAsync(string input, Buffer output, Action<string> setTranslated, Func<Task> handleDeletedFiles)
 	{
-		StatementKind = string.Empty;
+		StatementKind = TextType.General;
 
 		var inputTrim = input.Trim();
 
 		if (inputTrim.StartsWith("#ephemeral") || inputTrim.StartsWith("#evaporate"))
 		{
-			ProcessEphemeral(inputTrim, outputBuffer);
+			ProcessEphemeral(inputTrim, output);
 			return;
 		}
 
@@ -116,19 +126,19 @@ public partial class QueryAgent
 
 		if (inputTrim.StartsWith("#pragma monitor"))
 		{
-			await PragmaMonitorAsync(inputTrim, outputBuffer);
+			await PragmaMonitorAsync(inputTrim, output);
 			return;
 		}
 
 		if (inputTrim == "#clear")
 		{
-			outputBuffer.Clear();
+			output.Clear();
 			return;
 		}
 
 		if (inputTrim.At(0) == '#')
 		{
-			await PreprocessAsync(inputTrim, outputBuffer, handleDeletedFiles);
+			await PreprocessAsync(inputTrim, output, handleDeletedFiles);
 			return;
 		}
 
@@ -137,7 +147,7 @@ public partial class QueryAgent
 		var hashMatches = WideVariableRegex.HashExpression().Matches(inputTrim).Cast<Match>().ToArray();
 		var hashVariableIndex = 0;
 		if (hashMatches.Length > 0)
-			foreach(var (match, i) in hashMatches.WithIndex())
+			foreach (var (match, i) in hashMatches.WithIndex())
 			{
 				var variableName = $"&__hash_{hashVariableIndex++}_generated";
 				var length = match.Value.At(^1) is '}' or ' ' ? match.Length : match.Length - 1;
@@ -167,19 +177,31 @@ public partial class QueryAgent
 		foreach (var statement in _statements.Concat(formattedStatements))
 			try
 			{
-				RunStatement(statement, outputBuffer, setTranslated);
+				await RunStatementAsync(statement, output, setTranslated);
 			}
 			catch (Exception ex)
 			{
-				outputBuffer.Add(($"InternalException({ex.GetType().Name}): {ex.Message}", "Error"));
+				output.Add($"InternalException({ex.GetType().Name}): {ex.Message}", TextType.Error);
 			}
 
 		_statements.Clear();
 	}
 
-	private static void RunStatement(string input, Buffer outputBuffer, Action<string> setTranslated)
+	public static async Task RunStatementAsync(string input, Buffer output, Action<string> setTranslated)
 	{
 		var inputTrim = input.Trim();
+
+		if (inputTrim.EndsWith(';'))
+			inputTrim = inputTrim[..^1];
+
+		if (inputTrim.StartsWith("print"))
+		{
+			var lParen = inputTrim.IndexOf('(');
+			var rParen = inputTrim.LastIndexOf(')');
+			var printValue = await EvaluateExpression(inputTrim[(lParen + 1)..rParen]);
+			output.Add(To.String(printValue), TextType.General);
+			return;
+		}
 
 		if (RecordRegex.Statement().Match(inputTrim) is var recordMatch && recordMatch.Success)
 		{
@@ -189,19 +211,19 @@ public partial class QueryAgent
 
 		if (WideVariableRegex.Hash().Match(inputTrim) is var hashMatch && hashMatch.Success)
 		{
-			DefineHash(hashMatch);
+			await DefineHashAsync(hashMatch);
 			return;
 		}
 
 		if (WideVariableRegex.Declaration().Match(inputTrim) is var varMatch && varMatch.Success)
 		{
-			DefineVariable(varMatch, outputBuffer, setTranslated);
+			await DefineVariableAsync(varMatch, output, setTranslated);
 			return;
 		}
 
 		if (WideVariableRegex.Deletion().Match(inputTrim) is var deleteMatch && deleteMatch.Success)
 		{
-			DeleteVariable(deleteMatch, outputBuffer);
+			DeleteVariable(deleteMatch, output);
 			return;
 		}
 
@@ -220,70 +242,69 @@ public partial class QueryAgent
 		foreach (var (regex, type) in WideVariableRegex.Assignments)
 			if (regex.Match(inputTrim) is var assignMatch && assignMatch.Success)
 			{
-				AssignVariable(assignMatch, outputBuffer, setTranslated, type);
+				await AssignVariable(assignMatch, output, setTranslated, type);
 				return;
 			}
 
-		if (!Interpreter.TryInterpret(input, out var translated, out var selector, out var errorMsg))
+		if (await Interpreter.TryInterpretAsync(input) is var interpret && !interpret.Result)
 		{
-			outputBuffer.Add(($"Error: SBProcessException: {errorMsg}", "Error"));
+			output.Add($"Error: SBProcessException: {interpret.ErrorMsg}", TextType.Error);
 			return;
 		}
 
-		setTranslated(translated);
-		var output = ScriptExecutor.Execute(translated, selector);
-		outputBuffer.Add((output, output.Contains("Error:") ? "Error" : string.Empty));
+		setTranslated(interpret.Translated ?? string.Empty);
+		var result = ScriptExecutor.Execute(interpret.Translated, interpret.Selector);
+		output.Add(result, result.Contains("Error:") ? TextType.Error : TextType.General);
 
-		if (ManualQuery.IsReflect)
-			outputBuffer.Add((translated, "Monitor"));
+		output.AddReflect(interpret.Translated ?? string.Empty);
 	}
 
-	private async Task PragmaMonitorAsync(string input, Buffer outputBuffer)
+	private async Task PragmaMonitorAsync(string input, Buffer output)
 	{
 		var info = await Server.GetAsync();
 		string[] infoSplit;
 
-		StatementKind = "Monitor";
+		StatementKind = TextType.Monitor;
 
 		if (input == "#pragma monitor $ALL")
 		{
 			infoSplit = info.Split("00\"},");
-			outputBuffer.AddRange(infoSplit.Select((x, i) => (x + (i == infoSplit.Length - 1 ? string.Empty : "00\"}"), (i & 1) == 1 ? string.Empty : "Monitor")));
-			outputBuffer.Add((infoSplit.Length.ToString(), "Safe"));
+			output.AddRange(infoSplit.Select((x, i) => (x + (i == infoSplit.Length - 1 ? string.Empty : "00\"}"), (i & 1) == 1 ? TextType.General : TextType.Monitor)));
+			output.Add(infoSplit.Length.ToString(), TextType.Safe);
 			return;
 		}
 
 		infoSplit = info.Split("00\"},").TakeLast(10).ToArray();
-		outputBuffer.AddRange(infoSplit.Select((x, i) => (x + (i == infoSplit.Length - 1 ? string.Empty : "00\"}"), (i & 1) == 1 ? string.Empty : "Monitor")));
-		outputBuffer.Add((info.Split("00\"},").Length.ToString(), "Safe"));
+		output.AddRange(infoSplit.Select((x, i) => (x + (i == infoSplit.Length - 1 ? string.Empty : "00\"}"), (i & 1) == 1 ? TextType.General : TextType.Monitor)));
+		output.Add(info.Split("00\"},").Length.ToString(), TextType.Safe);
 	}
 
-	private static void ProcessEphemeral(string input, Buffer outputBuffer)
+	private static void ProcessEphemeral(string input, Buffer output)
 	{
 		if (!Preprocessor.TryProcessEphemerals(input, out var status, out var errorMsg))
 		{
-			outputBuffer.Add(($"Error: SBPreprocessException: {errorMsg}", "Error"));
+			output.Add($"Error: SBPreprocessException: {errorMsg}", TextType.Error);
 			return;
 		}
 
-		outputBuffer.AddRange(status.Select(x => (x, string.Empty)));
+		output.AddRange(status.Select(x => (x, string.Empty)));
 	}
 
-	private static async Task PreprocessAsync(string input, Buffer outputBuffer, Func<Task> handleDeletedFiles)
+	private static async Task PreprocessAsync(string input, Buffer output, Func<Task> handleDeletedFiles)
 	{
 		if (!Preprocessor.TryProcess(input, out var status, out var errorMsg))
 		{
-			outputBuffer.Add(($"Error: SBPreprocessException: {errorMsg}", "Error"));
+			output.Add(($"Error: SBPreprocessException: {errorMsg}", "Error"));
 			return;
 		}
 
-		outputBuffer.AddRange(status.Select(x => (x, string.Empty)));
+		output.AddRange(status.Select(x => (x, string.Empty)));
 
 		if (input.StartsWith("#delete"))
 			await handleDeletedFiles();
 	}
 
-	private static void DefineHash(Match hashMatch)
+	private static async Task DefineHashAsync(Match hashMatch)
 	{
 		var name = hashMatch.Groups["name"].Value;
 		var expr = hashMatch.Groups["expr"].Value;
@@ -307,8 +328,8 @@ public partial class QueryAgent
 
 		var collectionEnd = isCollection ? "}" : string.Empty;
 
-		var keySample = EvaluateExpression(sample.Groups["key"].Value) ?? new object();
-		var valueSample = EvaluateExpression(sample.Groups["value"].Value + collectionEnd) ?? new object();
+		var keySample = await EvaluateExpression(sample.Groups["key"].Value) ?? new object();
+		var valueSample = await EvaluateExpression(sample.Groups["value"].Value + collectionEnd) ?? new object();
 
 		var hashType = typeof(Dictionary<,>).MakeGenericType(keySample.GetType(), valueSample.GetType());
 
@@ -318,8 +339,8 @@ public partial class QueryAgent
 
 		foreach (var match in matches)
 		{
-			var key = EvaluateExpression(match.Groups["key"].Value);
-			var value = EvaluateExpression(match.Groups["value"].Value + collectionEnd);
+			var key = await EvaluateExpression(match.Groups["key"].Value);
+			var value = await EvaluateExpression(match.Groups["value"].Value + collectionEnd);
 
 			add?.Invoke(hashBase, new[] { key, value });
 		}
@@ -327,103 +348,105 @@ public partial class QueryAgent
 		WideVariable.Variables[name] = hashBase;
 	}
 
-	private static void DefineVariable(Match match, Buffer outputBuffer, Action<string> setTranslated)
+	private static async Task DefineVariableAsync(Match match, Buffer output, Action<string> setTranslated)
 	{
 		var name = match.Groups["name"].Value;
 		var expr = match.Groups["expr"].Value;
+		/*
 		if (!Interpreter.TryInterpret(expr, out var translated, out var selector, out var errorMsg))
 		{
-			outputBuffer.Add(($"Error: SBProcessException: {errorMsg}", "Error"));
+			output.Add($"Error: SBProcessException: {errorMsg}", TextType.Error);
 			return;
 		}
 		setTranslated(translated);
-		var output = ScriptExecutor.ExecuteDynamic(translated, selector);
+		var result = ScriptExecutor.ExecuteDynamic(translated, selector);
+		
 
-		WideVariable.Variables[name] = output;
+		WideVariable.Variables[name] = result;
 
-		if (ManualQuery.IsReflect)
-			outputBuffer.Add((translated, "Monitor"));
+		output.AddReflect(translated);
+		*/
+
+		WideVariable.Variables[name] = await EvaluateExpression(expr);
 	}
 
-	private static void DeleteVariable(Match match, Buffer outputBuffer)
+	private static void DeleteVariable(Match match, Buffer output)
 	{
 		var name = match.Groups["name"].Value;
 
 		if (!WideVariable.Variables.Remove(name))
 		{
-			outputBuffer.Add(($"Specified variable '{name}' does not exist.", "Error"));
+			output.Add($"Specified variable '{name}' does not exist.", TextType.Error);
 			return;
 		}
 
-		if (ManualQuery.IsReflect)
-			outputBuffer.Add(($"Successfully deleted variable '{name}'.", "Monitor"));
+		output.AddReflect($"Successfully deleted variable '{name}'.");
 	}
 
-	private static void AssignVariable(Match match, Buffer outputBuffer, Action<string> setTranslated, AssignmentType assignmentType)
+	private static async Task AssignVariable(Match match, Buffer output, Action<string> setTranslated, AssignmentType assignmentType)
 	{
 		var name = match.Groups["name"].Value;
 		var expr = match.Groups["expr"].Value;
-		if (!Interpreter.TryInterpret(expr, out var translated, out var selector, out var errorMsg))
+		if (await Interpreter.TryInterpretAsync(expr) is var interpret && !interpret.Result)
 		{
-			outputBuffer.Add(($"Error: SBProcessException: {errorMsg}", "Error"));
+			output.Add($"Error: SBProcessException: {interpret.ErrorMsg}", TextType.Error);
 			return;
 		}
-		setTranslated(translated);
+		setTranslated(interpret.Translated ?? string.Empty);
 
-		var output = ScriptExecutor.ExecuteDynamic(translated, selector) as dynamic;
+		var result = ScriptExecutor.ExecuteDynamic(interpret.Translated, interpret.Selector) as dynamic;
 
 		switch (assignmentType)
 		{
 			case AssignmentType.Add:
-				WideVariable.Variables[name] += output;
+				WideVariable.Variables[name] += result;
 				break;
 
 			case AssignmentType.Subtract:
-				WideVariable.Variables[name] -= output;
+				WideVariable.Variables[name] -= result;
 				break;
 
 			case AssignmentType.Multiply:
-				WideVariable.Variables[name] *= output;
+				WideVariable.Variables[name] *= result;
 				break;
 
 			case AssignmentType.Divide:
-				WideVariable.Variables[name] /= output;
+				WideVariable.Variables[name] /= result;
 				break;
 
 			case AssignmentType.Modulus:
-				WideVariable.Variables[name] %= output;
+				WideVariable.Variables[name] %= result;
 				break;
 
 			case AssignmentType.And:
-				WideVariable.Variables[name] &= output;
+				WideVariable.Variables[name] &= result;
 				break;
 
 			case AssignmentType.Or:
-				WideVariable.Variables[name] |= output;
+				WideVariable.Variables[name] |= result;
 				break;
 
 			case AssignmentType.Xor:
-				WideVariable.Variables[name] ^= output;
+				WideVariable.Variables[name] ^= result;
 				break;
 
 			case AssignmentType.LeftShift:
-				WideVariable.Variables[name] <<= output;
+				WideVariable.Variables[name] <<= result;
 				break;
 
 			case AssignmentType.RightShift:
-				WideVariable.Variables[name] >>= output;
+				WideVariable.Variables[name] >>= result;
 				break;
 
 			case AssignmentType.Coarse:
-				WideVariable.Variables[name] ??= output;
+				WideVariable.Variables[name] ??= result;
 				break;
 
 			default:
 				break;
 		}
 
-		if (ManualQuery.IsReflect)
-			outputBuffer.Add((translated, "Monitor"));
+		output.AddReflect(interpret.Translated ?? string.Empty);
 	}
 
 	[GeneratedRegex("(?<=;)")]
@@ -433,5 +456,5 @@ public partial class QueryAgent
 
 public enum QueryContext
 {
-	Script, Module, Procedure
+	Script, Module, Procedure, RunningProcedure
 }

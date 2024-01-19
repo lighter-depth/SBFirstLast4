@@ -4,10 +4,10 @@ namespace SBFirstLast4.Dynamic;
 
 public static class ScriptExecutor
 {
-	public static string Execute(string translated, string selector)
+	public static string Execute(string? translated, string? selector)
 		=> To.String(ExecuteDynamic(translated, selector));
 
-	public static object? ExecuteDynamic(string translated, string selector)
+	public static object? ExecuteDynamic(string? translated, string? selector)
 		=> SelectorHelper.GetDictionaryType(selector) switch
 		{
 			DictionaryType.String => QueryOverStringDictionaryDynamic(translated, selector),
@@ -15,7 +15,7 @@ public static class ScriptExecutor
 			_ => QueryOverSingletonDynamic(translated)
 		};
 
-	private static object? QueryOverWordDictionaryDynamic(string input, string selector)
+	private static object? QueryOverWordDictionaryDynamic(string? input, string? selector)
 	{
 		try
 		{
@@ -24,16 +24,16 @@ public static class ScriptExecutor
 				CustomTypeProvider = new CustomTypeProvider(),
 				AllowNewToEvaluateAnyType = true
 			};
-			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<Word>, object>(config, false, input);
+			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<Word>, object>(config, false, input ?? string.Empty);
 
-			return expression.Compile().Invoke(SelectorHelper.ToWordEnumerable(selector));
+			return expression.Compile().Invoke(SelectorHelper.ToWordEnumerable(selector ?? string.Empty));
 		}
 		catch (Exception ex)
 		{
 			return $"Error: {ex.GetType().Name}: {ex.Message}";
 		}
 	}
-	private static object? QueryOverStringDictionaryDynamic(string input, string selector)
+	private static object? QueryOverStringDictionaryDynamic(string? input, string? selector)
 	{
 		try
 		{
@@ -42,16 +42,16 @@ public static class ScriptExecutor
 				CustomTypeProvider = new CustomTypeProvider(),
 				AllowNewToEvaluateAnyType = true
 			};
-			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<string>, object>(config, false, input);
+			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<string>, object>(config, false, input ?? string.Empty);
 
-			return expression.Compile().Invoke(SelectorHelper.ToStringEnumerable(selector));
+			return expression.Compile().Invoke(SelectorHelper.ToStringEnumerable(selector ?? string.Empty));
 		}
 		catch (Exception ex)
 		{
 			return $"Error: {ex.GetType().Name}: {ex.Message}";
 		}
 	}
-	private static object? QueryOverSingletonDynamic(string input)
+	private static object? QueryOverSingletonDynamic(string? input)
 	{
 		try
 		{
@@ -61,7 +61,7 @@ public static class ScriptExecutor
 				ResolveTypesBySimpleName = true,
 				AllowNewToEvaluateAnyType = true
 			};
-			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<int>, object>(config, false, input);
+			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<int>, object>(config, false, input ?? string.Empty);
 
 			return expression.Compile().Invoke(_singletonEnumerable);
 		}

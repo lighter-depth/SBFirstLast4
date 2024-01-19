@@ -15,11 +15,12 @@
 	{
 		<p style="color: @(item.Type switch
 		{
-			"Error" => "red",
-			"Cmd" => "yellow",
-			"Monitor" => "lightblue",
-			"Safe" => "lime",
-			_ => "white"
+			TextType.Error => "red",
+			TextType.Cmd => "yellow",
+			TextType.Monitor => "lightblue",
+			TextType.Safe => "lime",
+			TextType.General => "white",
+			var color => color
 		});">@item.Content</p>
 	}
 	<div class="cmd-input" style="display: flex; flex-flow: row">
@@ -148,6 +149,7 @@
 
 	private Dictionary<string, int> progressPercentages = new Dictionary<string, int>();
 
+	internal static TaskCompletionSource<string> InputStream { get; private set; } = new();
 
 
 	protected override async Task OnInitializedAsync()
@@ -179,12 +181,12 @@
 		{
 			if (!ModuleManager.Import(Module.Compile(file.Content, true, file.Name), out var status))
 			{
-				outputBuffer.Add((status, "Error"));
+				outputBuffer.Add(status, TextType.Error);
 				moduleFiles.Remove(file);
 				StateHasChanged();
 				continue;
 			}
-			outputBuffer.Add((status, "Safe"));
+			outputBuffer.Add(status, TextType.Safe);
 			StateHasChanged();
 		}
 	}
@@ -200,19 +202,31 @@
 			if (e.Key is "Process" or not "Enter") return;
 			var input = await JSRuntime.GetElementValueById<string>("console-input");
 			await JSRuntime.ClearElementValueById("console-input");
-			outputBuffer.Add(($"> {input}", "Cmd"));
+
+			outputBuffer.Add($"> {input}", TextType.Cmd);
 			StateHasChanged();
+			await Task.Delay(1);
+
+			if (Agent.CurrentContext == QueryContext.RunningProcedure)
+			{
+				InputStream.TrySetResult(input);
+				return;
+			}
 
 			if (string.IsNullOrWhiteSpace(input))
 				return;
 
-			await Agent.RunAsync(input, outputBuffer, s => translatedStr = s, HandleDeletedFiles);
+			await Agent.RunAsync(input, outputBuffer, s => translatedStr = s, HandleDeletedFiles, async() =>
+			{
+				StateHasChanged();
+				await Task.Delay(1);
+			});
 
 			StateHasChanged();
 
 			Server.Log(new
 			{
-				Type = Agent.StatementKind == "Monitor" ? "MONITOR" : "QUERY",
+				Type = Agent.StatementKind is TextType.Monitor ? "MONITOR" : "QUERY",
 				Order = input.Trim(),
 				UserInfo = new
 				{
@@ -225,9 +239,15 @@
 		}
 		catch (Exception ex)
 		{
-			outputBuffer.Add(($"InternalException({ex.GetType().Name}): {ex.Message}", "Error"));
+			outputBuffer.Add($"InternalException({ex.GetType().Name}): {ex.Message}", TextType.Error);
 			StateHasChanged();
 		}
+	}
+
+	internal static Task<string> GetInputStream()
+	{
+		InputStream = new();
+		return InputStream.Task;
 	}
 
 	private async Task HandleFileSelected(InputFileChangeEventArgs e)
@@ -266,12 +286,12 @@
 
 			if (!ModuleManager.Import(Module.Compile(fileContent, true, file.Name), out var status))
 			{
-				outputBuffer.Add((status, "Error"));
+				outputBuffer.Add(status, TextType.Error);
 				moduleFiles.Remove(fileModel);
 				StateHasChanged();
 				continue;
 			}
-			outputBuffer.Add((status, "Safe"));
+			outputBuffer.Add(status, TextType.Safe);
 			StateHasChanged();
 		}
 		await LocalStorage.SetItemAsync("MODULE_FILES", moduleFiles);
@@ -283,11 +303,11 @@
 		{
 			if (!ModuleManager.DeleteByRuntimeName(file.Name, out var status))
 			{
-				outputBuffer.Add((status, "Error"));
+				outputBuffer.Add(status, TextType.Error);
 				StateHasChanged();
 				return;
 			}
-			outputBuffer.Add((status, "Safe"));
+			outputBuffer.Add(status, TextType.Safe);
 
 			await HandleDeletedFiles();
 		}

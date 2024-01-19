@@ -1,11 +1,14 @@
-﻿namespace SBFirstLast4.Dynamic;
+﻿using SBFirstLast4.Pages;
+using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
+
+namespace SBFirstLast4.Dynamic;
 
 internal class To
 {
 	internal static string String(object? result)
 	{
 		if (result is System.Collections.IDictionary dictionary)
-			return $"%{{ {dictionary.Keys.OfType<object?>().Select(String).Zip(dictionary.Values.OfType<object?>().Select(String)).Select(t => $"{t.First}: {t.Second}").StringJoin(", ")} }}";
+			return $"%{{ {dictionary.Keys.OfType<object?>().Select(String).Zip(dictionary.Values.OfType<object?>().Select(String)).Select(t => $"{t.First} = {t.Second}").StringJoin(", ")} }}";
 
 		if (result is System.Collections.IEnumerable enumerable and not string)
 			return $"{{ {enumerable.OfType<object?>().Select(String).StringJoin(", ")} }}";
@@ -45,4 +48,24 @@ internal class Is
 
 		return braceCount % 2 == 1;
 	}
+}
+
+internal static class BufferEx
+{
+	public static void Add(this Buffer buffer, string content, string type) => buffer.Add((content, type));
+
+	public static void AddReflect(this Buffer buffer, string content)
+	{
+		if (ManualQuery.IsReflect)
+			buffer.Add(content, TextType.Monitor);
+	}
+}
+
+internal static class TextType
+{
+	internal const string General = "", 
+						  Error = "Error", 
+						  Cmd = "Cmd",
+						  Safe = "Safe",
+						  Monitor = "Monitor";
 }

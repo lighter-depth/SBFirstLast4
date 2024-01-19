@@ -1,6 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using SBFirstLast4.Pages;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using System.Text;
 using static SBFirstLast4.Dynamic.SelectorConstants;
 
 namespace SBFirstLast4.Dynamic;
@@ -79,9 +79,14 @@ public static partial class Interpreter
 	internal static bool EasyArrayInitializer { get; set; } = true;
 
 
-	public static bool TryInterpret(string input, [NotNullWhen(true)] out string? translated, [NotNullWhen(true)] out string? selector, [NotNullWhen(false)] out string? errorMsg)
+	public static async Task<(bool Result, string? Translated, string? Selector, string? ErrorMsg)> TryInterpretAsync(string input)
 	{
-		if (!IsAuto) return TryInterpretManual(input, out translated, out selector, out errorMsg);
+		(string? translated, string? selector, string? errorMsg) = (null, null, null);
+		if (!IsAuto) 
+		{
+			var result = TryInterpretManual(input, out translated, out selector, out errorMsg);
+			return (result, translated, selector, errorMsg);
+		}
 
 		(translated, selector, errorMsg) = (null, null, null);
 
@@ -105,7 +110,7 @@ public static partial class Interpreter
 		if (input.Length < 5 || selectorIndex < 0)
 		{
 			errorMsg = "Input must contain query body.";
-			return false;
+			return (false, translated, selector, errorMsg);
 		}
 
 		selector = input[..selectorIndex];
@@ -113,16 +118,15 @@ public static partial class Interpreter
 		if (!DictionaryLiteral.ContainsKey(selector))
 		{
 			errorMsg = $"Invalid dictionary selector: {input[..selectorIndex]}";
-			return false;
+			return (false, translated, selector, errorMsg);
 		}
 
 		input = ReplaceGenericMethods(input);
 
 		input = input[(selectorIndex + 1)..];
 
-
-		/*if (input.Contains('['))
-			input = ReplaceCollectionLiteral(input);*/
+		if (input.Contains("input"))
+			input = await ReplaceInput(input);
 
 		if (input.Contains('{'))
 			input = ReplaceArrayInitializer(input);
@@ -159,7 +163,7 @@ public static partial class Interpreter
 
 		translated = input;
 
-		return true;
+		return (true, translated, selector, errorMsg);
 	}
 
 
@@ -186,6 +190,18 @@ public static partial class Interpreter
 		translated = input[(selectorIndex + 1)..];
 
 		return true;
+	}
+	private static async Task<string> ReplaceInput(string input)
+	{
+		var builder = new StringBuilder(input);
+		foreach(var match in InputRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
+		{
+			builder.Remove(match.Index, match.Length);
+			var value = await ManualQuery.GetInputStream();
+			value = value.Replace("\"", "\\\"");
+			builder.Insert(match.Index, $"\"{value}\"");
+		}
+		return builder.ToString();
 	}
 
 	private static string ReplaceGenericMethods(string input)
@@ -281,9 +297,11 @@ public static partial class Interpreter
 		return builder.ToString();
 	}
 
+	[GeneratedRegex(@"input\s*\(\s*\)")]
+	private static partial Regex InputRegex();
+
 	[GeneratedRegex(@"`(?<pattern>.*?)`")]
 	private static partial Regex RegexLiteralRegex();
-
 
 	[GeneratedRegex(@"/\s*(?<name>[ぁ-ゟー]+)\s*(?<type1>[A-Za-z])?(?<type2>[A-Za-z])?\s*/w")]
 	private static partial Regex WordLiteralRegex();

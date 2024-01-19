@@ -1,4 +1,5 @@
-﻿using System.Linq.Dynamic.Core.CustomTypeProviders;
+﻿using System.Text.RegularExpressions;
+using System.Linq.Dynamic.Core.CustomTypeProviders;
 
 namespace SBFirstLast4.Dynamic;
 
@@ -12,7 +13,8 @@ public class CustomTypeProvider : DefaultDynamicLinqCustomTypeProvider, IDynamic
 	{
 		var types = base.GetCustomTypes();
 		types = types
-				.Concat(typeof(System.Text.RegularExpressions.Regex).Assembly.GetTypes())
+				.Concat(typeof(Random).Assembly.GetTypes())
+				.Concat(typeof(Regex).Assembly.GetTypes())
 				.Concat(Record.Types)
 				.ToHashSet();
         

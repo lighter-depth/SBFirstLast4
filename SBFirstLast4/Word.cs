@@ -108,9 +108,9 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 		public static implicit operator bool(SuitableIndicator s) => s.Value == 0;
 		public static implicit operator SuitableIndicator(bool @bool) => new() { Value = @bool ? 0 : 1 };
 
-		public const int Suitable = 0;
-		public const int InvalidEnd = -1;
-		public const int BadStart = 1;
+		public const int Suitable = 0,
+						 InvalidEnd = -1,
+						 BadStart = 1;
 	}
 
 	public string Serialize() => $"/w/{Name}++{Type1.TypeToChar()}++{Type2.TypeToChar()}/w/";
