@@ -161,10 +161,8 @@
 			var location = e.Location;
 			var slash = location.LastIndexOf('/');
 			if(location[slash..] == "/manualquery")
-			{
-				JSRuntime.Alert("うわああ！！！");
 				return;
-			}
+
 			try
 			{
 				ManualQuery.Cancellation.Cancel();
