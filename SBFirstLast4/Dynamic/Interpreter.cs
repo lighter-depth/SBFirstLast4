@@ -79,10 +79,10 @@ public static partial class Interpreter
 	internal static bool EasyArrayInitializer { get; set; } = true;
 
 
-	public static async Task<(bool Result, string? Translated, string? Selector, string? ErrorMsg)> TryInterpretAsync(string input)
+	public static async Task<(bool Success, string? Translated, string? Selector, string? ErrorMsg)> TryInterpretAsync(string input)
 	{
 		(string? translated, string? selector, string? errorMsg) = (null, null, null);
-		if (!IsAuto) 
+		if (!IsAuto)
 		{
 			var result = TryInterpretManual(input, out translated, out selector, out errorMsg);
 			return (result, translated, selector, errorMsg);
@@ -90,11 +90,9 @@ public static partial class Interpreter
 
 		(translated, selector, errorMsg) = (null, null, null);
 
-
 		input = input.Trim();
 
-		foreach (var (key, value) in EscapeCharacters)
-			input = input.ReplaceFreeChar(key, value);
+		input = ReplaceFreeChars(input);
 
 		input = input.ReplaceFreeString("@item", "it");
 
@@ -125,14 +123,17 @@ public static partial class Interpreter
 
 		input = input[(selectorIndex + 1)..];
 
+		if (input.Contains('`'))
+			input = ReplaceRegexLiteral(input);
+
 		if (input.Contains("input"))
-			input = await ReplaceInput(input);
+			input = await ReplaceInputAsync(input);
+
+		if (input.Contains('!'))
+			input = await ReplaceProcedureAsync(input);
 
 		if (input.Contains('{'))
 			input = ReplaceArrayInitializer(input);
-
-		if (input.Contains('`'))
-			input = ReplaceRegexLiteral(input);
 
 		if (input.Contains("/w"))
 			input = ReplaceWordLiteral(input);
@@ -149,13 +150,31 @@ public static partial class Interpreter
 				input = input.ReplaceFreeString(key, value);
 
 		if (input.Contains("++"))
-			input = WideVariableRegex.Increment().Replace(input, m => WideVariable.GetIncrementString(m.Groups["name"].Value));
+			input = WideVariableRegex.Increment().Replace(input, m => 
+			{
+				if (Is.InsideStringLiteral(m.Index, m.Length, input))
+					return m.Value;
+
+				return WideVariable.GetIncrementString(m.Groups["name"].Value);
+			});
 
 		if (input.Contains("--"))
-			input = WideVariableRegex.Decrement().Replace(input, m => WideVariable.GetDecrementString(m.Groups["name"].Value));
+			input = WideVariableRegex.Decrement().Replace(input, m => 
+			{
+				if (Is.InsideStringLiteral(m.Index, m.Length, input))
+					return m.Value;
+
+				return WideVariable.GetDecrementString(m.Groups["name"].Value);
+			});
 
 		if (input.Contains('&'))
-			input = WideVariableRegex.Reference().Replace(input, m => WideVariable.GetFormattedString(m.Groups["name"].Value));
+			input = WideVariableRegex.Reference().Replace(input, m => 
+			{
+				if (Is.InsideStringLiteral(m.Index, m.Length, input))
+					return m.Value;
+
+				return WideVariable.GetFormattedString(m.Groups["name"].Value); 
+			});
 
 		foreach (var (key, value) in ExtensionProperties)
 			input = input.ReplaceFreeString(key, value);
@@ -164,6 +183,13 @@ public static partial class Interpreter
 		translated = input;
 
 		return (true, translated, selector, errorMsg);
+	}
+
+	private static string ReplaceFreeChars(string input)
+	{
+		foreach (var (key, value) in EscapeCharacters)
+			input = input.ReplaceFreeChar(key, value);
+		return input;
 	}
 
 
@@ -191,10 +217,50 @@ public static partial class Interpreter
 
 		return true;
 	}
-	private static async Task<string> ReplaceInput(string input)
+
+	private static int _procedureID;
+	private static async Task<string> ReplaceProcedureAsync(string input)
+	{
+		while (true)
+		{
+			var tmp = input.StringJoin();
+			foreach (var procedure in ModuleManager.Procedures)
+			{
+				var procName = procedure.Name;
+
+				var pattern = $@"{procedure.Name}\s*\!\s*\(";
+				var match = Regex.Match(input, pattern);
+
+				if (!match.Success || Is.InsideStringLiteral(match.Index, match.Length, input))
+					continue;
+
+				var paramStart = match.Index + match.Length;
+				var paramEnd = Find.CloseBrace(input, '(', ')', paramStart - 1);
+				var paramText = input[paramStart..paramEnd];
+				var parameters = Split.ParameterTexts(paramText).Where(s => !string.IsNullOrEmpty(s));
+				var evaluated = new List<object?>();
+				foreach (var parameter in parameters)
+					evaluated.Add(await QueryAgent.EvaluateExpressionAsync(parameter));
+				var result = await procedure.RunAsync(evaluated);
+				var varName = $"__proc_result_{_procedureID}_generated";
+				++_procedureID;
+				WideVariable.Variables[varName] = result;
+				var sb = new StringBuilder(input);
+				sb.Remove(match.Index, match.Length + paramEnd - paramStart + 1);
+				sb.Insert(match.Index, $"&{varName}");
+				input = sb.ToString();
+			}
+			if (tmp == input) 
+				break;
+		}
+		return input;
+
+	}
+
+	private static async Task<string> ReplaceInputAsync(string input)
 	{
 		var builder = new StringBuilder(input);
-		foreach(var match in InputRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
+		foreach (var match in InputRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
 		{
 			builder.Remove(match.Index, match.Length);
 			var value = await ManualQuery.GetInputStream();
@@ -229,23 +295,6 @@ public static partial class Interpreter
 		}
 
 		return builder.ToString();
-	}
-
-
-	private static string ReplaceCollectionLiteral(string input)
-	{
-		var sb = new StringBuilder();
-		var index = 0;
-		foreach (var match in CollectionLiteralRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Cast<Match>())
-		{
-			sb.Append(input.AsSpan(index, match.Index - index));
-			var items = match.Groups["items"].Value;
-			items = ReplaceCollectionLiteral(items);
-			sb.Append("new[]{ " + items + " }");
-			index = match.Index + match.Length;
-		}
-		sb.Append(input.AsSpan(index));
-		return sb.ToString();
 	}
 
 	private static string ReplaceArrayInitializer(string input)
@@ -308,9 +357,6 @@ public static partial class Interpreter
 
 	[GeneratedRegex(@"/\s*(?<name>[ぁ-ゟー]+)\s*/d")]
 	private static partial Regex DeduceLiteralRegex();
-
-	[GeneratedRegex(@"(?<!\[)(?<!\])(?<!new)(?<!\))\[(?<items>(?:[^[\]]|\[[^[\]]*\])*)\]")]
-	private static partial Regex CollectionLiteralRegex();
 
 	[GeneratedRegex(@"\.Cast<(?<type>.*?)>\(\)")]
 	private static partial Regex CastCallRegex();

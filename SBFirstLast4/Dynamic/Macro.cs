@@ -16,9 +16,6 @@ public abstract class Macro
 			{
 				input = Regex.Replace(input, $@"{functionLikeMacro.Name}\((?<parameters>[^)]+)\)", m =>
 				{
-					if (Is.InsideStringLiteral(m.Index, m.Length, input))
-						return m.Value;
-
 					var args = m.Groups["parameters"].Value.Split(',').Select(arg => arg.Trim()).ToList();
 					var body = functionLikeMacro.Body;
 					for (var i = 0; i < functionLikeMacro.Parameters.Count; i++)
@@ -28,7 +25,7 @@ public abstract class Macro
 				continue;
 			}
 			if (macro is ObjectLikeMacro objectLikeMacro)
-				input = input.ReplaceFreeString(objectLikeMacro.Name, objectLikeMacro.Body);
+				input = input.Replace(objectLikeMacro.Name, objectLikeMacro.Body);
 		}
 		return input;
 	}
@@ -61,7 +58,7 @@ public abstract class Macro
 
 public enum MacroType { None, ObjectLike, FunctionLike }
 
-public class ObjectLikeMacro : Macro
+public sealed class ObjectLikeMacro : Macro
 {
 	public override required string Name { get; init; }
 
@@ -69,7 +66,7 @@ public class ObjectLikeMacro : Macro
 
 }
 
-public class FunctionLikeMacro : Macro
+public sealed class FunctionLikeMacro : Macro
 {
 	public override required string Name { get; init; }
 

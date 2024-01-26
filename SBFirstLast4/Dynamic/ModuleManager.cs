@@ -15,6 +15,8 @@ public static class ModuleManager
 
 	public static Macro[] Ephemerals => Modules.Where(m => !ExcludedModules.Contains(m.Name)).SelectMany(m => m.Ephemerals).Concat(UserDefined.Ephemerals).ToArray();
 
+	public static Procedure[] Procedures => Modules.Where(m => !ExcludedModules.Contains(m.Name)).SelectMany(m => m.Procedures).Concat(UserDefined.Procedures).ToArray();
+	
 	public static string[] Symbols => Modules.Where(m => !ExcludedModules.Contains(m.Name)).SelectMany(m => m.Symbols).Concat(UserDefined.Symbols).Distinct().ToArray();
 
 	public static string[] ContentNames => Macros.Select(x => x.Name).Concat(Ephemerals.Select(x => x.Name)).Concat(Symbols).ToArray();
@@ -198,6 +200,8 @@ public class Module : IEquatable<Module>
 	public List<Macro> Macros { get; init; } = new();
 
 	public List<Macro> Ephemerals { get; init; } = new();
+
+	public List<Procedure> Procedures { get; init; } = new();
 
 	public bool IsRuntime { get; init; }
 

@@ -8,7 +8,7 @@ public static class WideVariable
 {
 	public static readonly Dictionary<string, dynamic?> Variables = new();
 
-	public static object? GetValue(string name) => Variables[name];
+	public static dynamic? GetValue(string name) => Variables.TryGetValue(name, out var value) ? value : null;
 
 	public static string SetValue(string name, object? value)
 	{
@@ -35,7 +35,7 @@ public static class WideVariable
 
 	private static string GetString(string name, string functionName)
 	{
-		var typename = Variables[name]?.GetType().FullName;
+		var typename = GetValue(name)?.GetType().FullName;
 		if (string.IsNullOrEmpty(typename))
 			return "null";
 
@@ -74,17 +74,26 @@ internal static partial class WideVariableRegex
 	[GeneratedRegex(VariablePattern)]
 	internal static partial Regex Reference();
 
+	[GeneratedRegex(@"\^(?<name>[A-Z_a-z][0-9A-Z_a-z]*)")]
+	internal static partial Regex InternalReference();
+
 	[GeneratedRegex($@"^\s*{VariablePattern}\s*$")]
-	internal static partial Regex SingleRegerence();
+	internal static partial Regex SingleReference();
 
 	[GeneratedRegex($@"^\s*{VariablePattern}\s*=(?<expr>[^=].*)$")]
 	internal static partial Regex Declaration();
+
+	[GeneratedRegex($@"^\s*{VariablePattern}\s*(?:\.|\[).*=(?<expr>[^=].*)$")]
+	internal static partial Regex MemberAssign();
 
 	[GeneratedRegex($@"^\s*{VariablePattern}\s*=\s*%\s*{{(?<expr>.*)}}\s*$")]
 	internal static partial Regex Hash();
 
 	[GeneratedRegex(@"%\s*{(?<expr>.*?)}\s*(?:[()\[\].\\]|$)")]
 	internal static partial Regex HashExpression();
+
+	[GeneratedRegex(@"%\s*{")]
+	internal static partial Regex HashStart();
 
 	[GeneratedRegex(@"(?<key>.*?)\s*=\s*(?<value>.*?)(?:,|$)")]
 	internal static partial Regex HashInitializer();

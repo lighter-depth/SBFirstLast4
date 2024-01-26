@@ -1,5 +1,6 @@
 ﻿using SBFirstLast4.Pages;
 using System.Diagnostics.CodeAnalysis;
+using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
 
 namespace SBFirstLast4.Dynamic;
 
@@ -35,6 +36,16 @@ public static partial class Preprocessor
 		ModuleManager.AddModule(Module.Compile(module));
 	}
 
+	public static void ProcessEphemeral(string input, Buffer output)
+	{
+		if (!TryProcessEphemerals(input, out var status, out var errorMsg))
+		{
+			output.Add($"Error: SBPreprocessException: {errorMsg}", TextType.Error);
+			return;
+		}
+
+		output.AddRange(status.Select(x => (x, TextType.General)));
+	}
 	public static bool TryProcessEphemerals(string input, [NotNullWhen(true)] out string[]? status, [NotNullWhen(false)] out string? errorMsg, string moduleName = "USER_DEFINED")
 	{
 		(status, errorMsg) = (null, null);
@@ -111,7 +122,19 @@ public static partial class Preprocessor
 		return false;
 	}
 
+	public static async Task ProcessAsync(string input, Buffer output, Func<Task> handleDeletedFiles)
+	{
+		if (!TryProcess(input, out var status, out var errorMsg))
+		{
+			output.Add(($"Error: SBPreprocessException: {errorMsg}", TextType.Error));
+			return;
+		}
 
+		output.AddRange(status.Select(x => (x, TextType.General)));
+
+		if (input.StartsWith("#delete"))
+			await handleDeletedFiles();
+	}
 	public static bool TryProcess(string input, [NotNullWhen(true)] out string[]? status, [NotNullWhen(false)] out string? errorMsg, string moduleName = "USER_DEFINED")
 	{
 		(status, errorMsg) = (null, null);
@@ -184,6 +207,7 @@ public static partial class Preprocessor
 			if(selector is "$VARIABLE" or "$VAR")
 			{
 				status = WideVariable.Variables
+						.Where(kv => contents.At(2)?.ToUpper().At(0) is 'A' ? true : !kv.Key.StartsWith('_'))
 						.Select(kv => $"Name: {kv.Key}, Value: {To.String(kv.Value)}")
 						.ToArray();
 				return true;
@@ -193,6 +217,14 @@ public static partial class Preprocessor
 			{
 				status = Record.Types
 						.Select(t => $"Name: {t.Name}, Fields: [{t.GetFields().Select(f => $"{{Sign: {f.Name}, Type: {f.FieldType.Name}}}").StringJoin(", ")}]")
+						.ToArray();
+				return true;
+			}
+
+			if(selector is "$PROCEDURE" or "$PROC" or "$PRC")
+			{
+				status = ModuleManager.UserDefined.Procedures
+						.Select(p => $"Name: {p.Name}, Value: {p.Value}")
 						.ToArray();
 				return true;
 			}

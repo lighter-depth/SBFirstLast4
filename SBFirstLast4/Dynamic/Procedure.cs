@@ -4,17 +4,134 @@ using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
 
 namespace SBFirstLast4.Dynamic;
 
-public class Procedure
+public sealed class Procedure
 {
+	public string Name { get; }
+
+	public List<string> Parameters { get; }
+
+	public Guid Id { get; init; } = Guid.NewGuid();
+
 	private List<string> _lines = new();
+
+	private Buffer _buffer;
+
+	private Action<string> _setTranslated;
+
+	private Func<Task> _update;
+
+	public QueryAgent Agent { get; internal set; }
+
+	private CancellationToken _token;
+
+	public string Value => _lines.StringJoin(Environment.NewLine);
+
+	private static readonly Buffer _discardBuffer = new();
+
+	private static readonly Func<Task> _discardDeletedFilesHandler = () => Task.CompletedTask;
+
+	public Procedure(QueryAgent agent, Buffer buffer, Action<string> setTranslated, Func<Task> update, List<string> parameters, string name, CancellationToken token)
+		=> (Agent, _buffer, _setTranslated, _update, Parameters, Name, _token) = (agent, buffer, setTranslated, update, parameters, name, token);
+
+	public Procedure Clone() => new(Agent, _buffer, _setTranslated, _update, Parameters, Name, _token) { Id = Id, _lines = _lines.ToList() };
+
+	public void Update(QueryAgent agent, Buffer buffer, Action<string> setTranslated, Func<Task> update, CancellationToken token)
+		=> (Agent, _buffer, _setTranslated, _update, _token) = (agent, buffer, setTranslated, update, token);
 
 	public void Push(string line) => _lines.Add(line.Trim());
 
-	public void Clear() => _lines = new();
-
-	public async Task FlushAsync(Buffer outputBuffer, Action<string> setTranslated, Func<Task> update)
+	private async Task<string> GetSourceTextAsync()
 	{
-		var source = _lines.StringJoin(Environment.NewLine);
+		var textBase = await GetProcessedTextAsync();
+		if (textBase.Contains('^'))
+			textBase = WideVariableRegex.InternalReference().Replace(textBase, m =>
+			{
+				if (Is.InsideStringLiteral(m.Index, m.Length, textBase))
+					return m.Value;
+
+				return $"&__proc_internal_{m.Groups["name"].Value}_{Name}_{Id:N}_generated";
+			});
+		textBase = ReplaceUnless(textBase);
+		textBase = textBase.ReplaceFreeString("forever", "for (;;)");
+		return textBase;
+	}
+
+	private async Task<string> GetProcessedTextAsync()
+	{
+		var lines = HandleEphemerals(_lines);
+		var result = new List<string>();
+		await foreach (var line in HandleDirectives(lines))
+			result.Add(line);
+		return result.StringJoin(Environment.NewLine);
+	}
+
+	private static IEnumerable<string> HandleEphemerals(IEnumerable<string> lines)
+	{
+		foreach (var line in lines)
+		{
+			if (!(line.StartsWith("#ephemeral") || line.StartsWith("#evaporate")))
+			{
+				yield return Macro.ExpandEphemeral(line);
+				continue;
+			}
+			Preprocessor.ProcessEphemeral(line, _discardBuffer);
+		}
+	}
+
+	private static async IAsyncEnumerable<string> HandleDirectives(IEnumerable<string> lines)
+	{
+		foreach (var line in lines)
+		{
+			if (!line.StartsWith('#'))
+			{
+				var result = Macro.Expand(line);
+				yield return result;
+				continue;
+			}
+			await Preprocessor.ProcessAsync(line, _discardBuffer, _discardDeletedFilesHandler);
+		}
+	}
+
+	private static string ReplaceUnless(string source)
+	{
+		while (source.Contains("unless"))
+		{
+			var unless = source.IndexOf("unless");
+			var openClose = Find.OpenCloseBrace(source, '(', ')', unless);
+			if (openClose is null) return source;
+			var (open, close) = openClose.Value;
+
+			var cond = source[open..(close + 1)];
+
+			var sb = new StringBuilder(source);
+			sb.Remove(unless, close - unless + 1);
+			sb.Insert(unless, $"if (!{cond})");
+			source = sb.ToString();
+		}
+		return source;
+	}
+
+	public async Task<object?> RunAsync(List<object?>? args = null)
+	{
+		if ((args?.Count ?? default) != Parameters.Count)
+			return string.Empty;
+
+		Agent.ContextStack.Push(QueryContext.RunningProcedure);
+
+		if (args is not null)
+			foreach (var (name, arg) in Parameters.Zip(args))
+			{
+				if (name.StartsWith('&'))
+				{
+					var wideName = name[1..];
+					WideVariable.Variables[wideName] = arg;
+					continue;
+				}
+				var internalName = $"__proc_internal_{name[1..]}_{Name}_{Id:N}_generated";
+				WideVariable.Variables[internalName] = arg;
+			}
+
+		var source = await GetSourceTextAsync();
 		var stream = new AntlrInputStream(source);
 
 		var lexer = new SBProcLangLexer(stream);
@@ -41,24 +158,30 @@ public class Procedure
 			var col = isLexerError ? listener_lexer.Column : listener_parser.Column;
 			var msg = isLexerError ? listener_lexer.Message : listener_parser.Message;
 
-			outputBuffer.Add($"COMPILE ERROR: {msg} at {line}:{col}", TextType.Error);
-			return;
-		};
+			_buffer.Add($"COMPILE ERROR: {msg} at {line}:{col}", TextType.Error);
+			Agent.ContextStack.Pop();
+			return "COMPILE ERROR";
+		}
 
 		if (ManualQuery.IsReflect)
-			outputBuffer.Add(tree.ToStringTree(parser), TextType.Monitor);
+			_buffer.Add(tree.ToStringTree(parser), TextType.Monitor);
 
 		try
 		{
-			var visitor = new SBProcLangVisitor(outputBuffer, setTranslated, update);
+			var visitor = new SBProcLangVisitor(_buffer, _setTranslated, _update, _token);
 			var result = await visitor.Visit(tree);
 
 			if (ManualQuery.IsReflect)
-				outputBuffer.Add(To.String(result), TextType.Monitor);
+				_buffer.Add(To.String(result), TextType.Monitor);
+
+			Agent.ContextStack.Pop();
+			return result;
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
-			outputBuffer.Add($"InternalException({ex.GetType().Name}): {ex.Message}", TextType.Error);
+			_buffer.Add($"InternalException({ex.GetType().Name}): {ex.Message}", TextType.Error);
+			Agent.ContextStack.Pop();
+			return ex.Stringify();
 		}
 	}
 }

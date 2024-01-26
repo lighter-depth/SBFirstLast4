@@ -11,7 +11,11 @@
 <PageTitle>手動クエリ</PageTitle>
 
 <div class="cmd">
-	@foreach (var item in outputBuffer)
+	<div class="cmd-input" style="display: flex; flex-flow: row">
+		<span>>&nbsp;</span>
+		<input type="text" class="input" id="console-input" autocomplete="off" @onkeydown="HandleInput" />
+	</div>
+	@foreach (var item in Enumerable.Reverse(outputBuffer).Where(e => !string.IsNullOrEmpty(e.Content)))
 	{
 		<p style="color: @(item.Type switch
 		{
@@ -23,10 +27,6 @@
 			var color => color
 		});">@item.Content</p>
 	}
-	<div class="cmd-input" style="display: flex; flex-flow: row">
-		<span>>&nbsp;</span>
-		<input type="text" class="input" id="console-input" autocomplete="off" @onkeydown="HandleInput" />
-	</div>
 </div>
 @if (AppSettings.IsDebug)
 {
@@ -89,6 +89,8 @@
 		width: 95%;
 		height: 300px;
 		overflow-y: scroll;
+		display: flex;
+		flex-direction: column-reverse;
 	}
 
 	.input {
@@ -151,9 +153,13 @@
 
 	internal static TaskCompletionSource<string> InputStream { get; private set; } = new();
 
+	internal static CancellationTokenSource Cancellation { get; private set; } = new();
+
+	private static bool WaitingForInput;
 
 	protected override async Task OnInitializedAsync()
 	{
+
 		if (!AppSettings.IsLoggedIn)
 		{
 			NavigationManager.NavigateTo("", false);
@@ -162,8 +168,29 @@
 		if (!Words.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 
+		try
+		{
+			Cancellation.Cancel();
+		}
+		catch (Exception e)
+		when (e is OperationCanceledException or TaskCanceledException)
+		{
+		}
+
+		Cancellation = new();
 		await ImportStoredModules();
+		InitProcedures();
 		StateHasChanged();
+	}
+
+	private void InitProcedures()
+	{
+		foreach (var proc in ModuleManager.Procedures)
+			proc.Update(Agent, outputBuffer, s => translatedStr = s, async () =>
+			{
+				StateHasChanged();
+				await Task.Delay(1);
+			}, Cancellation.Token);
 	}
 
 	private async Task ImportStoredModules()
@@ -192,7 +219,7 @@
 	}
 
 
-	private List<(string Content, string Type)> outputBuffer = new() { ("Welcome to manual query for SB.", string.Empty) };
+	private List<(string Content, string Type)> outputBuffer = new();
 
 
 	private async Task HandleInput(KeyboardEventArgs e)
@@ -207,16 +234,21 @@
 			StateHasChanged();
 			await Task.Delay(1);
 
-			if (Agent.CurrentContext == QueryContext.RunningProcedure)
+			InputStream.TrySetResult(input);
+
+			if (WaitingForInput)
 			{
-				InputStream.TrySetResult(input);
+				WaitingForInput = false;
 				return;
 			}
+
+			if (Agent.CurrentContext == QueryContext.RunningProcedure)
+				return;
 
 			if (string.IsNullOrWhiteSpace(input))
 				return;
 
-			await Agent.RunAsync(input, outputBuffer, s => translatedStr = s, HandleDeletedFiles, async() =>
+			await Agent.RunAsync(input, outputBuffer, s => translatedStr = s, HandleDeletedFiles, async () =>
 			{
 				StateHasChanged();
 				await Task.Delay(1);
@@ -246,6 +278,7 @@
 
 	internal static Task<string> GetInputStream()
 	{
+		WaitingForInput = true;
 		InputStream = new();
 		return InputStream.Task;
 	}

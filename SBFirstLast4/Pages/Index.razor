@@ -156,6 +156,21 @@
 
 	protected override async Task OnInitializedAsync()
 	{
+		NavigationManager.LocationChanged += (s, e) =>
+		{
+			var location = e.Location;
+			var slash = location.LastIndexOf('/');
+			if(location[slash..] == "/manualquery")
+			{
+				JSRuntime.Alert("うわああ！！！");
+				return;
+			}
+			try
+			{
+				ManualQuery.Cancellation.Cancel();
+			}
+			catch { }
+		};
 		try
 		{
 			LoadingMsg = "ユーザー情報を読み込み中...";

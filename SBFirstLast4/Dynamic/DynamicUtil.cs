@@ -50,6 +50,125 @@ internal class Is
 	}
 }
 
+internal static class Find
+{
+	internal static (int Open, int Close)? OpenCloseBrace(string source, char openBrace, char closeBrace, int startIndex = 0)
+	{
+		source = EscapeLiterals(source);
+
+		var index = source.IndexOf(openBrace, startIndex);
+		if (index == -1)
+			return null;
+
+		var braceCount = 0;
+
+		for (var i = index; i < source.Length; i++)
+		{
+			if (source[i] == openBrace)
+			{
+				braceCount++;
+				continue;
+			}
+			if (source[i] == closeBrace)
+			{
+				braceCount--;
+				if (braceCount == 0) return (index, i);
+			}
+		}
+		return null;
+	}
+
+	internal static int CloseBrace(string source, char openBrace, char closeBrace, int startIndex = 0)
+	{
+		source = EscapeLiterals(source);
+
+		var index = source.IndexOf(openBrace, startIndex);
+		if (index == -1)
+			return -1;
+
+		var braceCount = 0;
+
+		for (var i = index; i < source.Length; i++)
+		{
+			if (source[i] == openBrace)
+			{
+				braceCount++;
+				continue;
+			}
+			if (source[i] == closeBrace)
+			{
+				braceCount--;
+				if (braceCount == 0) return i;
+			}
+		}
+		return -1;
+	}
+
+	private static string EscapeLiterals(string source)
+	{
+		source = EscapeLiteral(source, '\'');
+		source = EscapeLiteral(source, '"');
+		source = EscapeLiteral(source, '`');
+		return source;
+	}
+
+	private static string EscapeLiteral(string source, char quote)
+	{
+		var sb = new StringBuilder();
+		var isInsideLiteral = false;
+		foreach (var c in source)
+		{
+			if (c == quote)
+				isInsideLiteral = !isInsideLiteral;
+			sb.Append(isInsideLiteral ? '0' : c);
+		}
+		return sb.ToString();
+	}
+}
+
+internal static class Split
+{
+	internal static IEnumerable<string> ParameterTexts(string parameterText)
+	{
+		var isInsideString = false;
+		var charBuffer = new List<char>();
+		for (var i = 0; i < parameterText.Length; i++)
+		{
+			var c = parameterText[i];
+
+			if (c == '"')
+				isInsideString = !isInsideString;
+
+			if (c == '(' && !isInsideString)
+			{
+				var close = Find.CloseBrace(parameterText, '(', ')', i);
+				charBuffer.AddRange(parameterText[i..(close + 1)]);
+				i = close;
+				continue;
+			}
+			if (c == '{' && !isInsideString)
+			{
+				var close = Find.CloseBrace(parameterText, '{', '}', i);
+				charBuffer.AddRange(parameterText[i..(close + 1)]);
+				i = close;
+				continue;
+			}
+
+			if (c == ',' && !isInsideString)
+			{
+				yield return charBuffer.StringJoin();
+				charBuffer.Clear();
+				continue;
+			}
+
+			charBuffer.Add(c);
+
+		}
+		if (charBuffer.Count > 0)
+			yield return charBuffer.StringJoin();
+	}
+}
+
 internal static class BufferEx
 {
 	public static void Add(this Buffer buffer, string content, string type) => buffer.Add((content, type));
@@ -63,8 +182,8 @@ internal static class BufferEx
 
 internal static class TextType
 {
-	internal const string General = "", 
-						  Error = "Error", 
+	internal const string General = "",
+						  Error = "Error",
 						  Cmd = "Cmd",
 						  Safe = "Safe",
 						  Monitor = "Monitor";
