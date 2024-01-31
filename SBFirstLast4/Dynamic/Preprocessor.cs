@@ -1,4 +1,5 @@
-﻿using SBFirstLast4.Pages;
+﻿using BlazorDownloadFile;
+using SBFirstLast4.Pages;
 using System.Diagnostics.CodeAnalysis;
 using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
 
@@ -10,7 +11,7 @@ public static partial class Preprocessor
 
 	private static readonly string[] ValidDirectives =
 	{
-		"define", "undef", "show", "pragma", "include", "exclude", "ifdef", "ifndef", "delete", "ephemeral", "evaporate"
+		"define", "undef", "show", "pragma", "include", "exclude", "ifdef", "ifndef", "delete", "ephemeral", "evaporate", "export"
 	};
 
 	private static readonly string[] ModulesToLoad =
@@ -122,44 +123,39 @@ public static partial class Preprocessor
 		return false;
 	}
 
-	public static async Task ProcessAsync(string input, Buffer output, Func<Task> handleDeletedFiles)
+	public static async Task ProcessAsync(string input, Buffer output, Func<Task> handleDeletedFiles, IBlazorDownloadFileService? service = null)
 	{
-		if (!TryProcess(input, out var status, out var errorMsg))
+		if (await TryProcessAsync(input, service) is var result && !result.Success)
 		{
-			output.Add(($"Error: SBPreprocessException: {errorMsg}", TextType.Error));
+			output.Add(($"Error: SBPreprocessException: {result.ErrorMsg}", TextType.Error));
 			return;
 		}
 
-		output.AddRange(status.Select(x => (x, TextType.General)));
+		output.AddRange(result.Status!.Select(x => (x, TextType.General)));
 
 		if (input.StartsWith("#delete"))
 			await handleDeletedFiles();
 	}
-	public static bool TryProcess(string input, [NotNullWhen(true)] out string[]? status, [NotNullWhen(false)] out string? errorMsg, string moduleName = "USER_DEFINED")
+
+	public static async Task<(bool Success, string[]? Status, string? ErrorMsg)> TryProcessAsync(string input, IBlazorDownloadFileService? service, string moduleName = "USER_DEFINED")
 	{
-		(status, errorMsg) = (null, null);
+		string[] status;
+
 		input = input.Trim();
+
 		if (input.Length < 2)
-		{
-			errorMsg = "The directive was empty.";
-			return false;
-		}
+			return (false, null, "The directive was empty.");
+
 		input = input[(input.IndexOf('#') + 1)..];
 
 		var contents = input.Split();
 		var symbol = contents.At(0);
 
 		if (symbol is "elifdef" or "elifndef" or "else" or "endif" or "transient")
-		{
-			errorMsg = "Invalid directive in this context.";
-			return false;
-		}
+			return (false, null, "Invalid directive in this context.");
 
 		if (!ValidDirectives.Contains(symbol))
-		{
-			errorMsg = "Couldn't recognize the specified directive type.";
-			return false;
-		}
+			return (false, null, "Couldn't recognize the specified directive type.");
 
 		if (symbol is "show")
 		{
@@ -181,52 +177,55 @@ public static partial class Preprocessor
 					: x is FunctionLikeMacro f
 					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.StringJoin(", ")}), Body: {f.Body}"
 					: "NULL")))
+					.Concat(ModuleManager.UserDefined.Procedures
+					.Select(p => $"Module: {p.ModuleName}, "
+					+ $"Name: {p.Name}, Value: {p.Value}"))
 					.Concat(ModuleManager.UserDefined.Symbols.Select(x => $"Symbol: {x}"))
 					.ToArray();
-				return true;
+				return (true, status, null);
 			}
 
 			if (selector is "$MODULE" or "$MDL")
 			{
 				status = ModuleManager.ModuleNames.Append("USER_DEFINED").ToArray();
-				return true;
+				return (true, status, null);
 			}
 
 			if (selector is "$EXCLUDED" or "$EXC")
 			{
 				status = ModuleManager.ExcludedModules.ToArray();
-				return true;
+				return (true, status, null);
 			}
 
 			if (selector is "$IMPORTED" or "$IMP")
 			{
 				status = ModuleManager.RuntimeModules.Select(m => m.Name).ToArray();
-				return true;
+				return (true, status, null);
 			}
 
-			if(selector is "$VARIABLE" or "$VAR")
+			if (selector is "$VARIABLE" or "$VAR")
 			{
 				status = WideVariable.Variables
-						.Where(kv => contents.At(2)?.ToUpper().At(0) is 'A' ? true : !kv.Key.StartsWith('_'))
+						.Where(kv => contents.At(2)?.ToUpper().At(0) is 'A' || !kv.Key.StartsWith('_'))
 						.Select(kv => $"Name: {kv.Key}, Value: {To.String(kv.Value)}")
 						.ToArray();
-				return true;
+				return (true, status, null);
 			}
 
-			if(selector is "$RECORD" or "$RCD")
+			if (selector is "$RECORD" or "$RCD")
 			{
 				status = Record.Types
 						.Select(t => $"Name: {t.Name}, Fields: [{t.GetFields().Select(f => $"{{Sign: {f.Name}, Type: {f.FieldType.Name}}}").StringJoin(", ")}]")
 						.ToArray();
-				return true;
+				return (true, status, null);
 			}
 
-			if(selector is "$PROCEDURE" or "$PROC" or "$PRC")
+			if (selector is "$PROCEDURE" or "$PROC" or "$PRC")
 			{
-				status = ModuleManager.UserDefined.Procedures
-						.Select(p => $"Name: {p.Name}, Value: {p.Value}")
+				status = ModuleManager.Procedures
+						.Select(p => $"Module: {p.ModuleName}, Name: {p.Name}, Value: {p.Value}")
 						.ToArray();
-				return true;
+				return (true, status, null);
 			}
 
 			if (selector is "$ALL")
@@ -245,18 +244,18 @@ public static partial class Preprocessor
 					: x is FunctionLikeMacro f
 					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.StringJoin(", ")}), Body: {f.Body}"
 					: "NULL")))
+					.Concat(ModuleManager.Procedures
+					.Select(p => $"Module: {p.ModuleName}, "
+					+ $"Name: {p.Name}, Value: {p.Value}"))
 					.Concat(ModuleManager.Symbols.Select(x => $"Symbol: {x}"))
 					.ToArray();
-				return true;
+				return (true, status, null);
 			}
 
 			var module = ModuleManager.GetModule(selector);
 
 			if (module is null)
-			{
-				errorMsg = $"Specified module {selector} does not exist in module manager.";
-				return false;
-			}
+				return (false, null, $"Specified module {selector} does not exist in module manager.");
 
 			status = module.Macros
 					.Select(x => $"Module: {x.ModuleName}, "
@@ -272,117 +271,112 @@ public static partial class Preprocessor
 					: x is FunctionLikeMacro f
 					? $"[[Ephemeral]] Sign: {f.Name}({f.Parameters.StringJoin(", ")}), Body: {f.Body}"
 					: "NULL")))
+					.Concat(module.Procedures
+					.Select(p => $"Module: {p.ModuleName}, "
+					+ $"Name: {p.Name}, Value: {p.Value}"))
 					.Concat(module.Symbols.Select(x => $"Symbol: {x}"))
 					.ToArray();
-			return true;
+			return (true, status, null);
 		}
 
 		if (symbol is "pragma")
 		{
 			var pragma = contents.At(1);
 			if (pragma is not ("auto" or "reflect" or "monitor" or "easyarray"))
-			{
-				errorMsg = "Invalid syntax: No applicable pragma found.";
-				return false;
-			}
+				return (false, null, "Invalid syntax: No applicable pragma found.");
+
 			if (pragma is "auto")
 			{
 				if (contents.Length != 3)
-				{
-					errorMsg = "Invalid syntax: #pragma auto syntax must have one argument.";
-					return false;
-				}
+					return (false, null, "Invalid syntax: #pragma auto syntax must have one argument.");
+
 				if (contents[2] == "enable")
 				{
 					Interpreter.IsAuto = true;
 					status = new[] { "Auto processing enabled." };
-					return true;
+					return (true, status, null);
 				}
+
 				if (contents[2] == "disable")
 				{
 					Interpreter.IsAuto = false;
 					status = new[] { "Auto processing disabled." };
-					return true;
+					return (true, status, null);
 				}
+
 				if (contents[2] == "toggle")
 				{
 					Interpreter.IsAuto = !Interpreter.IsAuto;
 					status = new[] { $"Auto processing {(Interpreter.IsAuto ? "enabled" : "disabled")}." };
-					return true;
+					return (true, status, null);
 				}
-				errorMsg = "Invalid syntax: invalid argument for #pragma auto directive.";
-				return false;
+
+				return (false, null, "Invalid syntax: invalid argument for #pragma auto directive.");
 			}
 			if (pragma is "reflect")
 			{
 				if (contents.Length != 3)
-				{
-					errorMsg = "Invalid syntax: #pragma reflect syntax must have one argument.";
-					return false;
-				}
+					return (false, null, "Invalid syntax: #pragma reflect syntax must have one argument.");
+				
 				if (contents[2] == "enable")
 				{
 					ManualQuery.IsReflect = true;
 					status = new[] { "Reflector enabled." };
-					return true;
+					return (true, status, null);
 				}
 				if (contents[2] == "disable")
 				{
 					ManualQuery.IsReflect = false;
 					status = new[] { "Reflector disabled." };
-					return true;
+					return (true, status, null);
 				}
 				if (contents[2] == "toggle")
 				{
 					ManualQuery.IsReflect = !ManualQuery.IsReflect;
 					status = new[] { $"Reflector {(ManualQuery.IsReflect ? "enabled" : "disabled")}." };
-					return true;
+					return (true, status, null);
 				}
-				errorMsg = "Invalid syntax: invalid argument for #pragma reflect directive.";
-				return false;
+
+				return (false, null, "Invalid syntax: invalid argument for #pragma reflect directive.");
 			}
 			if (pragma is "easyarray")
 			{
 				if (contents.Length != 3)
-				{
-					errorMsg = "Invalid syntax: #pragma easyarray syntax must have one argument.";
-					return false;
-				}
+					return (false, null, "Invalid syntax: #pragma easyarray syntax must have one argument.");
+				
 				if (contents[2] == "enable")
 				{
 					Interpreter.EasyArrayInitializer = true;
 					status = new[] { "Easy array enabled." };
-					return true;
+					return (true, status, null);
 				}
 				if (contents[2] == "disable")
 				{
 					Interpreter.EasyArrayInitializer = false;
 					status = new[] { "Easy array disabled." };
-					return true;
+					return (true, status, null);
 				}
 				if (contents[2] == "toggle")
 				{
 					Interpreter.EasyArrayInitializer = !Interpreter.EasyArrayInitializer;
 					status = new[] { $"Easy array {(Interpreter.EasyArrayInitializer ? "enabled" : "disabled")}." };
-					return true;
+					return (true, status, null);
 				}
-				errorMsg = "Invalid syntax: invalid argument for #pragma easyarray directive.";
-				return false;
+				return (false, null, "Invalid syntax: invalid argument for #pragma easyarray directive.");
 			}
-			errorMsg = "Invalid syntax: invalid argument for #pragma monitor directive.";
-			return false;
+			return (false, null, "Invalid syntax: invalid argument for #pragma monitor directive.");
 		}
 
 		if (symbol is "ifdef")
 		{
 			status = new[] { ModuleManager.ContentNames.Contains(contents.At(1)) ? "TRUE" : "FALSE" };
-			return true;
+			return (true, status, null);
 		}
 
 		if (symbol is "ifndef")
 		{
 			status = new[] { !ModuleManager.ContentNames.Contains(contents.At(1)) ? "TRUE" : "FALSE" };
-			return true;
+			return (true, status, null);
 		}
 
 		if (symbol is "include")
@@ -390,10 +384,9 @@ public static partial class Preprocessor
 			if (ModuleManager.Include(contents.At(1) ?? string.Empty))
 			{
 				status = new[] { $"Successfully included {(contents.At(1) == "$ALL" ? "all modules" : $"module {contents.At(1)}")}." };
-				return true;
+				return (true, status, null);
 			}
-			errorMsg = $"No includable module {contents.At(1)} found.";
-			return false;
+			return (false, null, $"No includable module {contents.At(1)} found.");
 		}
 
 
@@ -402,10 +395,9 @@ public static partial class Preprocessor
 			if (ModuleManager.Exclude(contents.At(1) ?? string.Empty))
 			{
 				status = new[] { $"Successfully excluded {(contents.At(1) == "$ALL" ? "all modules" : $"module {contents.At(1)}")}." };
-				return true;
+				return (true, status, null);
 			}
-			errorMsg = $"No excludable module {contents.At(1)} found.";
-			return false;
+			return (false, null, $"No excludable module {contents.At(1)} found.");
 		}
 
 		if (symbol is "delete")
@@ -413,35 +405,58 @@ public static partial class Preprocessor
 			if (ModuleManager.Delete(contents.At(1) ?? string.Empty, out var deleteStatus))
 			{
 				status = new[] { deleteStatus };
-				return true;
+				return (true, status, null);
 			}
-			errorMsg = deleteStatus;
-			return false;
+			return (false, null, deleteStatus);
+		}
+
+		if (symbol is "export")
+		{
+			var module = ModuleManager.GetModule(contents.At(1));
+
+			if (module is null)
+				return (false, null, $"Specified module {contents.At(1)} does not exist.");
+
+			var moduleContent = module.ModuleContent;
+			
+			var encodingProvider = CodePagesEncodingProvider.Instance;
+			Encoding.RegisterProvider(encodingProvider);
+
+			var encodeStr = contents.At(2);
+			var encoding = encodeStr?.ToLower() switch
+			{
+				null or "utf-8" or "utf8" or "u8" => Encoding.UTF8,
+				"unicode" or "utf-16" or "utf16" or "u16" => Encoding.Unicode,
+				"utf-32" or "utf32" or "u32" => Encoding.UTF32,
+				"ascii" => Encoding.ASCII,
+				_ => Encoding.GetEncoding(encodeStr.ToLower())
+			};
+
+			if (service is not null)
+				await service.DownloadFileFromText($"{module.Name}.txt", module.ModuleContent, encoding, "text/plain");
+
+			return (true, new[] { $"Successfully exported module {module.Name}" }, null);
 		}
 
 		if (symbol is "undef")
 		{
 			if (contents.Length != 2)
-			{
-				errorMsg = "Invalid syntax: #undef syntax must have one argument.";
-				return false;
-			}
+				return (false, null, "Invalid syntax: #undef syntax must have one argument.");
+			
 			if (contents[1] == "$ALL")
 			{
 				ModuleManager.UserDefined.Macros.Clear();
 				ModuleManager.UserDefined.Symbols.Clear();
 				status = new[] { "Cleared up the USER_DEFINED Macro Dictionary." };
-				return true;
+				return (true, status, null);
 			}
 			var count = ModuleManager.UserDefined.Macros.RemoveAll(m => m.Name == contents[1]);
 			count += ModuleManager.UserDefined.Symbols.RemoveAll(s => s == contents[1]);
 			if (count < 1)
-			{
-				errorMsg = $"Specified macro '{contents[1]}' does not exist in the USER_DEFINED module.";
-				return false;
-			}
+				return (false, null, $"Specified macro '{contents[1]}' does not exist in the USER_DEFINED module.");
+			
 			status = new[] { $"Successfully removed macro '{contents[1]}' from the dictionary." };
-			return true;
+			return (true, status, null);
 		}
 
 		if (symbol is "define")
@@ -459,20 +474,17 @@ public static partial class Preprocessor
 				};
 				ModuleManager.UserDefined.Macros.Add(functionLikeMacro);
 				status = new[] { $"Successfully added macro '{match.Groups["name"]}' to the dictionary." };
-				return true;
+				return (true, status, null);
 			}
 
 			if (contents.Length < 2)
-			{
-				errorMsg = "Invalid syntax: #define syntax must have more than one arguments.";
-				return false;
-			}
+				return (false, null, "Invalid syntax: #define syntax must have more than one arguments.");
 
 			if (contents.Length == 2)
 			{
 				ModuleManager.UserDefined.Symbols.Add(contents[1]);
 				status = new[] { $"Successfully added symbol '{contents[1]}' to the dictionary." };
-				return true;
+				return (true, status, null);
 			}
 
 			var groups = ModuleRegex.DefineObjectLikeMacro().Match(input).Groups;
@@ -485,10 +497,9 @@ public static partial class Preprocessor
 			ModuleManager.UserDefined.Macros.Add(objectLikeMacro);
 
 			status = new[] { $"Successfully added macro '{contents[1]}' to the dictionary." };
-			return true;
+			return (true, status, null);
 		}
 
-		errorMsg = $"Invalid directive: {input}";
-		return false;
+		return (false, null, $"Invalid directive: {input}");
 	}
 }

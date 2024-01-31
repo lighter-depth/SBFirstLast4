@@ -1,12 +1,14 @@
 ﻿@page "/manualquery"
-@inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
-@inject ILocalStorageService LocalStorage
 @using Blazored.LocalStorage
+@using BlazorDownloadFile
 @using System.Linq.Expressions
 @using System.Linq.Dynamic.Core
 @using SBFirstLast4.Dynamic
 @using SBFirstLast4.Logging
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ILocalStorageService LocalStorage
+@inject IBlazorDownloadFileService DownloadFileService
 
 <PageTitle>手動クエリ</PageTitle>
 
@@ -30,22 +32,22 @@
 </div>
 @if (AppSettings.IsDebug)
 {
-	<div class="translated-lbl">@translatedStr</div>
+	<div class="translated-lbl">@_translatedStr</div>
 }
 <div class="file-input">
 	<InputFile OnChange="HandleFileSelected" multiple />
 </div>
 
-@if (moduleFiles != null)
+@if (_moduleFiles != null)
 {
 	<div style="display: flex; flex-flow: column;">
-		@foreach (var (file, i) in moduleFiles.WithIndex())
+		@foreach (var (file, i) in _moduleFiles.WithIndex())
 		{
 			<div>
 				<span class="file-name">@file.Name</span>
 				<span class="file-size">(@file.Size) bytes</span>
 			</div>
-			<div id="file@($"{file.Name}")" class="progress-bar" style="width: @($"{(progressPercentages.TryGetValue(file.Name, out var percentage) ? percentage : 100)}%");">
+			<div id="file@($"{file.Name}")" class="progress-bar" style="width: @($"{(_progressPercentages.TryGetValue(file.Name, out var percentage) ? percentage : 100)}%");">
 			</div>
 			<label for="file@($"{file.Name}")" @onclick="async() =>
 				{
@@ -140,22 +142,32 @@
 </style>
 
 @code {
-	private QueryAgent Agent = new();
+	private QueryAgent _agent = new();
 
-	private string translatedStr = string.Empty;
+	private string _translatedStr = string.Empty;
 
 	internal static bool IsReflect { get; set; }
 
-	private List<FileModel> moduleFiles = new();
+	private List<FileModel> _moduleFiles = new();
 
 
-	private Dictionary<string, int> progressPercentages = new Dictionary<string, int>();
+	private Dictionary<string, int> _progressPercentages = new Dictionary<string, int>();
 
 	internal static TaskCompletionSource<string> InputStream { get; private set; } = new();
 
 	internal static CancellationTokenSource Cancellation { get; private set; } = new();
 
 	private static bool WaitingForInput;
+
+	private Action<string> _setTranslated => s => _translatedStr = s;
+
+	private Func<Task> _update => async () =>
+	{
+		StateHasChanged();
+		await Task.Delay(1);
+	};
+
+	private static bool IsInitialized;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -180,17 +192,29 @@
 		Cancellation = new();
 		await ImportStoredModules();
 		InitProcedures();
+		await InitModulesAsync();
+		IsInitialized = true;
 		StateHasChanged();
 	}
 
 	private void InitProcedures()
 	{
 		foreach (var proc in ModuleManager.Procedures)
-			proc.Update(Agent, outputBuffer, s => translatedStr = s, async () =>
-			{
-				StateHasChanged();
-				await Task.Delay(1);
-			}, Cancellation.Token);
+			proc.Update(_agent, outputBuffer, _setTranslated, _update, Cancellation.Token);
+	}
+
+	private async Task InitModulesAsync()
+	{
+		if (!IsInitialized)
+			foreach (var module in ModuleManager.Modules)
+				if (module.StaticStatements.Count > 0)
+					foreach (var statement in module.StaticStatements)
+						await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+
+		foreach (var module in ModuleManager.Modules)
+			if (module.InitStatements.Count > 0)
+				foreach (var statement in module.InitStatements)
+					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
 	}
 
 	private async Task ImportStoredModules()
@@ -200,16 +224,16 @@
 		if (storedFiles?.Count > 0)
 		{
 			foreach (var file in storedFiles)
-				progressPercentages[file.Name] = 100;
+				_progressPercentages[file.Name] = 100;
 
-			moduleFiles = storedFiles;
+			_moduleFiles = storedFiles;
 		}
-		foreach (var file in moduleFiles)
+		foreach (var file in _moduleFiles)
 		{
 			if (!ModuleManager.Import(Module.Compile(file.Content, true, file.Name), out var status))
 			{
 				outputBuffer.Add(status, TextType.Error);
-				moduleFiles.Remove(file);
+				_moduleFiles.Remove(file);
 				StateHasChanged();
 				continue;
 			}
@@ -242,23 +266,19 @@
 				return;
 			}
 
-			if (Agent.CurrentContext == QueryContext.RunningProcedure)
+			if (_agent.CurrentContext == QueryContext.RunningProcedure)
 				return;
 
 			if (string.IsNullOrWhiteSpace(input))
 				return;
 
-			await Agent.RunAsync(input, outputBuffer, s => translatedStr = s, HandleDeletedFiles, async () =>
-			{
-				StateHasChanged();
-				await Task.Delay(1);
-			});
+			await _agent.RunAsync(input, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
 
 			StateHasChanged();
 
 			Server.Log(new
 			{
-				Type = Agent.StatementKind is TextType.Monitor ? "MONITOR" : "QUERY",
+				Type = _agent.StatementKind is TextType.Monitor ? "MONITOR" : "QUERY",
 				Order = input.Trim(),
 				UserInfo = new
 				{
@@ -286,16 +306,16 @@
 	private async Task HandleFileSelected(InputFileChangeEventArgs e)
 	{
 		foreach (var file in e.GetMultipleFiles())
-			if (moduleFiles.Any(f => f.Name == file.Name))
+			if (_moduleFiles.Any(f => f.Name == file.Name))
 			{
-				moduleFiles.RemoveAll(f => f.Name != file.Name);
-				progressPercentages.Remove(file.Name);
+				_moduleFiles.RemoveAll(f => f.Name != file.Name);
+				_progressPercentages.Remove(file.Name);
 			}
 
 
 		foreach (var file in e.GetMultipleFiles())
 		{
-			progressPercentages[file.Name] = 0;
+			_progressPercentages[file.Name] = 0;
 
 			using var stream = file.OpenReadStream();
 
@@ -303,13 +323,13 @@
 
 			var fileContent = await reader.ReadToEndAsync();
 			var fileModel = new FileModel(file.Name, fileContent, file.Size);
-			moduleFiles.Add(fileModel);
+			_moduleFiles.Add(fileModel);
 			StateHasChanged();
 			await Task.Delay(1);
 
 			for (var i = 0; i < 100; i += 2)
 			{
-				progressPercentages[file.Name] += 2;
+				_progressPercentages[file.Name] += 2;
 				StateHasChanged();
 				await Task.Delay(1);
 			}
@@ -317,17 +337,28 @@
 			StateHasChanged();
 			await Task.Delay(100);
 
-			if (!ModuleManager.Import(Module.Compile(fileContent, true, file.Name), out var status))
+			var module = Module.Compile(fileContent, true, file.Name);
+			if (!ModuleManager.Import(module, out var status))
 			{
 				outputBuffer.Add(status, TextType.Error);
-				moduleFiles.Remove(fileModel);
+				_moduleFiles.Remove(fileModel);
 				StateHasChanged();
 				continue;
 			}
 			outputBuffer.Add(status, TextType.Safe);
 			StateHasChanged();
+
+			if (module?.StaticStatements.Count > 0)
+				foreach (var statement in module.StaticStatements)
+					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+
+			if (module?.InitStatements.Count > 0)
+				foreach (var statement in module.InitStatements)
+					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+
 		}
-		await LocalStorage.SetItemAsync("MODULE_FILES", moduleFiles);
+		await LocalStorage.SetItemAsync("MODULE_FILES", _moduleFiles);
+		InitProcedures();
 	}
 
 	private async Task RemoveFileAsync(FileModel file)
@@ -356,15 +387,15 @@
 		{
 			var filesToRemove = new List<FileModel>();
 
-			foreach (var m in moduleFiles)
+			foreach (var m in _moduleFiles)
 				if (!ModuleManager.RuntimeModules.Any(r => r.RuntimeName == m.Name))
 				{
 					filesToRemove.Add(m);
-					progressPercentages.Remove(m.Name);
+					_progressPercentages.Remove(m.Name);
 				}
-			moduleFiles = moduleFiles.RemoveRange(filesToRemove);
+			_moduleFiles = _moduleFiles.RemoveRange(filesToRemove);
 
-			await LocalStorage.SetItemAsync("MODULE_FILES", moduleFiles);
+			await LocalStorage.SetItemAsync("MODULE_FILES", _moduleFiles);
 			StateHasChanged();
 		}
 		catch (Exception ex)

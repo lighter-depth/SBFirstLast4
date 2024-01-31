@@ -1,5 +1,6 @@
 ﻿using Antlr4.Runtime.Misc;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
 
@@ -68,6 +69,26 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		return "ENDIF";
 	}
 
+	public override async Task<object?> VisitSwitch_stat([NotNull] SBProcLangParser.Switch_statContext context)
+	{
+		var expr = context.expr();
+		var source = await QueryRunner.EvaluateExpressionAsync(expr.GetText());
+		foreach (var (factor, block) in context.factor().Zip(context.stat_block()))
+		{
+			var target = await QueryRunner.EvaluateExpressionAsync(factor.GetText());
+			if ((dynamic?)source == (dynamic?)target)
+			{
+				await Visit(block);
+				return "SWITCH_CASE";
+			}
+		}
+		
+		if(context.default_stat is not null)
+			await Visit(context.default_stat);
+
+		return "SWITCH";
+	}
+
 	public override async Task<object?> VisitDo_while_stat([NotNull] SBProcLangParser.Do_while_statContext context)
 	{
 		object? condition;
@@ -86,7 +107,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			}
 			catch (Continue)
 			{
-				condition = await QueryAgent.EvaluateExpressionAsync(context.expr().GetText());
+				condition = await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
 				continue;
 			}
 			catch (Redo)
@@ -98,7 +119,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 				return "DO_WHILE";
 			}
 
-			condition = await QueryAgent.EvaluateExpressionAsync(context.expr().GetText());
+			condition = await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
 		}
 		while (condition is bool b && b);
 
@@ -107,7 +128,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 	public override async Task<object?> VisitWhile_stat([NotNull] SBProcLangParser.While_statContext context)
 	{
-		var condition = await QueryAgent.EvaluateExpressionAsync(context.expr().GetText());
+		var condition = await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
 
 		while (condition is bool b && b)
 		{
@@ -123,7 +144,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			}
 			catch (Continue)
 			{
-				condition = await QueryAgent.EvaluateExpressionAsync(context.expr().GetText());
+				condition = await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
 				continue;
 			}
 			catch (Redo)
@@ -131,7 +152,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 				goto Redo;
 			}
 
-			condition = await QueryAgent.EvaluateExpressionAsync(context.expr().GetText());
+			condition = await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
 		}
 
 		return "WHILE";
@@ -155,7 +176,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			}
 			catch (Continue)
 			{
-				condition = await QueryAgent.EvaluateExpressionAsync(context.expr().GetText());
+				condition = await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
 				continue;
 			}
 			catch (Redo)
@@ -167,7 +188,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 				return "DO_UNTIL";
 			}
 
-			condition = await QueryAgent.EvaluateExpressionAsync(context.expr().GetText());
+			condition = await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
 		}
 		while (condition is bool b && !b);
 
@@ -176,7 +197,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 	public override async Task<object?> VisitUntil_stat([NotNull] SBProcLangParser.Until_statContext context)
 	{
-		var condition = await QueryAgent.EvaluateExpressionAsync(context.expr().GetText());
+		var condition = await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
 
 		while (condition is bool b && !b)
 		{
@@ -192,7 +213,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			}
 			catch (Continue)
 			{
-				condition = await QueryAgent.EvaluateExpressionAsync(context.expr().GetText());
+				condition = await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
 				continue;
 			}
 			catch (Redo)
@@ -200,7 +221,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 				goto Redo;
 			}
 
-			condition = await QueryAgent.EvaluateExpressionAsync(context.expr().GetText());
+			condition = await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
 		}
 
 		return "UNTIL";
@@ -213,9 +234,9 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		var update = context.update;
 
 		if (init is not null)
-			await QueryAgent.RunStatementAsync(init.GetText(), _outputBuffer, _setTranslated);
+			await QueryRunner.RunStatementAsync(init.GetText(), _outputBuffer, _setTranslated);
 
-		var condition = await QueryAgent.EvaluateExpressionAsync(cond?.GetText() ?? "true");
+		var condition = await QueryRunner.EvaluateExpressionAsync(cond?.GetText() ?? "true");
 
 
 		while (condition is not bool b || b)
@@ -233,9 +254,9 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			catch (Continue)
 			{
 				if (update is not null)
-					await QueryAgent.RunStatementAsync(update.GetText(), _outputBuffer, _setTranslated);
+					await QueryRunner.RunStatementAsync(update.GetText(), _outputBuffer, _setTranslated);
 
-				condition = await QueryAgent.EvaluateExpressionAsync(cond?.GetText() ?? "true");
+				condition = await QueryRunner.EvaluateExpressionAsync(cond?.GetText() ?? "true");
 
 				continue;
 			}
@@ -245,9 +266,9 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			}
 
 			if (update is not null)
-				await QueryAgent.RunStatementAsync(update.GetText(), _outputBuffer, _setTranslated);
+				await QueryRunner.RunStatementAsync(update.GetText(), _outputBuffer, _setTranslated);
 
-			condition = await QueryAgent.EvaluateExpressionAsync(cond?.GetText() ?? "true");
+			condition = await QueryRunner.EvaluateExpressionAsync(cond?.GetText() ?? "true");
 		}
 
 		return "FOR";
@@ -256,7 +277,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 	public override async Task<object?> VisitForeach_stat([NotNull] SBProcLangParser.Foreach_statContext context)
 	{
 		var wideId = context.WideID();
-		var source = await QueryAgent.EvaluateExpressionAsync(context.expr()?.GetText() ?? "{}");
+		var source = await QueryRunner.EvaluateExpressionAsync(context.expr()?.GetText() ?? "{}");
 		var variableName = wideId?.GetText()[1..];
 
 		if (string.IsNullOrEmpty(variableName) || source is not System.Collections.IEnumerable enumerable)
@@ -288,9 +309,107 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		return "FOREACH";
 	}
 
+	public override Task<object?> VisitImplicit_throw_stat([NotNull] SBProcLangParser.Implicit_throw_statContext context)
+	{
+		throw new InvalidSyntaxException("cannot throw implicitly out of catch statements.");
+	}
+
+	public override async Task<object?> VisitThrow_stat([NotNull] SBProcLangParser.Throw_statContext context)
+	{
+		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
+		return "THROW";
+	}
+
+	public override async Task<object?> VisitTry_catch_stat([NotNull] SBProcLangParser.Try_catch_statContext context)
+	{
+	Retry:;
+		try
+		{
+			_token.ThrowIfCancellationRequested();
+			await Visit(context.try_stat);
+		}
+		catch (Exception ex)
+		when(ex is not (Break or Continue or Redo or Return or Retry or OperationCanceledException or TaskCanceledException or SBProcLangVisitorException))
+		{
+			var handled = false;
+			var catchStatements = new List<(SBProcLangParser.Stat_blockContext Block, string? TypeName, string? VarName)>();
+
+			var index = 0;
+			while (index < context.ChildCount)
+			{
+				if (index < 2)
+				{
+					index++;
+					continue;
+				}
+
+				if (context.children[index].GetText() == "catch")
+				{
+					var next = context.children.At(index + 1)?.GetText();
+					if (next != "(")
+					{
+						catchStatements.Add(((SBProcLangParser.Stat_blockContext)context.children.At(index + 1)!, null, null));
+						index += 2;
+						continue;
+					}
+					var typename = context.children.At(index + 2)?.GetText();
+					var varname = context.children.At(index + 3)?.GetText();
+
+					if (varname == ")")
+					{
+						catchStatements.Add(((SBProcLangParser.Stat_blockContext)context.children.At(index + 4)!, typename, null));
+						index += 5;
+						continue;
+					}
+
+					catchStatements.Add(((SBProcLangParser.Stat_blockContext)context.children.At(index + 5)!, typename, varname));
+					index += 6;
+					continue;
+				}
+				index++;
+			}
+
+			foreach (var (block, typeName, varName) in catchStatements)
+			{
+				if (typeName is null || Is.SubclassOf(ex.GetType(), typeName))
+				{
+					if (varName is not null)
+						WideVariable.Variables[varName[1..]] = ex;
+
+					try
+					{
+						foreach(var statement in block.statement())
+						{
+							if (statement.implicit_throw_stat() is not null)
+								throw;
+
+							await Visit(statement);
+						}
+					}
+					catch (Retry)
+					{
+						goto Retry;
+					}
+					handled = true;
+					break;
+				}
+			}
+
+			if (!handled) throw;
+
+
+		}
+		finally
+		{
+			if (context.finally_stat != null)
+				await Visit(context.finally_stat);
+		}
+		return "TRY_CATCH";
+	}
+
 	public override async Task<object?> VisitReturn_stat([NotNull] SBProcLangParser.Return_statContext context)
 	{
-		var value = await QueryAgent.EvaluateExpressionAsync(context.expr()?.GetText() ?? "\"\"");
+		var value = await QueryRunner.EvaluateExpressionAsync(context.expr()?.GetText() ?? "\"\"");
 		throw new Return(value);
 	}
 
@@ -302,6 +421,9 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 	public override Task<object?> VisitRedo_stat([NotNull] SBProcLangParser.Redo_statContext context)
 		=> throw new Redo();
+
+	public override Task<object?> VisitRetry_stat([NotNull] SBProcLangParser.Retry_statContext context)
+		=> throw new Retry();
 
 	public override async Task<object?> VisitStat_block([NotNull] SBProcLangParser.Stat_blockContext context)
 	{
@@ -318,35 +440,35 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 	public override async Task<object?> VisitWideAssignment([NotNull] SBProcLangParser.WideAssignmentContext context)
 	{
-		await QueryAgent.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
+		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
 		await _update();
 		return "ASSIGNMENT_WIDE";
 	}
 
 	public override async Task<object?> VisitInternalAssignment([NotNull] SBProcLangParser.InternalAssignmentContext context)
 	{
-		await QueryAgent.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
+		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
 		await _update();
 		return "ASSIGNMENT_INTERNAL";
 	}
 
 	public override async Task<object?> VisitMemberAssignment([NotNull] SBProcLangParser.MemberAssignmentContext context)
 	{
-		await QueryAgent.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
+		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
 		await _update();
 		return "MEMBER_ASSIGN";
 	}
 
 	public override async Task<object?> VisitVariableDeletion([NotNull] SBProcLangParser.VariableDeletionContext context)
 	{
-		await QueryAgent.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
+		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
 		await _update();
 		return "VAR_DELETION";
 	}
 
 	public override async Task<object?> VisitPrint([NotNull] SBProcLangParser.PrintContext context)
 	{
-		await QueryAgent.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
+		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
 		await _update();
 		return "PRINT";
 	}
@@ -369,7 +491,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 	public override async Task<object?> VisitExpr_stat([NotNull] SBProcLangParser.Expr_statContext context)
 	{
-		await QueryAgent.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
+		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
 		return "STAT_EXPR";
 	}
 
@@ -383,7 +505,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		var lhs = context.GetChild(0).GetText();
 		var rhs = context.GetChild(2).GetText();
 
-		var value = await QueryAgent.EvaluateExpressionAsync(rhs);
+		var value = await QueryRunner.EvaluateExpressionAsync(rhs);
 
 		var parts = lhs.Split(new[] { '.', '[' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -392,18 +514,19 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		for (var i = 1; i < parts.Length; i++)
 		{
 			var part = parts[i];
+			var type = obj?.GetType();
+
 			if (i == parts.Length - 1)
 			{
 				if (part.EndsWith("]"))
 				{
 					part = part[..^1];
-					var index = int.Parse(part);
-
-					((Array?)obj)?.SetValue(value, index);
+					var index = await QueryRunner.EvaluateExpressionAsync(part);
+					var argType = new[] { index?.GetType() ?? typeof(object) };
+					var indexer = type?.GetProperty(type?.GetCustomAttribute<DefaultMemberAttribute>()?.MemberName ?? string.Empty, argType);
+					indexer?.SetValue(obj, value, new[] { index });
 					continue;
 				}
-
-				var type = obj?.GetType();
 
 				var prop = type?.GetProperty(part);
 
@@ -421,37 +544,37 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 					continue;
 				}
 
-				throw new Exception("No such property or field: " + part);
+				throw new SBMemberAccessException("No such property or field: " + part);
 			}
 
 			if (part.EndsWith("]"))
 			{
 				part = part[..^1];
-				var index = int.Parse(part);
+				var index = await QueryRunner.EvaluateExpressionAsync(part);
+				var argType = new[] { index?.GetType() ?? typeof(object) };
+				var indexer = type?.GetProperty(type?.GetCustomAttribute<DefaultMemberAttribute>()?.MemberName ?? string.Empty, argType);
 
-				obj = ((Array?)obj)?.GetValue(index);
+				obj = indexer?.GetValue(obj, new[] { index });
 			}
-			else
+
+
+			var propGet = type?.GetProperty(part);
+
+			if (propGet != null)
 			{
-				var type = obj?.GetType();
-
-				var prop = type?.GetProperty(part);
-
-				if (prop != null)
-				{
-					obj = prop.GetValue(obj);
-					continue;
-				}
-				var field = type?.GetField(part);
-
-				if (field != null)
-				{
-					obj = field.GetValue(obj);
-					continue;
-				}
-
-				throw new Exception("No such property or field: " + part);
+				obj = propGet.GetValue(obj);
+				continue;
 			}
+			var fieldGet = type?.GetField(part);
+
+			if (fieldGet != null)
+			{
+				obj = fieldGet.GetValue(obj);
+				continue;
+			}
+
+			throw new SBMemberAccessException("No such property or field: " + part);
+
 		}
 
 		return "MEMBER_ASSIGN";
@@ -624,8 +747,17 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 	}
 }
 
+internal class InvalidSyntaxException : Exception
+{
+	public InvalidSyntaxException(string message = "") : base(message) { }
+}
+
 internal class SBProcLangVisitorException : Exception
 {
 	public SBProcLangVisitorException(string message = "") : base(message) { }
 }
 
+internal class SBMemberAccessException : Exception
+{
+	public SBMemberAccessException(string message = "") : base(message) { }
+}

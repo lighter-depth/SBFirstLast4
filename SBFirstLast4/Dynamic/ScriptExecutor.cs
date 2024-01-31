@@ -58,58 +58,38 @@ public static class ScriptExecutor
 
 	private static object? QueryOverWordDictionaryDynamic(string? input, string? selector)
 	{
-		try
+		var config = new ParsingConfig
 		{
-			var config = new ParsingConfig
-			{
-				CustomTypeProvider = new CustomTypeProvider(),
-				AllowNewToEvaluateAnyType = true
-			};
-			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<Word>, object>(config, false, input ?? string.Empty);
+			CustomTypeProvider = new CustomTypeProvider(),
+			AllowNewToEvaluateAnyType = true
+		};
+		var expression = DynamicExpressionParser.ParseLambda<IEnumerable<Word>, object>(config, false, input ?? string.Empty);
 
-			return expression.Compile().Invoke(SelectorHelper.ToWordEnumerable(selector ?? string.Empty));
-		}
-		catch (Exception ex)
-		{
-			return $"Error: {ex.GetType().Name}: {ex.Message}";
-		}
+		return expression.Compile().Invoke(SelectorHelper.ToWordEnumerable(selector ?? string.Empty));
 	}
 	private static object? QueryOverStringDictionaryDynamic(string? input, string? selector)
 	{
-		try
+		var config = new ParsingConfig
 		{
-			var config = new ParsingConfig
-			{
-				CustomTypeProvider = new CustomTypeProvider(),
-				AllowNewToEvaluateAnyType = true
-			};
-			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<string>, object>(config, false, input ?? string.Empty);
+			CustomTypeProvider = new CustomTypeProvider(),
+			AllowNewToEvaluateAnyType = true
+		};
+		var expression = DynamicExpressionParser.ParseLambda<IEnumerable<string>, object>(config, false, input ?? string.Empty);
 
-			return expression.Compile().Invoke(SelectorHelper.ToStringEnumerable(selector ?? string.Empty));
-		}
-		catch (Exception ex)
-		{
-			return $"Error: {ex.GetType().Name}: {ex.Message}";
-		}
+		return expression.Compile().Invoke(SelectorHelper.ToStringEnumerable(selector ?? string.Empty));
+
 	}
 	private static object? QueryOverSingletonDynamic(string? input)
 	{
-		try
+		var config = new ParsingConfig
 		{
-			var config = new ParsingConfig
-			{
-				CustomTypeProvider = new CustomTypeProvider(),
-				ResolveTypesBySimpleName = true,
-				AllowNewToEvaluateAnyType = true
-			};
-			var expression = DynamicExpressionParser.ParseLambda<IEnumerable<int>, object>(config, false, input ?? string.Empty);
+			CustomTypeProvider = new CustomTypeProvider(),
+			ResolveTypesBySimpleName = true,
+			AllowNewToEvaluateAnyType = true
+		};
+		var expression = DynamicExpressionParser.ParseLambda<IEnumerable<int>, object>(config, false, input ?? string.Empty);
 
-			return expression.Compile().Invoke(_singletonEnumerable);
-		}
-		catch (Exception ex)
-		{
-			return $"Error: {ex.GetType().Name}: {ex.Message}";
-		}
+		return expression.Compile().Invoke(_singletonEnumerable);
 	}
 
 

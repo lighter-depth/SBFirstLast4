@@ -240,7 +240,7 @@ public static partial class Interpreter
 				var parameters = Split.ParameterTexts(paramText).Where(s => !string.IsNullOrEmpty(s));
 				var evaluated = new List<object?>();
 				foreach (var parameter in parameters)
-					evaluated.Add(await QueryAgent.EvaluateExpressionAsync(parameter));
+					evaluated.Add(await QueryRunner.EvaluateExpressionAsync(parameter));
 				var result = await procedure.RunAsync(evaluated);
 				var varName = $"__proc_result_{_procedureID}_generated";
 				++_procedureID;

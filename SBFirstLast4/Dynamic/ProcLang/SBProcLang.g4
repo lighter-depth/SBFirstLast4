@@ -9,15 +9,20 @@ statement: assignment
          | variableDeletion
          | print 
          | if_else_stat 
+         | switch_stat
          | do_while_stat
          | while_stat 
          | do_until_stat
          | until_stat 
          | for_stat
          | foreach_stat
+         | implicit_throw_stat
+         | throw_stat
+         | try_catch_stat
          | break_stat
          | continue_stat
          | redo_stat
+         | retry_stat
          | return_stat
          | clear_stat
          | delay_stat
@@ -28,6 +33,8 @@ statement: assignment
 stat_block: '{' statement* '}' | statement ;
 
 if_else_stat: 'if' '(' expr ')' stat_block ('else' 'if' '(' expr ')' stat_block)* ('else' stat_block)? ;
+
+switch_stat: 'switch' '(' expr ')' '{' ( 'case'? factor ':' stat_block )* ( ( 'default' | '_' ) ':' default_stat=stat_block )? '}' ;
 
 do_while_stat: 'do' stat_block 'while' '(' expr ')' ';' ;
 
@@ -41,11 +48,19 @@ for_stat: 'for' '(' init=expr? ';' cond=expr? ';' update=expr? ')' stat_block ;
 
 foreach_stat: 'foreach' '(' ( WideID | InternalID ) 'in' expr ')' stat_block ;
 
+implicit_throw_stat: 'throw' ';' ;
+
+throw_stat: 'throw' expr ';' ;
+
+try_catch_stat: 'try' try_stat=stat_block ( 'catch' ( '(' ID WideID? ')' )? stat_block )* ( 'finally' finally_stat=stat_block )? ;
+
 break_stat: 'break' ';' ;
 
 continue_stat: 'continue' ';' ;
 
 redo_stat: 'redo' ';' ;
+
+retry_stat: 'retry' ';' ;
 
 return_stat: 'return' expr? ';' ;
 
@@ -77,7 +92,7 @@ empty_stat: ';' ;
 
 
 expr :  <assoc=right> expr '?' expr ':' expr
-     | term ( ( '+' | '-' | Compare | Bitwise | '&&' | '||' ) term )* 
+     | term ( ( '+' | '-' | '==' | '!=' | '<' | '<=' | '>' | '>=' | '&' | '|' | '<<' | '>>' | '&&' | '||' ) term )* 
      | op=( '-' | '!' ) expr
      | lambda
      | wide_assign_expr
@@ -140,11 +155,7 @@ WordLiteral : '/' ([ぁ-ゟ] | 'ー')+ ([a-zA-Z]*)? '/' ('w' | 'd') ;
 
 NullLiteral : 'null' ;
 
-ItemLiteral : '@item' ;
-
-Compare : '==' | '!=' | '<' | '<=' | '>' | '>=' ;
-
-Bitwise : '&' | '|' | '<<' | '>>' ;
+ItemLiteral : ( '@item' | 'it' ) ;
 
 lambda : ('(' ID ')' | ID) '=>' expr ;
 

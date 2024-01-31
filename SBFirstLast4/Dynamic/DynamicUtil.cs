@@ -3,7 +3,7 @@ using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
 
 namespace SBFirstLast4.Dynamic;
 
-internal class To
+internal static class To
 {
 	internal static string String(object? result)
 	{
@@ -17,7 +17,7 @@ internal class To
 	}
 }
 
-internal class Is
+internal static class Is
 {
 	internal static bool InsideStringLiteral(int startIndex, int length, string source)
 	{
@@ -47,6 +47,24 @@ internal class Is
 		}
 
 		return braceCount % 2 == 1;
+	}
+
+	internal static bool SubclassOf(Type derivedType, string baseName)
+	{
+		if (derivedType.Name == baseName)
+			return true;
+
+		var type = derivedType;
+
+		while (type != typeof(object))
+		{
+			type = type?.BaseType;
+
+			if (type?.Name == baseName)
+				return true;
+		}
+
+		return false;
 	}
 }
 
@@ -100,6 +118,27 @@ internal static class Find
 				braceCount--;
 				if (braceCount == 0) return i;
 			}
+		}
+		return -1;
+	}
+
+	internal static int FirstFree(string source, char target)
+	{
+		var index = 0;
+		while (index < source.Length)
+		{
+			var result = source.IndexOf(target, index);
+			if (result == -1)
+				return result;
+
+			if (Is.InsideBrace(result, 1, source, '(', ')')
+			|| Is.InsideBrace(result, 1, source, '{', '}')
+			|| Is.InsideStringLiteral(result, 1, source))
+			{
+				index = result + 1;
+				continue;
+			}
+			return result;
 		}
 		return -1;
 	}

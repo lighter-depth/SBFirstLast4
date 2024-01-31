@@ -35,7 +35,7 @@ internal static class AppSettings
 		UseExists = value;
 		await localStorage.SetItemAsync("USE_EXISTS", value);
 	}
-	internal static async Task InitUserInfoAsync(ILocalStorageService localStorage)
+	internal static async Task InitUserInfoAsync(ILocalStorageService localStorage, Func<string, Task> update)
 	{
 		IsLoggedIn = await localStorage.GetItemAsync<bool>("IS_LOGGED_IN");
 		if (!IsLoggedIn) return;
@@ -44,7 +44,8 @@ internal static class AppSettings
 		Guid = await localStorage.GetItemAsync<string?>("USER_ID") ?? "ILLEGAL_LOGIN";
 		Hash = await localStorage.GetItemAsync<string?>("HASH_ID") ?? "ILLEGAL_LOGIN";
 
-		await SetIsAdminAsync();
+		await update("ユーザー設定を更新中...");
+		await Task.WhenAny(SetIsAdminAsync(), Task.Delay(3000));
 	}
 
 	internal static async Task SetIsAdminAsync() => IsAdmin = await Server.CheckAsync(UserName);

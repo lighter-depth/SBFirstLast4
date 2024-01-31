@@ -4,7 +4,9 @@ namespace SBFirstLast4.Dynamic;
 
 public abstract class Macro
 {
-	public abstract required string Name { get; init; }
+	public required string Name { get; init; }
+
+	public required string Body { get; set; }
 
 	public required string ModuleName { get; init; }
 
@@ -58,19 +60,32 @@ public abstract class Macro
 
 public enum MacroType { None, ObjectLike, FunctionLike }
 
-public sealed class ObjectLikeMacro : Macro
-{
-	public override required string Name { get; init; }
-
-	public required string Body { get; set; }
-
-}
+public sealed class ObjectLikeMacro : Macro { }
 
 public sealed class FunctionLikeMacro : Macro
 {
-	public override required string Name { get; init; }
-
 	public required List<string> Parameters { get; init; }
+}
 
-	public required string Body { get; set; }
+public static class Transient
+{
+	public static string Expand(string input, Macro transient)
+	{
+		if (transient is FunctionLikeMacro functionLikeTransient)
+		{
+			input = Regex.Replace(input, $@"{functionLikeTransient.Name}\((?<parameters>[^)]+)\)", m =>
+			{
+				var args = m.Groups["parameters"].Value.Split(',').Select(arg => arg.Trim()).ToList();
+				var body = functionLikeTransient.Body;
+				for (var i = 0; i < functionLikeTransient.Parameters.Count; i++)
+					body = body.Replace(functionLikeTransient.Parameters[i], args[i]);
+				return body;
+			});
+		}
+		else if (transient is ObjectLikeMacro objectLikeTransient)
+			input = input.Replace(objectLikeTransient.Name, objectLikeTransient.Body);
+
+		return input;
+
+	}
 }

@@ -12,6 +12,8 @@ public sealed class Procedure
 
 	public Guid Id { get; init; } = Guid.NewGuid();
 
+	public string ModuleName { get; init; }
+
 	private List<string> _lines = new();
 
 	private Buffer _buffer;
@@ -26,19 +28,27 @@ public sealed class Procedure
 
 	public string Value => _lines.StringJoin(Environment.NewLine);
 
-	private static readonly Buffer _discardBuffer = new();
+	internal static readonly QueryAgent DiscardAgent = new();
 
-	private static readonly Func<Task> _discardDeletedFilesHandler = () => Task.CompletedTask;
+	internal static readonly Buffer DiscardBuffer = new();
 
-	public Procedure(QueryAgent agent, Buffer buffer, Action<string> setTranslated, Func<Task> update, List<string> parameters, string name, CancellationToken token)
-		=> (Agent, _buffer, _setTranslated, _update, Parameters, Name, _token) = (agent, buffer, setTranslated, update, parameters, name, token);
+	internal static readonly Func<Task> DiscardHandleDeletedFiles = () => Task.CompletedTask;
 
-	public Procedure Clone() => new(Agent, _buffer, _setTranslated, _update, Parameters, Name, _token) { Id = Id, _lines = _lines.ToList() };
+	internal static readonly Action<string> DiscardSetTranslated = _ => { };
+
+	internal static readonly Func<Task> DiscardUpdate = () => Task.CompletedTask;
+
+	public Procedure(string name, List<string> parameters, string moduleName, QueryAgent agent, Buffer buffer, Action<string> setTranslated, Func<Task> update, CancellationToken token)
+		=> (Name, Parameters, ModuleName, Agent, _buffer, _setTranslated, _update, _token) = (name, parameters, moduleName, agent, buffer, setTranslated, update, token);
+
+	public Procedure Clone() => new(Name, Parameters, ModuleName, Agent, _buffer, _setTranslated, _update, _token) { Id = Id, _lines = _lines.ToList() };
 
 	public void Update(QueryAgent agent, Buffer buffer, Action<string> setTranslated, Func<Task> update, CancellationToken token)
 		=> (Agent, _buffer, _setTranslated, _update, _token) = (agent, buffer, setTranslated, update, token);
 
 	public void Push(string line) => _lines.Add(line.Trim());
+
+	public void ExpandTransient(Macro transient) => _lines = _lines.Select(l => Transient.Expand(l, transient)).ToList();
 
 	private async Task<string> GetSourceTextAsync()
 	{
@@ -74,7 +84,7 @@ public sealed class Procedure
 				yield return Macro.ExpandEphemeral(line);
 				continue;
 			}
-			Preprocessor.ProcessEphemeral(line, _discardBuffer);
+			Preprocessor.ProcessEphemeral(line, DiscardBuffer);
 		}
 	}
 
@@ -88,7 +98,7 @@ public sealed class Procedure
 				yield return result;
 				continue;
 			}
-			await Preprocessor.ProcessAsync(line, _discardBuffer, _discardDeletedFilesHandler);
+			await Preprocessor.ProcessAsync(line, DiscardBuffer, DiscardHandleDeletedFiles);
 		}
 	}
 

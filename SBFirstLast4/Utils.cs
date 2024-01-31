@@ -149,6 +149,8 @@ public static class CollectionHelper
 
 	public static void Add(this List<AnnotatedString> list, Notice notice, BattleData data) => list.Add(new(string.Empty, notice) { Data = data });
 
+	public static void Add<T>(this Stack<T> stack, T item) => stack.Push(item);
+
 	public static Span<T> AsSpan<T>(this List<T> list) => CollectionsMarshal.AsSpan(list);
 
 	public static List<string[]> SplitToChunks(this List<string> source, int chunkSize)

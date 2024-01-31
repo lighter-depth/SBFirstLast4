@@ -12,3 +12,5 @@ public class Break : Exception { }
 public class Continue : Exception { }
 
 public class Redo : Exception { }
+
+public class Retry : Exception { }

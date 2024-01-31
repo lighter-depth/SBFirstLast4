@@ -171,19 +171,20 @@
 		};
 		try
 		{
-			LoadingMsg = "ユーザー情報を読み込み中...";
-			await AppSettings.InitUserInfoAsync(LocalStorage);
-			LoadingMsg = "設定を同期中...";
-			StateHasChanged();
+			await Update("ユーザー情報を読み込み中...");
+
+			await AppSettings.InitUserInfoAsync(LocalStorage, Update);
+			await Update("設定を同期中...");
+
 			await AppSettings.SetupAsync(LocalStorage);
 
 			if (AppSettings.IsLoggedIn)
 			{
-				LoadingMsg = "ハッシュを初期化中...";
-				StateHasChanged();
+				await Update("ハッシュを初期化中...");
+
 				await Task.WhenAny(AppSettings.RefreshHashAsync(Http, LocalStorage), Task.Delay(3000));
-				LoadingMsg = "準備中...";
-				StateHasChanged();
+				await Update("準備中...");
+
 				Server.Log(new
 				{
 					Type = "LOGIN",
@@ -205,6 +206,13 @@
 		{
 			await JSRuntime.AlertEx(ex);
 		}
+	}
+
+	private async Task Update(string message)
+	{
+		LoadingMsg = message;
+		StateHasChanged();
+		await Task.Delay(1);
 	}
 
 	private void OnChange()

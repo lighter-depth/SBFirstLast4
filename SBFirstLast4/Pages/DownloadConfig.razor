@@ -2,7 +2,7 @@
 @using BlazorDownloadFile
 @using SBFirstLast4.Logging
 @inject NavigationManager NavigationManager
-@inject IBlazorDownloadFileService BlazorDownloadFileService
+@inject IBlazorDownloadFileService DownloadFileService
 <PageTitle>ダウンロード</PageTitle>
 
 <div class="grid">
@@ -452,7 +452,7 @@ else
 			_ => default
 		};
 
-		await BlazorDownloadFileService.DownloadFileFromText(fileName, content, encoding, "text/plain");
+		await DownloadFileService.DownloadFileFromText(fileName, content, encoding, "text/plain");
 
 		isDownloading = false;
 		StateHasChanged();
