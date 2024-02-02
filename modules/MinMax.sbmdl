@@ -5,6 +5,7 @@ requires: STD;
 
 .static
 #exclude STD_SUGARS
+#clear
 .end
 
 #ephemeral </ "+object(
