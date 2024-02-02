@@ -1,4 +1,13 @@
-module STD_MINMAX;
+module STD_SUGARS;
 requires: STD;
 
-#define STD_MINMAX
+#define STD_SUGARS
+
+.static
+#exclude STD_SUGARS
+.end
+
+#ephemeral </ "+object(
+#ephemeral /> )+"
+
+#define NewList(_T) {}.Cast<_T>().ToList()
