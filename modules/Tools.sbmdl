@@ -14,8 +14,10 @@ requires: STD;
 #define STARTS(_X) @TW.Where(Start == '_X')
 #define ENDS(_X) @TW.Where(`_Xー*$`.\~(Name))
 #define STARTSN(_X) @NN.Where(FirstChar == '_X')
-#define ENDSN(_X) @NN.Where(`_Xー*$`.\~(@item))
+#define ENDSN(_X) @NN.Where(`_Xー*$`.\~(it))
 
 #transient __COUNT__(_X, _Y, _Z, _W) &_la = @NN.Where(_X).Where(_Y); &_da = @TW.Where(_Z).Where(_W); print(\$("無属性: {0}個", &_la.Count())); print(\$("有属性: {0}個", &_da.Count())); print(\$("合計: {0}個", &_la.Count() + &_da.Count())); delete &_la; delete &_da
 
 #define COUNTF(_A, _B) __COUNT__("_A" == "*" ? true : \fc == '_A', "_B" == "*" ? true : \lc == '_B', "_A" == "*" ? true : Start == '_A', "_B" == "*" ? true : End == '_B')
+
+#define UNOMAX(_X) UNO(_X).Select(AttackInfo.Create(it, $I, static_cast<int>(\cl(/_X/d)), 0)).OrderByDescending(MaxDmg).Take(10).Select(\$("{0} [{1}倍]", Word, MaxDmg))
