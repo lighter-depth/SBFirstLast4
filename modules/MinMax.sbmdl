@@ -4,8 +4,7 @@ requires: STD;
 #define STD_SUGARS
 
 .static
-#exclude STD_SUGARS
-#clear
+#exclude STD_SUGARS [quiet]
 .end
 
 #ephemeral </ "+object(
