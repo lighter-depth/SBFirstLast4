@@ -189,6 +189,8 @@ internal class ModuleReader
 				}
 				_scriptContextTrackingStack.Pop();
 			}
+			else if (input == ".default")
+				_scriptContextTrackingStack.Clear();
 			else
 				_scriptContextTrackingStack.Push(default);
 		}
@@ -390,26 +392,5 @@ internal class ModuleReader
 			default:
 				break;
 		}
-	}
-
-
-	private static string ExpandTransient(string input, Macro transient)
-	{
-		if (transient is FunctionLikeMacro functionLikeTransient)
-		{
-			input = Regex.Replace(input, $@"{functionLikeTransient.Name}\((?<parameters>[^)]+)\)", m =>
-			{
-				var args = m.Groups["parameters"].Value.Split(',').Select(arg => arg.Trim()).ToList();
-				var body = functionLikeTransient.Body;
-				for (var i = 0; i < functionLikeTransient.Parameters.Count; i++)
-					body = body.Replace(functionLikeTransient.Parameters[i], args[i]);
-				return body;
-			});
-		}
-		else if (transient is ObjectLikeMacro objectLikeTransient)
-			input = input.Replace(objectLikeTransient.Name, objectLikeTransient.Body);
-
-		return input;
-
 	}
 }

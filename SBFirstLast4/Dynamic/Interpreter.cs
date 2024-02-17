@@ -38,7 +38,7 @@ public static partial class Interpreter
 			Enum.GetValues<WordType>()
 			.ToDictionary(type => $"${char.ToLower(type.TypeToChar())}", type => $"{nameof(WordType)}.{Enum.GetName(type)!}")
 			)
-		.ToDictionary(x => x.Key, x => x.Value);
+		.ToDictionary();
 
 	private static readonly Dictionary<string, string> DictionaryLiteral = new()
 	{
@@ -241,7 +241,7 @@ public static partial class Interpreter
 				var evaluated = new List<object?>();
 				foreach (var parameter in parameters)
 					evaluated.Add(await QueryRunner.EvaluateExpressionAsync(parameter));
-				var result = await procedure.RunAsync(evaluated);
+				var result = await procedure.RunAsync(evaluated.ToArray());
 				var varName = $"__proc_result_{_procedureID}_generated";
 				++_procedureID;
 				WideVariable.Variables[varName] = result;

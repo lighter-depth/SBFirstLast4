@@ -41,11 +41,9 @@ public static class Record
 			["uint"] = typeof(uint),
 			["ulong"] = typeof(ulong)
 		};
-		var arrays = typeMapBase
-					.Select(kv => ($"{kv.Key}[]", kv.Value.MakeArrayType()))
-					.ToDictionary(t => t.Item1, t => t.Item2);
+		var arrays = typeMapBase.ToDictionary(kv => $"{kv.Key}[]", kv => kv.Value.MakeArrayType());
 
-		return typeMapBase.Concat(arrays).ToDictionary(kv => kv.Key, kv => kv.Value);
+		return typeMapBase.Concat(arrays).ToDictionary();
 	}
 
 

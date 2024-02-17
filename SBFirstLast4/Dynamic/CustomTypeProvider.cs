@@ -16,7 +16,6 @@ public class CustomTypeProvider : DefaultDynamicLinqCustomTypeProvider, IDynamic
 				.Concat(typeof(Regex).Assembly.GetTypes())
 				.Concat(typeof(Enumerable).Assembly.GetTypes())
 				.Concat(typeof(StringBuilder).Assembly.GetTypes())
-				.Concat(typeof(Task).Assembly.GetTypes())
 				.Concat(Record.Types)
 				.ToHashSet();
         

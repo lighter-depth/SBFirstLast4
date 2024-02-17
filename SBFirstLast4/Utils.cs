@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using Microsoft.JSInterop;
 using SBFirstLast4.Dynamic;
 using SBFirstLast4.Simulator;
-using System.Linq;
 
 namespace SBFirstLast4;
 
@@ -122,11 +121,25 @@ public static class JSHelper
 	public static ValueTask<T> GetProperty<T>(this IJSObjectReference jsRef, string key) => jsRef.InvokeAsync<T>("getProperty", key);
 
 	public static ValueTask SetProperty<T>(this IJSObjectReference jsRef, string key, T value) => jsRef.InvokeVoidAsync("setProperty", key, value);
+
+	public static void Alert(this IJSInProcessRuntime jsRuntime, params object?[]? args) => jsRuntime.InvokeVoid("alert", args);
+
+	public static void AlertEx(this IJSInProcessRuntime jsRuntime, Exception ex) => jsRuntime.InvokeVoid("alert", ex.Stringify());
+
+	public static bool Confirm(this IJSInProcessRuntime jsRuntime, params object?[]? args) => jsRuntime.Invoke<bool>("confirm", args);
+
+	public static T GetElementValueById<T>(this IJSInProcessRuntime jsRuntime, string id) => jsRuntime.Invoke<T>("eval", $"document.getElementById('{id}').value");
+
+	public static void SetElementValueById<T>(this IJSInProcessRuntime jSRuntime, string id, T value) => jSRuntime.InvokeVoid("eval", $"document.getElementById('{id}').value = '{value}'");
+
+	public static void ClearElementValueById(this IJSInProcessRuntime jsRuntime, string id) => jsRuntime.InvokeVoid("eval", $"document.getElementById('{id}').value = ''");
+
 }
 
 public static class CollectionHelper
 {
 	public static int IndexOf<T>(this T[] array, T value) => Array.IndexOf(array, value);
+	
 	public static List<T> RemoveRange<T>(this List<T> list, IEnumerable<T> values) => list.Except(values).ToList();
 
 	public static void ReplaceOrAdd<T>(this List<T> list, T value)
@@ -211,4 +224,8 @@ public static class CollectionHelper
 	public static string StringJoin<T>(this IEnumerable<T> values) => string.Join(string.Empty, values);
 
 	public static IEnumerable<(T, int)> WithIndex<T>(this IEnumerable<T> source) => source.Select((x, i) => (x, i));
+
+	public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> source) where TKey : notnull => source.ToDictionary(kv => kv.Key, kv => kv.Value);
+
+	public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<ValueTuple<TKey, TValue>> source) where TKey : notnull => source.ToDictionary(t => t.Item1, t => t.Item2);
 }

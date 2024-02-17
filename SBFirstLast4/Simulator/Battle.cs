@@ -32,7 +32,7 @@ public partial class Battle
 
 	public char NextChar => OtherPlayer.CurrentWord.End;
 
-	public Dictionary<int, BattleData> DHistory => _dHistory.Where(kv => !kv.Value.IsEdited).ToDictionary(kv => kv.Key, kv => kv.Value);
+	public Dictionary<int, BattleData> DHistory => _dHistory.Where(kv => !kv.Value.IsEdited).ToDictionary();
 
 	public void SetDHistoryElement(BattleData value, int index)
 	{

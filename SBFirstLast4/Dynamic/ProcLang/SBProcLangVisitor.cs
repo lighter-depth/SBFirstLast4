@@ -1,4 +1,5 @@
 ﻿using Antlr4.Runtime.Misc;
+using Antlr4.Runtime.Tree;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -82,8 +83,8 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 				return "SWITCH_CASE";
 			}
 		}
-		
-		if(context.default_stat is not null)
+
+		if (context.default_stat is not null)
 			await Visit(context.default_stat);
 
 		return "SWITCH";
@@ -309,6 +310,77 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		return "FOREACH";
 	}
 
+	public override Task<object?> VisitRaise_stat([NotNull] SBProcLangParser.Raise_statContext context)
+		=> throw new Raise(context.ID()?.GetText() ?? "default");
+
+	public override async Task<object?> VisitWhenany_stat([NotNull] SBProcLangParser.Whenany_statContext context)
+	{
+		var signals = new List<string> { "default" };
+
+		foreach(var i in context.children)
+		{
+			if (i is SBProcLangParser.Stat_blockContext)
+				break;
+
+			if(i is ITerminalNode terminal)
+			{
+				var text = terminal.GetText();
+				if (text is not ("whenany" or "(" or "," or ")"))
+					signals.Add(text);
+			}
+		}
+
+		var labels = new List<string>();
+		var blocks = new List<SBProcLangParser.Stat_blockContext>();
+
+		foreach(var i in context.children.SkipWhile(t => t.GetText() != "exits"))
+		{
+			if(i is SBProcLangParser.Stat_blockContext block)
+			{
+				blocks.Add(block);
+				continue;
+			}
+
+			if (i.GetText() is var label && label is "case" or ":" or "{" or "}" or "exits")
+				continue;
+
+			labels.Add(label);
+		}
+
+		var cases = labels.Zip(blocks);
+
+		try
+		{
+			await Visit(context.body_stat);
+		}
+		catch(Raise raise)
+		{
+			if (!signals.Contains(raise.Name))
+				throw;
+
+			var handler = cases.FirstOrDefault(c => c.First == raise.Name).Second;
+
+			if (handler is not null)
+				await Visit(handler);
+		}
+
+		return "WHENANY";
+	}
+
+	public override async Task<object?> VisitWhenever_stat([NotNull] SBProcLangParser.Whenever_statContext context)
+	{
+		try
+		{
+			await Visit(context.body_stat);
+		}
+		catch (Raise)
+		{
+			if (context.exit_stat is { } exitStat)
+				await Visit(exitStat);
+		}
+		return "WHENEVER";
+	}
+
 	public override Task<object?> VisitImplicit_throw_stat([NotNull] SBProcLangParser.Implicit_throw_statContext context)
 	{
 		throw new InvalidSyntaxException("cannot throw implicitly out of catch statements.");
@@ -329,7 +401,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			await Visit(context.try_stat);
 		}
 		catch (Exception ex)
-		when(ex is not (Break or Continue or Redo or Return or Retry or OperationCanceledException or TaskCanceledException or SBProcLangVisitorException))
+		when (ex is not (Break or Continue or Redo or Return or Retry or Raise or OperationCanceledException or TaskCanceledException or SBProcLangVisitorException))
 		{
 			var handled = false;
 			var catchStatements = new List<(SBProcLangParser.Stat_blockContext Block, string? TypeName, string? VarName)>();
@@ -378,7 +450,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 					try
 					{
-						foreach(var statement in block.statement())
+						foreach (var statement in block.statement())
 						{
 							if (statement.implicit_throw_stat() is not null)
 								throw;

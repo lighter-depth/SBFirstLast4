@@ -16,6 +16,9 @@ statement: assignment
          | until_stat 
          | for_stat
          | foreach_stat
+         | raise_stat
+         | whenany_stat
+         | whenever_stat
          | implicit_throw_stat
          | throw_stat
          | try_catch_stat
@@ -47,6 +50,12 @@ until_stat: 'until' '(' expr ')' stat_block ;
 for_stat: 'for' '(' init=expr? ';' cond=expr? ';' update=expr? ')' stat_block ;
 
 foreach_stat: 'foreach' '(' ( WideID | InternalID ) 'in' expr ')' stat_block ;
+
+raise_stat: 'raise' ID? ';' ;
+
+whenany_stat: 'whenany' '(' ( ID ( ',' ID )* )? ')' body_stat=stat_block ( 'exits' '{' ( 'case'? ( ID | 'default' ) ':' stat_block )* '}' )? ;
+
+whenever_stat: 'whenever' body_stat=stat_block ( 'exits' exit_stat=stat_block )? ;
 
 implicit_throw_stat: 'throw' ';' ;
 

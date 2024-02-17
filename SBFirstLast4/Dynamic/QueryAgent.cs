@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.Design.Serialization;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using BlazorDownloadFile;
 using SBFirstLast4.Logging;
 using SBFirstLast4.Pages;
@@ -207,12 +206,15 @@ public partial class QueryAgent
 					var success = ModuleManager.Import(module, out var status);
 
 					output.Add(status, success ? TextType.Safe : TextType.Error);
-					
+
+					_moduleBuffer.Clear();
 					ContextStack.Pop();
 					return;
 				}
 				_moduleContextTrackingStack.Pop();
 			}
+			else if (input == ".default")
+				_moduleContextTrackingStack.Clear();
 			else
 				_moduleContextTrackingStack.Push(default);
 		}

@@ -121,9 +121,9 @@ public sealed class Procedure
 		return source;
 	}
 
-	public async Task<object?> RunAsync(List<object?>? args = null)
+	public async Task<object?> RunAsync(params object?[]? args)
 	{
-		if ((args?.Count ?? default) != Parameters.Count)
+		if ((args?.Length ?? default) != Parameters.Count)
 			return string.Empty;
 
 		Agent.ContextStack.Push(QueryContext.RunningProcedure);

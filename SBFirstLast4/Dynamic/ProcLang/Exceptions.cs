@@ -7,6 +7,13 @@ public class Return : Exception
 	public Return(object? value) => Value = value;
 }
 
+public class Raise : Exception
+{
+	public string Name { get; }
+
+	public Raise(string name) => Name = name;
+}
+
 public class Break : Exception { }
 
 public class Continue : Exception { }

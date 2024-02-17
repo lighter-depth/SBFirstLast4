@@ -379,12 +379,14 @@ public static partial class Preprocessor
 			return (true, status, null);
 		}
 
+		var isQuiet = contents.Contains("[quiet]");
+
 		if (symbol is "include")
 		{
 			if (ModuleManager.Include(contents.At(1) ?? string.Empty))
 			{
 				status = new[] { $"Successfully included {(contents.At(1) == "$ALL" ? "all modules" : $"module {contents.At(1)}")}." };
-				return (true, status, null);
+				return (true, isQuiet ? status : Array.Empty<string>(), null);
 			}
 			return (false, null, $"No includable module {contents.At(1)} found.");
 		}
@@ -395,7 +397,7 @@ public static partial class Preprocessor
 			if (ModuleManager.Exclude(contents.At(1) ?? string.Empty))
 			{
 				status = new[] { $"Successfully excluded {(contents.At(1) == "$ALL" ? "all modules" : $"module {contents.At(1)}")}." };
-				return (true, status, null);
+				return (true, isQuiet ? status : Array.Empty<string>(), null);
 			}
 			return (false, null, $"No excludable module {contents.At(1)} found.");
 		}
@@ -405,7 +407,7 @@ public static partial class Preprocessor
 			if (ModuleManager.Delete(contents.At(1) ?? string.Empty, out var deleteStatus))
 			{
 				status = new[] { deleteStatus };
-				return (true, status, null);
+				return (true, isQuiet ? status : Array.Empty<string>(), null);
 			}
 			return (false, null, deleteStatus);
 		}
@@ -448,7 +450,7 @@ public static partial class Preprocessor
 				ModuleManager.UserDefined.Macros.Clear();
 				ModuleManager.UserDefined.Symbols.Clear();
 				status = new[] { "Cleared up the USER_DEFINED Macro Dictionary." };
-				return (true, status, null);
+				return (true, isQuiet ? status : Array.Empty<string>(), null);
 			}
 			var count = ModuleManager.UserDefined.Macros.RemoveAll(m => m.Name == contents[1]);
 			count += ModuleManager.UserDefined.Symbols.RemoveAll(s => s == contents[1]);
@@ -456,7 +458,7 @@ public static partial class Preprocessor
 				return (false, null, $"Specified macro '{contents[1]}' does not exist in the USER_DEFINED module.");
 			
 			status = new[] { $"Successfully removed macro '{contents[1]}' from the dictionary." };
-			return (true, status, null);
+			return (true, isQuiet ? status : Array.Empty<string>(), null);
 		}
 
 		if (symbol is "define")
@@ -474,7 +476,7 @@ public static partial class Preprocessor
 				};
 				ModuleManager.UserDefined.Macros.Add(functionLikeMacro);
 				status = new[] { $"Successfully added macro '{match.Groups["name"]}' to the dictionary." };
-				return (true, status, null);
+				return (true, isQuiet ? status : Array.Empty<string>(), null);
 			}
 
 			if (contents.Length < 2)
@@ -484,7 +486,7 @@ public static partial class Preprocessor
 			{
 				ModuleManager.UserDefined.Symbols.Add(contents[1]);
 				status = new[] { $"Successfully added symbol '{contents[1]}' to the dictionary." };
-				return (true, status, null);
+				return (true, isQuiet ? status : Array.Empty<string>(), null);
 			}
 
 			var groups = ModuleRegex.DefineObjectLikeMacro().Match(input).Groups;
@@ -497,7 +499,7 @@ public static partial class Preprocessor
 			ModuleManager.UserDefined.Macros.Add(objectLikeMacro);
 
 			status = new[] { $"Successfully added macro '{contents[1]}' to the dictionary." };
-			return (true, status, null);
+			return (true, isQuiet ? status : Array.Empty<string>(), null);
 		}
 
 		return (false, null, $"Invalid directive: {input}");
