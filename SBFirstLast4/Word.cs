@@ -178,10 +178,26 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 
 	public static Word FromString(string? name)
 	{
-		if (string.IsNullOrWhiteSpace(name)) return Default;
+		if (string.IsNullOrWhiteSpace(name)) 
+			return Default;
+
 		var resultWord = Words.GetSplitList(name[0]).Find(x => x.Name == name);
-		if (resultWord != default) return resultWord;
+
+		if (resultWord != default) 
+			return resultWord;
+
 		return (Word)name;
+	}
+
+	public static Word FromVerbatim(string? name, string? type1Str, string? type2Str)
+	{
+		if (string.IsNullOrWhiteSpace(name)) 
+			return Default;
+
+		var type1 = type1Str?.StringToType() ?? WordType.Empty;
+		var type2 = type2Str?.StringToType() ?? WordType.Empty;
+
+		return new(name, type1, type2);
 	}
 
 	internal static Word FromType(WordType type) => Default with { Type1 = type };

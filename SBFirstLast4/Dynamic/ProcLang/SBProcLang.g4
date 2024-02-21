@@ -124,6 +124,7 @@ factor : Number
        | BooleanLiteral 
        | WordTypeLiteral 
        | WordLiteral
+       | RawWordLiteral
        | CharLiteral 
        | StringLiteral 
        | RegexLiteral
@@ -162,6 +163,8 @@ WordTypeLiteral : '$' [A-Z][a-z]* ;
 
 WordLiteral : '/' ([ぁ-ゟ] | 'ー')+ ([a-zA-Z]*)? '/' ('w' | 'd') ;
 
+RawWordLiteral: '/' ([ぁ-ゟ] | 'ー')+ WS* [ぁ-ヿ一-鿿]* ( WS* [ぁ-ヿ一-鿿]* )? '/r' ;
+
 NullLiteral : 'null' ;
 
 ItemLiteral : ( '@item' | 'it' ) ;
@@ -188,5 +191,7 @@ arrayAccess : factor '[' expr ']' ( objectAccessRest | arrayAccessRest )? ;
 
 arrayAccessRest : '[' expr ']' ( objectAccessRest | arrayAccessRest )? ;
 
-WS: [ \t\r\n]+ -> skip;
+postcall: (objectAccess | arrayAccess) '..' ID ( '<' ID '>' )? '(' ( expr ( ',' expr )* )? ')' ;
+
+WS: [ \t\r\n　]+ -> skip;
 Comment : '//' ~[\r\n]* -> skip ;

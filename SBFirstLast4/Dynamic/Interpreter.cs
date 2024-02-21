@@ -141,6 +141,9 @@ public static partial class Interpreter
 		if (input.Contains("/d"))
 			input = ReplaceDeduceLiteral(input);
 
+		if (input.Contains("/r"))
+			input = ReplaceRawWordLiteral(input);
+
 		if (input.Contains('$'))
 			foreach (var (key, value) in WordTypeLiteral)
 				input = input.ReplaceFreeString(key, value);
@@ -150,7 +153,7 @@ public static partial class Interpreter
 				input = input.ReplaceFreeString(key, value);
 
 		if (input.Contains("++"))
-			input = WideVariableRegex.Increment().Replace(input, m => 
+			input = WideVariableRegex.Increment().Replace(input, m =>
 			{
 				if (Is.InsideStringLiteral(m.Index, m.Length, input))
 					return m.Value;
@@ -159,7 +162,7 @@ public static partial class Interpreter
 			});
 
 		if (input.Contains("--"))
-			input = WideVariableRegex.Decrement().Replace(input, m => 
+			input = WideVariableRegex.Decrement().Replace(input, m =>
 			{
 				if (Is.InsideStringLiteral(m.Index, m.Length, input))
 					return m.Value;
@@ -168,12 +171,12 @@ public static partial class Interpreter
 			});
 
 		if (input.Contains('&'))
-			input = WideVariableRegex.Reference().Replace(input, m => 
+			input = WideVariableRegex.Reference().Replace(input, m =>
 			{
 				if (Is.InsideStringLiteral(m.Index, m.Length, input))
 					return m.Value;
 
-				return WideVariable.GetFormattedString(m.Groups["name"].Value); 
+				return WideVariable.GetFormattedString(m.Groups["name"].Value);
 			});
 
 		foreach (var (key, value) in ExtensionProperties)
@@ -250,7 +253,7 @@ public static partial class Interpreter
 				sb.Insert(match.Index, $"&{varName}");
 				input = sb.ToString();
 			}
-			if (tmp == input) 
+			if (tmp == input)
 				break;
 		}
 		return input;
@@ -299,10 +302,25 @@ public static partial class Interpreter
 
 	private static string ReplaceArrayInitializer(string input)
 	{
-		if (EasyArrayInitializer)
-			return input.ReplaceFreeString("{", "new[]{");
+		if (!EasyArrayInitializer)
+			return input;
 
-		return input;
+		return Regex.Replace(input, Regex.Escape("{"), m =>
+		{
+			if (Is.InsideStringLiteral(m.Index, m.Length, input))
+				return m.Value;
+
+			for (var i = m.Index - 1; i >= 0; i--)
+			{
+				if (input.At(i) == ']')
+					return m.Value;
+
+				if (!char.IsWhiteSpace(input.At(i)))
+					break;
+			}
+
+			return "new[]{";
+		});
 	}
 
 	private static string ReplaceRegexLiteral(string input)
@@ -315,6 +333,7 @@ public static partial class Interpreter
 		}
 		return builder.ToString();
 	}
+
 	private static string ReplaceWordLiteral(string input)
 	{
 		var builder = new StringBuilder(input);
@@ -346,6 +365,21 @@ public static partial class Interpreter
 		return builder.ToString();
 	}
 
+	private static string ReplaceRawWordLiteral(string input)
+	{
+		var builder = new StringBuilder(input);
+		foreach (var match in RawWordLiteralRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
+		{
+			var name = Escape(match.Groups["name"].Value);
+			var type1 = Escape(match.Groups["type1"].Value);
+			var type2 = Escape(match.Groups["type2"].Value);
+			builder.Remove(match.Index, match.Length);
+			builder.Insert(match.Index, $"Word.FromVerbatim({name}, {type1}, {type2})");
+		}
+		return builder.ToString();
+		static string Escape(string? value) => value is null ? "null" : $"\"{value}\"";
+	}
+
 	[GeneratedRegex(@"input\s*\(\s*\)")]
 	private static partial Regex InputRegex();
 
@@ -357,6 +391,9 @@ public static partial class Interpreter
 
 	[GeneratedRegex(@"/\s*(?<name>[ぁ-ゟー]+)\s*/d")]
 	private static partial Regex DeduceLiteralRegex();
+
+	[GeneratedRegex(@"/\s*(?<name>\w+)(?:\s+(?<type1>[ぁ-ヿ一-鿿]+)(?:\s+(?<type2>[ぁ-ヿ一-鿿]+))?)?/r")]
+	private static partial Regex RawWordLiteralRegex();
 
 	[GeneratedRegex(@"\.Cast<(?<type>.*?)>\(\)")]
 	private static partial Regex CastCallRegex();

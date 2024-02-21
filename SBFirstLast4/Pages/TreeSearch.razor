@@ -1,7 +1,9 @@
 ﻿@page "/treesearch"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@using System.Text.RegularExpressions
 @using SBFirstLast4.Expression
+@using static SBFirstLast4.Expression.BooleanOperators
 
 <div id="pagemain">
 	<div class="tree-node">
@@ -328,35 +330,75 @@
 			NavigationManager.NavigateTo("top", false);
 	}
 
-	private void SearchButton_Click()
+	private async void SearchButton_Click()
 	{
-		var predicates = new List<Func<Word, bool>> { _ => true };
-		foreach(var (node, index) in Nodes.WithIndex())
+		var predicates = new List<PipeElement> {{ _ => true, Pipe.None }};
+		foreach (var (node, index) in Nodes.WithIndex())
 		{
 			switch (node)
 			{
 				case FirstNode firstNode:
-					predicates.Add(w => firstNode.IsIdentity && firstNode.IsEqual ? w.Start == firstNode.Value
-									  : !firstNode.IsIdentity && firstNode.IsEqual ? w.Start != firstNode.Value
-									  : firstNode.IsIdentity && !firstNode.IsEqual ? w.Start != firstNode.Value
-									  : w.Start == firstNode.Value);
-					continue;
+					{
+						var id = firstNode.IsIdentity;
+						var eq = firstNode.IsEqual;
+
+						if ((id && eq) || (!id && !eq))
+							predicates.Add(w => w.Start == firstNode.Value, firstNode.Pipe);
+						else
+							predicates.Add(w => w.Start != firstNode.Value, firstNode.Pipe);
+						continue;
+					}
 
 				case LastNode lastNode:
-					continue;
+					{
+						var id = lastNode.IsIdentity;
+						var eq = lastNode.IsEqual;
+
+						if ((id && eq) || (!id && !eq))
+							predicates.Add(w => w.End == lastNode.Value, lastNode.Pipe);
+						else
+							predicates.Add(w => w.End != lastNode.Value, lastNode.Pipe);
+						continue;
+					}
 
 				case LengthNode lengthNode:
+					{
+					}
 					continue;
 
 				case TypeNode typeNode:
 					continue;
 
 				case RegexNode regexNode:
+					if (regexNode.IsIdentity)
+						predicates.Add(w => Regex.IsMatch(w.Name, regexNode.Pattern), regexNode.Pipe);
+					else
+						predicates.Add(w => !Regex.IsMatch(w.Name, regexNode.Pattern), regexNode.Pipe);
 					continue;
 
 				default:
 					continue;
 			}
 		}
+
+		var predicate = predicates.Aggregate((p1, p2) => new(p2.Pipe switch
+		{
+			Pipe.None => _ => true,
+			Pipe.And => w => And(p1[w], p2[w]),
+			Pipe.Or => w => Or(p1[w], p2[w]),
+			Pipe.Xor => w => Xor(p1[w], p2[w]),
+			Pipe.Nand => w => Nand(p1[w], p2[w]),
+			Pipe.Nor => w => Nor(p1[w], p2[w]),
+			Pipe.Xnor => w => Xnor(p1[w], p2[w]),
+			Pipe.Imply => w => Imply(p1[w], p2[w]),
+			Pipe.Nimply => w => Nimply(p1[w], p2[w]),
+			_ => _ => false
+
+		}, p2.Pipe)).Predicate;
+
+		var result = Words.TypedWords.Where(predicate).ToArray();
+
+		await JSRuntime.Alert(result.StringJoin(", "));
+
 	}
 }

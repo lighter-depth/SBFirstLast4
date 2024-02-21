@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace SBFirstLast4.Expression;
+﻿namespace SBFirstLast4.Expression;
 
 public abstract class Node
 {
@@ -102,4 +100,11 @@ public static class BooleanOperators
 	public static bool Imply(bool left, bool right) => Or(!left, right);
 
 	public static bool Nimply(bool left, bool right) => !Imply(left, right);
+}
+
+
+public record PipeElement(Func<Word, bool> Predicate, Pipe Pipe)
+{
+
+	public bool this[Word word] => Predicate(word);
 }
