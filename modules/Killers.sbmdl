@@ -43,5 +43,5 @@ requires: STD;
 #define SEMIKILLST2(_T1, _T2) @TW.Where(\c($_T1) && \c($_T2)).Select(Name).Intersect(@6X)
 #define 4XST2(_T1, _T2) @TW.Where(\c($_T1) && \c($_T2)).Select(Name).Intersect(@4X)
 
-#define KILLEROFR(_X) @TW.Where(Start == /_X/m.End && \cl(/_X/m) * (Length > 6 ? 2 : 1) > 7)
-#define KILLEDBYR(_X) @TW.Where(End == /_X/m.Start && /_X/m.\cl(it) * (/_X/m.Length > 6 ? 2 : 1) > 7)
+#define KILLEROFR(_X) @TW.Where(Start == /_X/m.End && \cl(Word(/_X/m)) * (Length > 6 ? 2 : 1) > 7)
+#define KILLEDBYR(_X) @TW.Where(End == /_X/m.Start && Word(/_X/m).\cl(it) * (/_X/m.Length > 6 ? 2 : 1) > 7)
