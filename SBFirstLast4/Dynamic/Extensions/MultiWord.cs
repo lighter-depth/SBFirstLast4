@@ -42,6 +42,8 @@ public readonly record struct MultiWord(string Name, IReadOnlyList<WordType> Typ
 		return result;
 	}
 
+	public double CalcEffectiveDmg(Word other) => CalcEffectiveDmg(new MultiWord(other));
+
 	public Word.SuitableIndicator IsSuitable(MultiWord prev)
 	{
 		if (End == 'ん')

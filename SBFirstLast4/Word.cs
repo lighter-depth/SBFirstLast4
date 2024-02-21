@@ -1,5 +1,6 @@
 ﻿using SBFirstLast4.Simulator;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
+using MultiWord = SBFirstLast4.Dynamic.Extensions.MultiWord;
 
 namespace SBFirstLast4;
 
@@ -40,7 +41,7 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	private static readonly int[,] effList;
 	private static readonly WordType[] typeIndex;
 
-	public Word(Dynamic.Extensions.MultiWord word) 
+	public Word(MultiWord word) 
 		: this(word.Name, word.Types.At(0), word.Types.At(1)) { }
 
 	public override string ToString()
@@ -73,6 +74,9 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 		   * CalcEffectiveDmg(Type1, other.Type2)
 		   * CalcEffectiveDmg(Type2, other.Type1)
 		   * CalcEffectiveDmg(Type2, other.Type2);
+
+	public double CalcEffectiveDmg(MultiWord other)
+		=> new MultiWord(this).CalcEffectiveDmg(other);
 
 	public static double CalcEffectiveDmg(WordType t1, WordType t2)
 	{
