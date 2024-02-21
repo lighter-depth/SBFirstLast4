@@ -125,6 +125,7 @@ factor : Number
        | WordTypeLiteral 
        | WordLiteral
        | RawWordLiteral
+       | RawMultiWordLiteral
        | CharLiteral 
        | StringLiteral 
        | RegexLiteral
@@ -164,6 +165,8 @@ WordTypeLiteral : '$' [A-Z][a-z]* ;
 WordLiteral : '/' ([ぁ-ゟ] | 'ー')+ ([a-zA-Z]*)? '/' ('w' | 'd') ;
 
 RawWordLiteral: '/' ([ぁ-ゟ] | 'ー')+ WS* [ぁ-ヿ一-鿿]* ( WS* [ぁ-ヿ一-鿿]* )? '/r' ;
+
+RawMultiWordLiteral: '/' ([ぁ-ゟ] | 'ー')+ ( WS* [ぁ-ヿ一-鿿]+ )* '/m' ;
 
 NullLiteral : 'null' ;
 

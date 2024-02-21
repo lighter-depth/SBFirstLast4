@@ -144,6 +144,9 @@ public static partial class Interpreter
 		if (input.Contains("/r"))
 			input = ReplaceRawWordLiteral(input);
 
+		if (input.Contains("/m"))
+			input = ReplaceRawMultiWord(input);
+
 		if (input.Contains('$'))
 			foreach (var (key, value) in WordTypeLiteral)
 				input = input.ReplaceFreeString(key, value);
@@ -380,6 +383,19 @@ public static partial class Interpreter
 		static string Escape(string? value) => value is null ? "null" : $"\"{value}\"";
 	}
 
+	private static string ReplaceRawMultiWord(string input)
+	{
+		var builder = new StringBuilder(input);
+		foreach(var match in RawMultiWordRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
+		{
+			var name = match.Groups["name"].Value;
+			var types = match.Groups["types"].Value.Split().Where(s => !string.IsNullOrWhiteSpace(s));
+			builder.Remove(match.Index, match.Length);
+			builder.Insert(match.Index, $"MultiWord.FromVerbatim(\"{name}\"{types.Select(t => $", \"{t.Trim()}\"").StringJoin()})");
+		}
+		return builder.ToString();
+	}
+
 	[GeneratedRegex(@"input\s*\(\s*\)")]
 	private static partial Regex InputRegex();
 
@@ -394,6 +410,9 @@ public static partial class Interpreter
 
 	[GeneratedRegex(@"/\s*(?<name>\w+)(?:\s+(?<type1>[ぁ-ヿ一-鿿]+)(?:\s+(?<type2>[ぁ-ヿ一-鿿]+))?)?/r")]
 	private static partial Regex RawWordLiteralRegex();
+
+	[GeneratedRegex(@"/\s*(?<name>\w+)(?<types>(?:\s+[ぁ-ヿ一-鿿]+)*)/m")]
+	private static partial Regex RawMultiWordRegex();
 
 	[GeneratedRegex(@"\.Cast<(?<type>.*?)>\(\)")]
 	private static partial Regex CastCallRegex();

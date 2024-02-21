@@ -667,10 +667,10 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			return bool.Parse(context.BooleanLiteral().GetText());
 
 		if (context.WordTypeLiteral() != null)
-			return context.WordTypeLiteral().GetText();
+			return await Visit(context.WordTypeLiteral());
 
 		if (context.WordLiteral() != null)
-			return context.WordLiteral().GetText();
+			return await Visit(context.WordLiteral());
 
 		if (context.CharLiteral() != null)
 			return context.CharLiteral().GetText()[1];

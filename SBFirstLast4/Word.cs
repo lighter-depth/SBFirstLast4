@@ -63,6 +63,7 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	}
 
 	public int CompareTo(Word other) => string.Compare(Name, other.Name, StringComparison.Ordinal);
+
 	public double CalcEffectiveDmg(Word other)
 		=> CalcEffectiveDmg(Type1, other.Type1)
 		   * CalcEffectiveDmg(Type1, other.Type2)
