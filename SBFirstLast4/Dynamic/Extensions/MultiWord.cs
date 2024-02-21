@@ -24,11 +24,13 @@ public readonly record struct MultiWord(string Name, IReadOnlyList<WordType> Typ
 
 	public MultiWord(string name, params WordType[] types) : this(name, types.ToList()) { }
 
+	public MultiWord(Word word) : this(word.Name, word.Types) { }
+
 	public override string ToString()
 		=> IsEmpty ? Name : $"{Name} ({Types.Select(t => t.TypeToString()).StringJoin("/")})";
 
 	public int CompareTo(MultiWord other) => string.Compare(Name, other.Name, StringComparison.Ordinal);
-	
+
 	public double CalcEffectiveDmg(MultiWord other)
 	{
 		var result = 1d;
@@ -39,6 +41,7 @@ public readonly record struct MultiWord(string Name, IReadOnlyList<WordType> Typ
 
 		return result;
 	}
+
 	public Word.SuitableIndicator IsSuitable(MultiWord prev)
 	{
 		if (End == 'ん')
@@ -53,10 +56,6 @@ public readonly record struct MultiWord(string Name, IReadOnlyList<WordType> Typ
 	}
 
 	public static explicit operator MultiWord(string name) => new(name, new List<WordType>());
-
-	public static implicit operator Word(MultiWord word) => new(word.Name, word.Types.At(0), word.Types.At(1));
-
-	public static implicit operator MultiWord(Word word) => new(word.Name, word.Types);
 
 	public static MultiWord FromVerbatim(string? name, params string?[]? types)
 	{

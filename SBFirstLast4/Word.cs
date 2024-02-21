@@ -39,6 +39,10 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 
 	private static readonly int[,] effList;
 	private static readonly WordType[] typeIndex;
+
+	public Word(Dynamic.Extensions.MultiWord word) 
+		: this(word.Name, word.Types.At(0), word.Types.At(1)) { }
+
 	public override string ToString()
 	{
 		var type1 = Type1.TypeToString();
