@@ -10,4 +10,4 @@ requires: STD;
 #ephemeral </ "+object(
 #ephemeral /> )+"
 
-#define NewList(_T) {}.Cast<_T>().ToList()
+#define NewList(_T) {}.Cast("_T").ToList()
