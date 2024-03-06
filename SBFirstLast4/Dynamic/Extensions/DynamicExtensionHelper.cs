@@ -1,6 +1,7 @@
 ﻿using SpawnDev.BlazorJS.JSObjects;
 using System.Configuration;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
+using System.Numerics;
 using System.Text.RegularExpressions;
 using IEnumerable = System.Collections.IEnumerable;
 
@@ -58,6 +59,108 @@ public static class @cast
 	public static T? @dynamic<T>(object? obj) where T : class => obj as T;
 }
 #pragma warning restore
+
+[DynamicLinqType]
+public static class Operators
+{
+	public static object? Plus(dynamic x) => UnaryPlus(x);
+
+	public static object? Plus(dynamic x, dynamic y) => Add(x, y);
+
+	public static object? Minus(dynamic x) => Negate(x);
+
+	public static object? Minus(dynamic x, dynamic y) => Subtract(x, y);
+
+	public static object? UnaryPlus(dynamic x) => +x;
+
+	public static object? Negate(dynamic x) => -x;
+
+	public static object? NegateChecked(dynamic x) => checked(-x);
+
+	public static object? Not(dynamic x) => !x;
+
+	public static object? Complement(dynamic x) => ~x;
+
+	public static object? Checked(dynamic x) => checked(x);
+
+	public static object? Unchecked(dynamic x) => unchecked(x);
+
+	public static double Power(dynamic x, dynamic y) => Math.Pow(x, y);
+
+	public static object? Multiply(dynamic x, dynamic y) => x * y;
+
+	public static object? MultiplyChecked(dynamic x, dynamic y) => checked(x * y);
+
+	public static object? Divide(dynamic x, dynamic y) => x / y;
+
+	public static object? Modulo(dynamic x, dynamic y) => x % y;
+
+	public static object? Add(dynamic x, dynamic y) => x + y;
+
+	public static object? AddChecked(dynamic x, dynamic y) => checked(x + y);
+
+	public static object? Subtract(dynamic x, dynamic y) => x - y;
+
+	public static object? SubtractChecked(dynamic x, dynamic y) => checked(x - y);
+
+	public static object? LeftShift(dynamic x, dynamic y) => x << y;
+
+	public static object? RightShift(dynamic x, dynamic y) => x >> y;
+
+	public static T UnsignedRightShift<T>(T x, int b) where T : IShiftOperators<T, int, T> => x >>> b;
+
+	public static TResult UnsignedRightShift<TLeft, TRight, TResult>(TLeft x, TRight b) where TLeft : IShiftOperators<TLeft, TRight, TResult> => x >>> b;
+
+	public static object? Equal(dynamic x, dynamic y) => x == y;
+
+	public static object? NotEqual(dynamic x, dynamic y) => x != y;
+
+	public static object? LessThan(dynamic x, dynamic y) => x < y;
+
+	public static object? LessThanOrEqual(dynamic x, dynamic y) => x <= y;
+
+	public static object? GreaterThan(dynamic x, dynamic y) => x > y;
+
+	public static object? GreaterThenOrEqual(dynamic x, dynamic y) => x >= y;
+
+	public static object? And(dynamic x, dynamic y) => x & y;
+
+	public static object? Or(dynamic x, dynamic y) => x | y;
+
+	public static object? Xor(dynamic x, dynamic y) => x ^ y;
+
+	public static object? AndAlso(dynamic x, dynamic y) => x && y;
+
+	public static object? OrElse(dynamic x, dynamic y) => x || y;
+
+	public static object? Coalesce(dynamic x, dynamic y) => x ?? y;
+
+	public static object? Condition(dynamic x, dynamic y, dynamic z) => x ? y : z;
+
+	public static T? Default<T>() => default;
+
+	public static Type TypeOf<T>() => typeof(T);
+
+	public static Index Index(int x) => ^x;
+
+	public static Range Range() => ..;
+
+	public static Range Range(int start) => start..;
+
+	public static Range Range(Index start) => start..;
+
+	public static Range Range(int start, int end) => start..end;
+
+	public static Range Range(Index start, int end) => start..end;
+
+	public static Range Range(int start, Index end) => start..end;
+
+	public static Range Range(Index start, Index end) => start..end;
+
+	public static Range RangeEnd(int end) => ..end;
+
+	public static Range RangeEnd(Index end) => ..end;
+}
 
 [DynamicLinqType]
 public static class Linq
