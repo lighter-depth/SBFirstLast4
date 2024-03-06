@@ -18,6 +18,8 @@ public class CustomTypeProvider : DefaultDynamicLinqCustomTypeProvider, IDynamic
 
 	internal static readonly Dictionary<string, Type> BuiltInTypeMap = GetTypeMap();
 
+	internal static readonly bool IsLinqDefined = typeof(Enumerable).GetMethod(nameof(Enumerable.Chunk)) is not null;
+
 	private static Dictionary<string, Type> GetTypeMap()
 	{
 		var typeMapBase = new Dictionary<string, Type>

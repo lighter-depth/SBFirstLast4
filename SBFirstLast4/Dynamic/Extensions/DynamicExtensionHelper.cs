@@ -1,5 +1,8 @@
-﻿using System.Linq.Dynamic.Core.CustomTypeProviders;
+﻿using SpawnDev.BlazorJS.JSObjects;
+using System.Configuration;
+using System.Linq.Dynamic.Core.CustomTypeProviders;
 using System.Text.RegularExpressions;
+using IEnumerable = System.Collections.IEnumerable;
 
 namespace SBFirstLast4.Dynamic.Extensions;
 
@@ -54,144 +57,283 @@ public static class @cast
 
 	public static T? @dynamic<T>(object? obj) where T : class => obj as T;
 }
-
-/*
-[DynamicLinqType]
-public static class List
-{
-	public static string Add(dynamic? @this, dynamic? item)
-	{
-		@this?.Add(item);
-		return string.Empty;
-	}
-
-	public static string AddRange(dynamic? @this, dynamic? collection)
-	{
-		@this?.AddRange(collection);
-		return string.Empty;
-	}
-
-	public static int BinarySearch(dynamic @this, dynamic? item)
-		=> @this.BinarySearch(item);
-
-	public static string Clear(dynamic @this)
-	{
-		@this?.Clear();
-		return string.Empty;
-	}
-
-	public static bool Contains(dynamic @this, dynamic? item) => @this.Contains(item);
-
-	public static string CopyTo(dynamic @this, dynamic? array)
-	{
-		@this.CopyTo(array);
-		return string.Empty;
-	}
-
-	public static string CopyTo(dynamic @this, dynamic? array, int arrayIndex)
-	{
-		@this.CopyTo(array, arrayIndex);
-		return string.Empty;
-	}
-
-	public static int EnsureCapacity(dynamic @this, int capacity) => @this.EnsureCapacity(capacity);
-
-	public static int IndexOf(dynamic @this, dynamic? item) => @this.IndexOf(item);
-
-	public static int IndexOf(dynamic @this, dynamic? item, int index) => @this.IndexOf(item, index);
-
-	public static int IndexOf(dynamic @this, dynamic? item, int index, int count) => @this.IndexOf(item, index, count);
-
-	public static string Insert(dynamic @this, int index, dynamic? item)
-	{
-		@this?.Insert(index, item);
-		return string.Empty;
-	}
-
-	public static string InsertRange(dynamic @this, int index, dynamic? collection)
-	{
-		@this.InsertRange(index, collection);
-		return string.Empty;
-	}
-
-	public static int LastIndexOf(dynamic @this, dynamic? item) => @this.LastIndexOf(item);
-
-	public static int LastIndexOf(dynamic @this, dynamic? item, int index) => @this.LastIndexOf(item, index);
-
-	public static int LastIndexOf(dynamic @this, dynamic? item, int index, int count) => @this.LastIndexOf(item, index, count);
-
-	public static bool Remove(dynamic @this, dynamic? item) => @this.Remove(item);
-
-	public static string RemoveAt(dynamic @this, int index)
-	{
-		@this.RemoveAt(index);
-		return string.Empty;
-	}
-
-	public static string RemoveRange(dynamic @this, int index, int count)
-	{
-		@this?.RemoveRange(index, count);
-		return string.Empty;
-	}
-
-	public static string Reverse(dynamic @this)
-	{
-		@this.Reverse();
-		return string.Empty;
-	}
-
-	public static string Reverse(dynamic @this, int index, int count)
-	{
-		@this.Reverse(index, count);
-		return string.Empty;
-	}
-
-	public static string Sort(dynamic @this)
-	{
-		@this.Sort();
-		return string.Empty;
-	}
-
-	public static string TrimExcess(dynamic @this)
-	{
-		@this.TrimExcess();
-		return string.Empty;
-	}
-}
+#pragma warning restore
 
 [DynamicLinqType]
-public static class Hash
+public static class Linq
 {
-	public static string Add(dynamic @this, dynamic? key, dynamic? value)
-	{
-		@this.Add(key, value);
-		return string.Empty;
-	}
+	public static bool IsLinqDefined => CustomTypeProvider.IsLinqDefined;
 
-	public static string Clear(dynamic @this)
-	{
-		@this.Clear();
-		return string.Empty;
-	}
+	public static IEnumerable<TSource> Flatten<TSource>(this IEnumerable<IEnumerable<TSource>> source)
+		=> source.SelectMany(x => x);
 
-	public static bool ContainsKey(dynamic @this, dynamic? key) => @this.ContainsKey(key);
+	public static IEnumerable<TSource> Sort<TSource>(this IEnumerable<TSource> source)
+		=> source.Order();
 
-	public static bool ContainsValue(dynamic @this, dynamic? value) => @this.ContainsValue(value);
+	public static IEnumerable<TSource> Shuffle<TSource>(this IEnumerable<TSource> source)
+		=> source.OrderBy(_ => Guid.NewGuid());
 
-	public static int EnsureCapacity(dynamic @this, int capacity) => @this.EnsureCapacity(capacity);
+	public static string StringJoin<TSource>(this IEnumerable<TSource> source, char separator)
+		=> string.Join(separator, source);
 
-	public static bool Remove(dynamic @this, dynamic? key) => @this.Remove(key);
+	public static string StringJoin<TSource>(this IEnumerable<TSource> source, string separator)
+		=> string.Join(separator, source);
 
-	public static bool Remove(dynamic @this, dynamic? key, dynamic? value) => @this.Remove(key, value);
+	public static string StringJoin<TSource>(this IEnumerable<TSource> source)
+		=> string.Join(string.Empty, source);
 
-	public static string TrimExcess(dynamic @this, int capacity)
-	{
-		@this.TrimExcess(capacity);
-		return string.Empty;
-	}
+	public static bool Any<TSource>(this IEnumerable<TSource> source) 
+		=> Enumerable.Any(source);
 
-	public static bool TryAdd(dynamic @this, dynamic? key, dynamic? value) => @this.TryAdd(key, value);
+	public static IEnumerable<TSource> Append<TSource>(this IEnumerable<TSource> source, TSource element) 
+		=> Enumerable.Append(source, element);
 
-	public static bool TryGetValue(dynamic @this, dynamic? key, out dynamic? value) => @this.TryGetValue(key, out value);
+	public static IEnumerable<TSource> Prepend<TSource>(this IEnumerable<TSource> source, TSource element)
+		=> Enumerable.Prepend(source, element);
+
+	public static double Average(this IEnumerable<int> source)
+		=> Enumerable.Average(source);
+
+	public static double Average(this IEnumerable<long> source)
+		=> Enumerable.Average(source);
+
+	public static float Average(this IEnumerable<float> source)
+		=> Enumerable.Average(source);
+
+	public static double Average(this IEnumerable<double> source)
+		=> Enumerable.Average(source);
+
+	public static decimal Average(this IEnumerable<decimal> source)
+		=> Enumerable.Average(source);
+
+	public static double? Average(this IEnumerable<int?> source)
+		=> Enumerable.Average(source);
+
+	public static double? Average(this IEnumerable<long?> source)
+		=> Enumerable.Average(source);
+
+	public static float? Average(this IEnumerable<float?> source)
+		=> Enumerable.Average(source);
+
+	public static double? Average(this IEnumerable<double?> source)
+		=> Enumerable.Average(source);
+
+	public static decimal? Average(this IEnumerable<decimal?> source)
+		=> Enumerable.Average(source);
+
+	public static IEnumerable<TResult> OfType<TResult>(this IEnumerable source)
+		=> Enumerable.OfType<TResult>(source);
+
+	public static IEnumerable<TResult> Cast<TResult>(this IEnumerable source) 
+		=> Enumerable.Cast<TResult>(source);
+
+	public static IEnumerable<TSource[]> Chunk<TSource>(this IEnumerable<TSource> source, int size)
+		=> Enumerable.Chunk(source, size);
+
+	public static IEnumerable<TSource> Concat<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second)
+		=> Enumerable.Concat(first, second);
+
+	public static bool Contains<TSource>(this IEnumerable<TSource> source, TSource value)
+		=> Enumerable.Contains(source, value);
+
+	public static int Count<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.Count(source);
+
+	public static bool TryGetNonEnumeratedCound<TSource>(this IEnumerable<TSource> source, out int count)
+		=> Enumerable.TryGetNonEnumeratedCount(source, out count);
+
+	public static long LongCount<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.LongCount(source);
+
+	public static IEnumerable<TSource?> DefaultIfEmpty<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.DefaultIfEmpty(source);
+
+	public static IEnumerable<TSource?> DefaultIfEmpty<TSource>(this IEnumerable<TSource> source, TSource defaultValue)
+		=> Enumerable.DefaultIfEmpty(source, defaultValue);
+
+	public static IEnumerable<TSource> Distinct<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.Distinct(source);
+
+	public static TSource ElementAt<TSource>(this IEnumerable<TSource> source, int index)
+		=> Enumerable.ElementAt(source, index);
+
+	public static TSource? ElementAtOrDefault<TSource>(this IEnumerable<TSource> source, int index)
+		=> Enumerable.ElementAtOrDefault(source, index);
+
+	public static IEnumerable<TSource> AsEnumerable<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.AsEnumerable(source);
+
+	public static IEnumerable<TSource> Except<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second)
+		=> Enumerable.Except(first, second);
+
+	public static TSource First<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.First(source);
+
+	public static TSource? FirstOrDefault<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.FirstOrDefault(source);
+
+	public static TSource? FirstOrDefault<TSource>(this IEnumerable<TSource> source, TSource defaultValue)
+		=> Enumerable.FirstOrDefault(source, defaultValue);
+
+	public static IEnumerable<TSource> Intersect<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second)
+		=> Enumerable.Intersect(first, second);
+
+	public static TSource Last<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.Last(source);
+
+	public static TSource? LastOrDefault<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.LastOrDefault(source);
+
+	public static TSource LastOrDefault<TSource>(this IEnumerable<TSource> source, TSource defaultValue)
+		=> Enumerable.LastOrDefault(source, defaultValue);
+
+	public static int Max(this IEnumerable<int> source)
+		=> Enumerable.Max(source);
+
+	public static int? Max(this IEnumerable<int?> source)
+		=> Enumerable.Max(source);
+
+	public static long Max(this	IEnumerable<long> source)
+		=> Enumerable.Max(source);
+
+	public static long? Max(this IEnumerable<long?> source)
+		=> Enumerable.Max(source);
+
+	public static double Max(this IEnumerable<double> source)
+		=> Enumerable.Max(source);
+
+	public static double? Max(this IEnumerable<double?> source)
+		=> Enumerable.Max(source);
+
+	public static float Max(this IEnumerable<float> source)
+		=> Enumerable.Max(source);
+
+	public static float? Max(this IEnumerable<float?> source)
+		=> Enumerable.Max(source);
+
+	public static decimal Max(this IEnumerable<decimal> source)
+		=> Enumerable.Max(source);
+
+	public static decimal? Max(this IEnumerable<decimal?> source)
+		=> Enumerable.Max(source);
+
+	public static TSource? Max<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.Max(source);
+
+	public static int Min(this IEnumerable<int> source)
+		=> Enumerable.Min(source);
+
+	public static long Min(this IEnumerable<long> source)
+		=> Enumerable.Min(source);
+
+	public static int? Min(this IEnumerable<int?> source)
+		=> Enumerable.Min(source);
+
+	public static long? Min(this IEnumerable<long?> source)
+		=> Enumerable.Min(source);
+
+	public static float Min(this IEnumerable<float> source)
+	=> Enumerable.Min(source);
+
+	public static float? Min(this IEnumerable<float?> source)
+		=> Enumerable.Min(source);
+
+	public static double Min(this IEnumerable<double> source)
+		=> Enumerable.Min(source);
+
+	public static double? Min(this IEnumerable<double?> source)
+		=> Enumerable.Min(source);
+
+	public static decimal Min(this IEnumerable<decimal> source)
+		=> Enumerable.Min(source);
+
+	public static decimal? Min(this IEnumerable<decimal?> source)
+		=> Enumerable.Min(source);
+
+	public static TSource? Min<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.Min(source);
+
+	public static IOrderedEnumerable<T> Order<T>(this IEnumerable<T> source)
+		=> Enumerable.Order(source);
+
+	public static IOrderedEnumerable<T> OrderDescending<T>(this IEnumerable<T> source)
+		=> Enumerable.OrderDescending(source);
+
+	public static IEnumerable<TSource> Reverse<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.Reverse(source);
+
+	public static bool SequenceEqual<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second)
+		=> Enumerable.SequenceEqual(first, second);
+
+	public static TSource Single<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.Single(source);
+
+	public static TSource? SingleOrDefault<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.SingleOrDefault(source);
+
+	public static TSource? SingleOrDefault<TSource>(this IEnumerable<TSource> source, TSource defaultValue)
+		=> Enumerable.SingleOrDefault(source, defaultValue);
+
+	public static IEnumerable<TSource> Skip<TSource>(this IEnumerable<TSource> source, int count)
+		=> Enumerable.Skip(source, count);
+
+	public static IEnumerable<TSource> SkipLast<TSource>(this IEnumerable<TSource> source, int cound)
+		=> Enumerable.SkipLast(source, cound);
+
+	public static int Sum(this IEnumerable<int> source)
+		=> Enumerable.Sum(source);
+
+	public static long Sum(this IEnumerable<long> source)
+		=> Enumerable.Sum(source);
+
+	public static float Sum(this IEnumerable<float> source)
+		=> Enumerable.Sum(source);
+
+	public static double Sum(this IEnumerable<double> source)
+		=> Enumerable.Sum(source);
+
+	public static decimal Sum(this IEnumerable<decimal> source)
+		=> Enumerable.Sum(source);
+
+	public static int? Sum(this IEnumerable<int?> source)
+		=> Enumerable.Sum(source);
+
+	public static long? Sum(this IEnumerable<long?> source)
+		=> Enumerable.Sum(source);
+
+	public static float? Sum(this IEnumerable<float?> source)
+		=> Enumerable.Sum(source);
+
+	public static double? Sum(this IEnumerable<double?> source)
+		=> Enumerable.Sum(source);
+
+	public static decimal? Sum(this IEnumerable<decimal?> source)
+		=> Enumerable.Sum(source);
+
+	public static IEnumerable<TSource> Take<TSource>(this IEnumerable<TSource> source, int count)
+		=> Enumerable.Take(source, count);
+
+	public static IEnumerable<TSource> Take<TSource>(this IEnumerable<TSource> source, Range range)
+		=> Enumerable.Take(source, range);
+
+	public static IEnumerable<TSource> TakeLast<TSource>(this IEnumerable<TSource> source, int count)
+		=> Enumerable.TakeLast(source, count);
+
+	public static TSource[] ToArray<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.ToArray(source);
+
+	public static List<TSource> ToList<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.ToList(source);
+
+	public static HashSet<TSource> ToHashSet<TSource>(this IEnumerable<TSource> source)
+		=> Enumerable.ToHashSet(source);
+
+	public static IEnumerable<TSource> Union<TSource>(this IEnumerable<TSource> first,  IEnumerable<TSource> second)
+		=> Enumerable.Union(first, second);
+
+	public static IEnumerable<(TFirst First, TSecond Second)> Zip<TFirst, TSecond>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second)
+		=> Enumerable.Zip(first, second);
+
+	public static IEnumerable<(TFirst First, TSecond Second, TThird Third)> Zip<TFirst, TSecond, TThird>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second, IEnumerable<TThird> third)
+		=> Enumerable.Zip(first, second, third);
 }
-*/

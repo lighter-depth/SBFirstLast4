@@ -120,8 +120,6 @@ public static partial class Interpreter
 			return (false, translated, selector, errorMsg);
 		}
 
-		// input = ReplaceGenericMethods(input);
-
 		input = input[(selectorIndex + 1)..];
 
 		if (input.Contains('`'))
