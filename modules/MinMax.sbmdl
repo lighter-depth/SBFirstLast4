@@ -3,11 +3,7 @@ requires: STD;
 
 #define STD_SUGARS
 
-.static
-#exclude STD_SUGARS [quiet]
-.end
-
 #ephemeral </ "+object(
 #ephemeral /> )+"
 
-#define NewList(_T) {}.Cast("_T").ToList()
+#define ,( tuple..(
