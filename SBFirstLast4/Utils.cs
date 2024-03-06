@@ -103,6 +103,8 @@ public static class Utils
 	public static string Stringify(this Exception ex) => $"{ex.GetType().Name}: {ex.Message}";
 
 	public static bool IsDefault<T>(this T value) where T : struct => value.Equals(default(T));
+
+	public static Type GetTypeOrDefault<T>(this T? obj) => obj?.GetType() ?? typeof(object);
 }
 
 public static class JSHelper

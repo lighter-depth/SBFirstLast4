@@ -26,7 +26,18 @@ public static class DynamicExtensionHelper
 
 	public static char At(this string source, int index) => index < 0 || index >= source.Length ? default : source[index];
 
-	public static char At(this string source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];
+	public static T? At<T>(this IEnumerable<T> source, int index) => source.ElementAtOrDefault(index);
+
+	public static T? At<T>(this T[] source, int index) => index < 0 || index >= source.Length ? default : source[index];
+
+	public static T? At<T>(this IList<T> source, int index) => index < 0 || index >= source.Count ? default : source[index];
+
+	public static TValue? At<TKey, TValue>(this IDictionary<TKey, TValue> source, TKey key) => source.TryGetValue(key, out var value) ? value : default;
+
+	public static void Add<T>(this Stack<T> stack, T value) => stack.Push(value);
+
+	public static void Add<T>(this Queue<T> queue, T value) => queue.Enqueue(value);
+
 
 	/// <summary>
 	/// SO dictionary for query source
@@ -35,6 +46,16 @@ public static class DynamicExtensionHelper
 	public static int[] GetSingleton() => new[] { 0 };
 }
 
+#pragma warning disable IDE1006
+[DynamicLinqType]
+public static class @cast
+{
+	public static T @static<T>(object? obj) => (T)obj!;
+
+	public static T? @dynamic<T>(object? obj) where T : class => obj as T;
+}
+
+/*
 [DynamicLinqType]
 public static class List
 {
@@ -173,3 +194,4 @@ public static class Hash
 
 	public static bool TryGetValue(dynamic @this, dynamic? key, out dynamic? value) => @this.TryGetValue(key, out value);
 }
+*/

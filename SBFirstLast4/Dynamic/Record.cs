@@ -18,35 +18,6 @@ public static class Record
 
 	internal static readonly List<string> TypeNames = new();
 
-	internal static readonly Dictionary<string, Type> BuiltInTypeMap = GetTypeMap();
-
-	private static Dictionary<string, Type> GetTypeMap()
-	{
-		var typeMapBase = new Dictionary<string, Type>
-		{
-			["object"] = typeof(object),
-			["string"] = typeof(string),
-			["bool"] = typeof(bool),
-			["byte"] = typeof(byte),
-			["char"] = typeof(char),
-			["decimal"] = typeof(decimal),
-			["double"] = typeof(double),
-			["short"] = typeof(short),
-			["int"] = typeof(int),
-			["long"] = typeof(long),
-			["sbyte"] = typeof(sbyte),
-			["float"] = typeof(float),
-			["half"] = typeof(Half),
-			["ushort"] = typeof(ushort),
-			["uint"] = typeof(uint),
-			["ulong"] = typeof(ulong)
-		};
-		var arrays = typeMapBase.ToDictionary(kv => $"{kv.Key}[]", kv => kv.Value.MakeArrayType());
-
-		return typeMapBase.Concat(arrays).ToDictionary();
-	}
-
-
 	public static string Emit(string recordName, string expression)
 	{
 		var builder = ModuleBuilder.DefineType(recordName);
@@ -67,11 +38,7 @@ public static class Record
 			var typeStr = paramMatch.Groups["type"].Value;
 			var name = paramMatch.Groups["name"].Value;
 
-			var type = BuiltInTypeMap.TryGetValue(typeStr, out var value) 
-						? value
-						: provider.ResolveTypeBySimpleName(typeStr) 
-						?? provider.ResolveType(typeStr)
-						?? typeof(object);
+			var type = provider.GetTypeByName(typeStr);
 
 			paramTypes.Add(type);
 

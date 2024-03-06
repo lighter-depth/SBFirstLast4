@@ -108,6 +108,7 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 		return SuitableIndicator.Suitable;
 	}
 
+
 	public readonly struct SuitableIndicator
 	{
 		private int Value { get; init; }

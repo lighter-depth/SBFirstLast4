@@ -81,15 +81,15 @@ assignment: ID '=' expr ';' ;
 
 wideAssignment: wide_assign_expr ';' ;
 
-wide_assign_expr: WideID ('+' | '-' | '*' | '/' | '%' | '&' | '|' | '^' | '<<' | '>>' | '??' )? '=' expr ;
+wide_assign_expr: WideID ('+' | '-' | '*' | '/' | '%' | '&' | '|' | '^' | '??' )? '=' expr ;
 
 internalAssignment: internal_assign_expr ';' ;
 
-internal_assign_expr: InternalID ('+' | '-' | '*' | '/' | '%' | '&' | '|' | '^' | '<<' | '>>' | '??' )? '=' expr ;
+internal_assign_expr: InternalID ('+' | '-' | '*' | '/' | '%' | '&' | '|' | '^' | '??' )? '=' expr ;
 
 memberAssignment: member_assign_expr ';' ;
 
-member_assign_expr: ( objectAccess | arrayAccess ) ('+' | '-' | '*' | '/' | '%' | '&' | '|' | '^' | '<<' | '>>' | '??' )? '=' expr ;
+member_assign_expr: ( objectAccess | arrayAccess ) ('+' | '-' | '*' | '/' | '%' | '&' | '|' | '^' | '??' )? '=' expr ;
 
 variableDeletion: 'delete' (WideID | InternalID) ';' ;
 
@@ -101,7 +101,7 @@ empty_stat: ';' ;
 
 
 expr :  <assoc=right> expr '?' expr ':' expr
-     | term ( ( '+' | '-' | '==' | '!=' | '<' | '<=' | '>' | '>=' | '&' | '|' | '<<' | '>>' | '&&' | '||' ) term )* 
+     | term ( ( '+' | '-' | '==' | '!=' | '<' | '<=' | '>' | '>=' | '&' | '|' | '&&' | '||' ) term )* 
      | op=( '-' | '!' ) expr
      | lambda
      | wide_assign_expr
@@ -113,6 +113,7 @@ term : factor ( ( '*' | '/' | '%' | '??' ) factor )*
      | op=( '++' | '--') ( WideID | InternalID )
      | inputCall
      | procCall
+     | postcall
      | objectAccess
      | arrayAccess
      ;
@@ -127,12 +128,14 @@ factor : Number
        | RawWordLiteral
        | RawMultiWordLiteral
        | CharLiteral 
-       | StringLiteral 
+       | StringLiteral
        | RegexLiteral
        | arrayInitializer 
        | hashInitializer 
-       | listMarker 
+       | listMarker
        | methodCall
+       | initCall
+       | tupleCall
        | NullLiteral
        | ItemLiteral
        |'(' expr ')' 
@@ -140,9 +143,13 @@ factor : Number
 
 inputCall : 'input' '(' ')' ;
 
-methodCall : ( ID | MethodAlias ) ( '<' ID '>' )? '(' ( expr ( ',' expr )* )? ')' ;
+methodCall : ( methodName=ID | MethodAlias ) ( openAngle='<' ( ID | '<' | '>' | ',' | '[' | ']' )* closeAngle='>' )? methodOpen='(' ( expr ( ',' expr )* )? methodClose=')' ;
 
 procCall : ID '!' '(' ( expr ( ',' expr )* )? ')' ;
+
+initCall : initToken='init' '..' ( ID | '<' | '>' | ',' | '[' | ']' )* initOpen='(' ( expr ( ',' expr )* )? initClose=')' ;
+
+tupleCall : tupleToken='tuple' '..' tupleOpen='(' ( expr ( ',' expr )* )? tupleClose=')' ;
 
 Number : ( '0' .. '9' )+ ( '.' ( '0' .. '9' )+ )? ;
 
@@ -186,15 +193,17 @@ InternalID: '^' ID ;
 
 MethodAlias : '\\' ( ID | '$' | '~' ) ;
 
-objectAccess : factor '.' (ID | methodCall) ( objectAccessRest | arrayAccessRest )? ;
+objectAccess : factor '.' (ID | methodCall) ( objectAccessRest | arrayAccessRest | postcallRest )? ;
 
-objectAccessRest : '.' (ID | methodCall) ( objectAccessRest | arrayAccessRest )? ;
+objectAccessRest : '.' (ID | methodCall) ( objectAccessRest | arrayAccessRest | postcallRest )? ;
 
-arrayAccess : factor '[' expr ']' ( objectAccessRest | arrayAccessRest )? ;
+arrayAccess : factor '[' expr ']' ( objectAccessRest | arrayAccessRest | postcallRest )? ;
 
-arrayAccessRest : '[' expr ']' ( objectAccessRest | arrayAccessRest )? ;
+arrayAccessRest : '[' expr ']' ( objectAccessRest | arrayAccessRest | postcallRest )? ;
 
-postcall: (objectAccess | arrayAccess) '..' ID ( '<' ID '>' )? '(' ( expr ( ',' expr )* )? ')' ;
+postcall : ( factor | objectAccess | arrayAccess ) postcallOperator='..' methodCall ( objectAccessRest | arrayAccessRest | postcallRest )? ;
+
+postcallRest : '..' methodCall ( objectAccessRest | arrayAccessRest | postcallRest )? ;
 
 WS: [ \t\r\n　]+ -> skip;
 Comment : '//' ~[\r\n]* -> skip ;

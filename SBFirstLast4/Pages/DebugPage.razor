@@ -1,50 +1,63 @@
 ﻿@page "/debug"
-@layout NoMenuLayout
+@using System.Diagnostics
+@using System.Diagnostics.CodeAnalysis
+@using SpawnDev.BlazorJS.WebWorkers
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
-<PageTitle>きくらげ</PageTitle>
+@inject HttpClient Http
+@inject IWordLoaderService WordLoader
 
-<p>@Kikurage</p>
+<button @onclick=TestBtn_OnClick>Test!</button>
+<br />
 
-<style>
-	body {
-		background-color: black;
-	}
+@Message
 
-	p {
-		color: darkred;
-	}
-</style>
+<br />
+
+@WorkerTimeElapsed
+
+<br />
+
+@BlockingTimeElapsed
+
 
 @code {
-	private string Kikurage = string.Empty;
 
-	protected override async Task OnInitializedAsync()
+	private string Message = string.Empty;
+
+	private string WorkerTimeElapsed = string.Empty;
+
+	private string BlockingTimeElapsed = string.Empty;
+
+
+	private async Task Progress(string msg)
 	{
-		if (!await JSRuntime.Confirm("きくらげですか？"))
-			return;
-
-		var kikurage = string.Empty;
-
-		while (true)
-			await JSRuntime.Alert(kikurage += "きくらげ");
-
+		Message = msg;
+		StateHasChanged();
+		await Task.Delay(1);
 	}
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
+	private async Task TestBtn_OnClick()
 	{
-		if (!firstRender) return;
+		Words.NoTypeWords.Clear();
 
-		var timeLimit = new Random().Next(300, 400);
-		while (timeLimit --> 0)
-			foreach (var i in "きくらげ")
-			{
-				Kikurage += i;
-				StateHasChanged();
-				await Task.Delay(1);
-			}
+		await JSRuntime.Alert("Running...");
+		var sw = new Stopwatch();
 
-		throw new();
+		sw.Restart();
+
+		for (var i = 0; i < 6; i++)
+		{
+			var localParameter = i;
+			await Progress($"タイプレス ワードを読み込んでいます... ({i}/5) Count: {Words.NoTypeWords.Count}");
+			await WordLoader.LoadTL(localParameter, Http);
+		}
+
+		sw.Stop();
+		await JSRuntime.Alert($"Done! Count: {Words.NoTypeWords.Count}");
+
+		WorkerTimeElapsed = sw.Elapsed.ToString();
+		StateHasChanged();
 	}
 }
 

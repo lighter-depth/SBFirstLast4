@@ -1,9 +1,10 @@
 ﻿@page "/top"
 @layout NoMenuLayout
 @inject NavigationManager NavigationManager
+@inject HttpClient Http
 @inject IJSRuntime JSRuntime
 @inject ILocalStorageService LocalStorage
-@inject HttpClient Http
+@inject IWordLoaderService WordLoader
 @using Blazored.LocalStorage
 @using SBFirstLast4.Dynamic
 <PageTitle>トップページ</PageTitle>
@@ -204,12 +205,7 @@
 		if (AppSettings.SkipFlag) token = DictionaryInitializationToken.Skip;
 		try
 		{
-			await Words.Initialize(async s =>
-			{
-				Content = s;
-				StateHasChanged();
-				await Task.Delay(1);		
-			}, LocalStorage, token);
+			await Words.Initialize(Progress, Http, LocalStorage, WordLoader, token);
 		}
 		catch (Exception e)
 		{
@@ -229,6 +225,13 @@
 		Content = "完了！";
 		StateHasChanged();
 		await Task.Delay(200);
+	}
+
+	private async Task Progress(string content)
+	{
+		Content = content;
+		StateHasChanged();
+		await Task.Delay(1);
 	}
 }
 

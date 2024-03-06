@@ -1,5 +1,4 @@
 ﻿using Antlr4.Runtime;
-using System.Diagnostics.CodeAnalysis;
 
 namespace SBFirstLast4.Dynamic;
 

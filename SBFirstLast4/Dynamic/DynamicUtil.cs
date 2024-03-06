@@ -1,7 +1,40 @@
 ﻿using SBFirstLast4.Pages;
+using System.Reflection;
 using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
 
 namespace SBFirstLast4.Dynamic;
+
+internal static class DynamicUtil
+{
+	internal static string ToFormat(this Exception ex) => ex switch
+	{
+		TargetInvocationException target => ToInternalExceptionFormat(target.InnerException!),
+		AggregateException aggregate => aggregate.InnerExceptions.Select(ToInternalExceptionFormat).StringJoin(", "),
+		_ => ToInternalExceptionFormat(ex)
+	};
+	private static string ToInternalExceptionFormat(Exception ex) => $"InternalException({ex.GetType().Name}): {ex.Message}";
+
+	internal static string EscapeLiteral(this string str)
+	{
+		var sb = new StringBuilder();
+		var isInsideLiteral = false;
+		foreach (var c in str)
+		{
+			if (c == '"')
+				isInsideLiteral = !isInsideLiteral;
+			sb.Append(isInsideLiteral ? '0' : c);
+		}
+		return sb.ToString();
+	}
+}
+
+internal static class TypeHelper
+{
+	internal static Type[] GetGenericArgumentsOrElementTypes(this Type type)
+		=> type == typeof(string) ? new[] { typeof(char) } : type.IsArray ? new[] { type.GetElementType() ?? typeof(object) } : type.GetGenericArguments();
+
+	internal static int GetParameterLength(this MethodInfo method) => method.GetParameters().Length;
+}
 
 internal static class To
 {
@@ -205,6 +238,113 @@ internal static class Split
 		}
 		if (charBuffer.Count > 0)
 			yield return charBuffer.StringJoin();
+	}
+
+	internal static IEnumerable<string> By(char separator, string source)
+	{
+		var isInsideString = false;
+		var charBuffer = new List<char>();
+		for (var i = 0; i < source.Length; i++)
+		{
+			var c = source[i];
+
+			if (c == '"')
+				isInsideString = !isInsideString;
+
+			if (c == '<' && !isInsideString)
+			{
+				var close = Find.CloseBrace(source, '<', '>', i);
+				charBuffer.AddRange(source[i..(close + 1)]);
+				i = close;
+				continue;
+			}
+
+			if (c == separator && !isInsideString)
+			{
+				yield return charBuffer.StringJoin();
+				charBuffer.Clear();
+				continue;
+			}
+
+			charBuffer.Add(c);
+
+		}
+		if (charBuffer.Count > 0)
+			yield return charBuffer.StringJoin();
+	}
+
+	internal static IEnumerable<string> By(char separator, string source, BracketOption option)
+	{
+		var isInsideString = false;
+		var charBuffer = new List<char>();
+		var paren = option.HasFlag(BracketOption.Paren);
+		var brace = option.HasFlag(BracketOption.Brace);
+		var angle = option.HasFlag(BracketOption.Angle);
+		var square = option.HasFlag(BracketOption.Square);
+
+
+		for (var i = 0; i < source.Length; i++)
+		{
+			var c = source[i];
+
+			if (c == '"')
+				isInsideString = !isInsideString;
+
+			if (paren && c == '(' && !isInsideString)
+			{
+				var close = Find.CloseBrace(source, '(', ')', i);
+				charBuffer.AddRange(source[i..(close + 1)]);
+				i = close;
+				continue;
+			}
+
+			if (brace && c == '{' && !isInsideString)
+			{
+				var close = Find.CloseBrace(source, '{', '}', i);
+				charBuffer.AddRange(source[i..(close + 1)]);
+				i = close;
+				continue;
+			}
+
+			if (angle && c == '<' && !isInsideString)
+			{
+				var close = Find.CloseBrace(source, '<', '>', i);
+				charBuffer.AddRange(source[i..(close + 1)]);
+				i = close;
+				continue;
+			}
+
+			if (square && c == '[' && !isInsideString)
+			{
+				var close = Find.CloseBrace(source, '[', ']', i);
+				charBuffer.AddRange(source[i..(close + 1)]);
+				i = close;
+				continue;
+			}
+
+			if (c == separator && !isInsideString)
+			{
+				yield return charBuffer.StringJoin();
+				charBuffer.Clear();
+				continue;
+			}
+
+			charBuffer.Add(c);
+
+		}
+		if (charBuffer.Count > 0)
+			yield return charBuffer.StringJoin();
+	}
+
+
+	[Flags]
+	internal enum BracketOption
+	{
+		None = 0,
+		Paren = 1,
+		Brace = 2,
+		Angle = 4,
+		Square = 8
 	}
 }
 

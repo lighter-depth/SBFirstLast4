@@ -85,9 +85,9 @@ public enum Pipe { None, And, Or, Xor, Nand, Nor, Xnor, Imply, Nimply }
 
 public static class BooleanOperators
 {
-	public static bool And(bool left, bool right) => left & right;
+	public static bool And(bool left, bool right) => left && right;
 
-	public static bool Or(bool left, bool right) => left | right;
+	public static bool Or(bool left, bool right) => left || right;
 
 	public static bool Xor(bool left, bool right) => left ^ right;
 

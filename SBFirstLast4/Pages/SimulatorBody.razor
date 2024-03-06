@@ -1643,8 +1643,8 @@
 		}
 	}
 
-	private readonly SemaphoreSlim Player1HPLock = new SemaphoreSlim(1, 1);
-	private readonly SemaphoreSlim Player2HPLock = new SemaphoreSlim(1, 1);
+	private readonly SemaphoreSlim Player1HPLock = new(1, 1);
+	private readonly SemaphoreSlim Player2HPLock = new(1, 1);
 
 	private async Task UpdateHPBarAsync(int hp, int hpMax, PlayerSelector selector)
 	{

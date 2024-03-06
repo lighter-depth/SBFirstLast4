@@ -1,6 +1,5 @@
 ﻿using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
-using System.Diagnostics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Buffer = System.Collections.Generic.List<(string Content, string Type)>;

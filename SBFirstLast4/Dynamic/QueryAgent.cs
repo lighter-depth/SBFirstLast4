@@ -187,7 +187,7 @@ public partial class QueryAgent
 			}
 			catch (Exception ex)
 			{
-				output.Add($"InternalException({ex.GetType().Name}): {ex.Message}", TextType.Error);
+				output.Add(ex.ToFormat(), TextType.Error);
 			}
 
 		_statements.Clear();

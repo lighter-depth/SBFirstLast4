@@ -1,4 +1,5 @@
-﻿using SBFirstLast4.Pages;
+﻿using Antlr4.Runtime;
+using SBFirstLast4.Pages;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using static SBFirstLast4.Dynamic.SelectorConstants;
@@ -119,7 +120,7 @@ public static partial class Interpreter
 			return (false, translated, selector, errorMsg);
 		}
 
-		input = ReplaceGenericMethods(input);
+		// input = ReplaceGenericMethods(input);
 
 		input = input[(selectorIndex + 1)..];
 
@@ -131,6 +132,9 @@ public static partial class Interpreter
 
 		if (input.Contains('!'))
 			input = await ReplaceProcedureAsync(input);
+
+		if (input.Contains(".."))
+			input = await ReplacePostcallAsync(input);
 
 		if (input.Contains('{'))
 			input = ReplaceArrayInitializer(input);
@@ -386,7 +390,7 @@ public static partial class Interpreter
 	private static string ReplaceRawMultiWord(string input)
 	{
 		var builder = new StringBuilder(input);
-		foreach(var match in RawMultiWordRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
+		foreach (var match in RawMultiWordRegex().Matches(input).Where(m => !Is.InsideStringLiteral(m.Index, m.Length, input)).Reverse())
 		{
 			var name = match.Groups["name"].Value;
 			var types = match.Groups["types"].Value.Split().Where(s => !string.IsNullOrWhiteSpace(s));
@@ -394,6 +398,39 @@ public static partial class Interpreter
 			builder.Insert(match.Index, $"MultiWord.FromVerbatim(\"{name}\"{types.Select(t => $", \"{t.Trim()}\"").StringJoin()})");
 		}
 		return builder.ToString();
+	}
+
+	private static async Task<string> ReplacePostcallAsync(string input)
+	{
+		var stream = new AntlrInputStream(input);
+
+		var lexer = new SBProcLangLexer(stream);
+		var tokens = new CommonTokenStream(lexer);
+		var parser = new SBProcLangParser(tokens)
+		{
+			ErrorHandler = new DefaultErrorStrategy()
+		};
+
+		var listener_lexer = new ErrorListener<int>();
+		var listener_parser = new ErrorListener<IToken>();
+
+		lexer.RemoveErrorListeners();
+		parser.RemoveErrorListeners();
+		lexer.AddErrorListener(listener_lexer);
+		parser.AddErrorListener(listener_parser);
+		var tree = parser.expr();
+
+		if (listener_lexer.HadError || listener_parser.HadError)
+			return input;
+
+		var visitor = new PostcallVisitor(input);
+
+		var result = await visitor.VisitExpr(tree) ?? input;
+
+		if (result.Contains(".."))
+			result = await ReplacePostcallAsync(result);
+
+		return result;
 	}
 
 	[GeneratedRegex(@"input\s*\(\s*\)")]
