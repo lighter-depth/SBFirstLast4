@@ -7,4 +7,6 @@ requires: STD;
 #ephemeral /> )+"
 
 #define ,( tuple..(
-#define procof(_X) Procedure.Delegate("_X")
+
+#define typeof(_T) Operators.TypeOf<_T>()
+#define procof(_P) Procedure.Delegate("_P")
