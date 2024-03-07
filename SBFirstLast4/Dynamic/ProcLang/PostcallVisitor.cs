@@ -360,8 +360,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 			var extensionMethod = extensionMethods
 				.Where(m => m
-				.GetParameters()
-				.Select(p => p.ParameterType)
+				.GetParameterTypes()
 				.SequenceEqual(extensionParamTypes, TypeEqualityComparer.Instance))
 				.FirstOrDefault();
 
@@ -389,7 +388,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 				return InvalidPostcall.Value;
 
 			var castedParameters = extensionParamTypes
-				.Zip(extensionMethod.GetParameters().Select(p => p.ParameterType))
+				.Zip(extensionMethod.GetParameterTypes())
 				.Select(t => t.Second.IsGenericParameter ? t.First : t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name)! : t.Second)
 				.ToArray();
 
@@ -464,7 +463,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 			if (methodCall.openAngle is not null)
 			{
 				typeParameterText = methodCall.children
-					.Take((methodCall.openAngle.TokenIndex + 1)..methodCall.closeAngle.TokenIndex)
+					.Take((methodCall.openAngle.TokenIndex - methodCall.methodName.TokenIndex + 1)..(methodCall.closeAngle.TokenIndex - methodCall.methodName.TokenIndex))
 					.Select(t => t.GetText())
 					.StringJoin();
 			}
@@ -491,6 +490,28 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 			if (method is not null)
 				return await InvokeMethod(method, target, args, signature, false);
 
+			var candidates = type.GetMethods().Where(m => m.Name == methodName && m.GetParameterLength() == argTypes.Length);
+
+			foreach (var candidate in candidates)
+				if (candidate.GetParameterTypes().SequenceEqual(argTypes, TypeEqualityComparer.Instance))
+				{
+					if(!candidate.IsGenericMethod)
+						return await InvokeMethod(candidate, target, args, signature, false);
+
+					var instanceLocations = GetTypeArgumentLocations(candidate);
+					if (instanceLocations.Contains(TypeArgumentLocation.Nowhere))
+						return await InvokeMethod(candidate.MakeGenericMethod(typeParameters ?? Type.EmptyTypes), target, args, signature, false);
+
+					var castedInstanceParameters = typeParameters?
+						.Zip(candidate.GetParameterTypes())
+						.Select(t => t.Second.IsGenericParameter ? t.First : t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name)! : t.Second)
+						.ToArray() ?? Type.EmptyTypes;
+
+					var instanceGenericTypeArgs = instanceLocations.Select(l => l.Access(castedInstanceParameters)).ToArray();
+
+					return await InvokeMethod(candidate.MakeGenericMethod(instanceGenericTypeArgs), target, args, signature, false);
+				}
+
 			var extensionDictionary = _customTypeProvider.GetAllExtensionMethods();
 
 			var extensionMethods = extensionDictionary.SelectMany(kv => kv.Value).Where(m => m.Name == methodName && IsAssignableToGeneric(type, m.GetParameters()[0].ParameterType)).ToArray();
@@ -499,8 +520,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 			var extensionMethod = extensionMethods
 				.Where(m => m
-				.GetParameters()
-				.Select(p => p.ParameterType)
+				.GetParameterTypes()
 				.SequenceEqual(extensionParamTypes, TypeEqualityComparer.Instance))
 				.FirstOrDefault();
 
@@ -525,8 +545,8 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 				return await InvokeMethod(extensionMethod.MakeGenericMethod(typeParameters ?? Type.EmptyTypes), target, extensionParameters, signature, true);
 
 			var castedParameters = extensionParamTypes
-				.Zip(extensionMethod.GetParameters().Select(p => p.ParameterType))
-				.Select(t => t.Second.IsGenericParameter ? t.First : t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name)! : t.Second)
+				.Zip(extensionMethod.GetParameterTypes())
+				.Select(t => t.Second.IsGenericParameter ? t.First : t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name) ?? t.First : t.Second)
 				.ToArray();
 
 			var genericTypeArgs = locations.Select(l => l.Access(castedParameters)).ToArray();
@@ -611,7 +631,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 
 			var castedParameters = argTypes
-				.Zip(method.GetParameters().Select(p => p.ParameterType))
+				.Zip(method.GetParameterTypes())
 				.Select(t => t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name)! : t.Second)
 				.ToArray();
 
@@ -628,18 +648,18 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 	private static async Task<object?> InvokeCachedMethod(MethodInfo method, object? obj, List<object?> args, bool isExtension)
 	{
-		var result = isExtension ? method?.Invoke(null, new[] { obj }.Concat(args).ToArray()) : method?.Invoke(obj, args.ToArray());
+		var result = isExtension ? method.Invoke(null, new[] { obj }.Concat(args).ToArray()) : method.Invoke(obj, args.ToArray());
 
-		if (method?.ReturnType == typeof(void))
+		if (method.ReturnType == typeof(void))
 			result = string.Empty;
 
-		else if (method?.ReturnType == typeof(Task))
+		else if (method.ReturnType == typeof(Task))
 		{
 			await (dynamic?)result;
 			result = string.Empty;
 		}
 
-		else if (method?.ReturnType == typeof(Task<>))
+		else if (result.GetTypeOrDefault().IsSubclassOf(typeof(Task)))
 			result = await (dynamic?)result;
 
 		return result;
@@ -649,18 +669,18 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 	{
 		_methodCache.Add(signature, (method, isExtension));
 
-		var result = method?.Invoke(obj, args.ToArray());
+		var result = method.Invoke(obj, args.ToArray());
 
-		if (method?.ReturnType == typeof(void))
+		if (method.ReturnType == typeof(void))
 			result = string.Empty;
 
-		else if (method?.ReturnType == typeof(Task))
+		else if (method.ReturnType == typeof(Task))
 		{
 			await (dynamic?)result;
 			result = string.Empty;
 		}
 
-		else if (method?.ReturnType == typeof(Task<>))
+		else if (result.GetTypeOrDefault().IsSubclassOf(typeof(Task)))
 			result = await (dynamic?)result;
 
 		return result;
@@ -716,8 +736,11 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 		return type;
 	}
 
-	private static bool IsAssignableToGeneric(Type from, Type to)
+	private static bool IsAssignableToGeneric(Type? from, Type? to)
 	{
+		if(from is null || to is null) 
+			return false;
+
 		if (from.IsAssignableTo(to))
 			return true;
 
@@ -848,6 +871,9 @@ internal class TypeEqualityComparer : IEqualityComparer<Type>
 			return true;
 
 		if (x.IsGenericParameter || y.IsGenericParameter)
+			return true;
+
+		if (Equals(x.GetElementType(), y.GetElementType()))
 			return true;
 
 		if (x.IsGenericType && y.IsGenericType && x.GetGenericTypeDefinition().IsAssignableFrom(y.GetGenericTypeDefinition()))

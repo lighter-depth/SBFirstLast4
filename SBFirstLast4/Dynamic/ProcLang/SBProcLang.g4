@@ -29,6 +29,7 @@ statement: assignment
          | return_stat
          | clear_stat
          | delay_stat
+         | flush_stat
          | expr_stat
          | empty_stat
          ;
@@ -76,6 +77,8 @@ return_stat: 'return' expr? ';' ;
 clear_stat: 'clear' '(' ')' ';' ;
 
 delay_stat: 'delay' '(' Number ')' ';' ;
+
+flush_stat: 'flush' ';' ;
 
 assignment: ID '=' expr ';' ;
 

@@ -1,9 +1,12 @@
 ﻿using Antlr4.Runtime;
 using SBFirstLast4.Pages;
+using System.Linq.Dynamic.Core.CustomTypeProviders;
+using System.Reflection;
 using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
 
 namespace SBFirstLast4.Dynamic;
 
+[DynamicLinqType]
 public sealed class Procedure
 {
 	public string Name { get; }
@@ -38,17 +41,17 @@ public sealed class Procedure
 
 	internal static readonly Func<Task> DiscardUpdate = () => Task.CompletedTask;
 
-	public Procedure(string name, List<string> parameters, string moduleName, QueryAgent agent, Buffer buffer, Action<string> setTranslated, Func<Task> update, CancellationToken token)
+	internal Procedure(string name, List<string> parameters, string moduleName, QueryAgent agent, Buffer buffer, Action<string> setTranslated, Func<Task> update, CancellationToken token)
 		=> (Name, Parameters, ModuleName, Agent, _buffer, _setTranslated, _update, _token) = (name, parameters, moduleName, agent, buffer, setTranslated, update, token);
 
-	public Procedure Clone() => new(Name, Parameters, ModuleName, Agent, _buffer, _setTranslated, _update, _token) { Id = Id, _lines = _lines.ToList() };
+	internal Procedure Clone() => new(Name, Parameters, ModuleName, Agent, _buffer, _setTranslated, _update, _token) { Id = Id, _lines = _lines.ToList() };
 
-	public void Update(QueryAgent agent, Buffer buffer, Action<string> setTranslated, Func<Task> update, CancellationToken token)
+	internal void Update(QueryAgent agent, Buffer buffer, Action<string> setTranslated, Func<Task> update, CancellationToken token)
 		=> (Agent, _buffer, _setTranslated, _update, _token) = (agent, buffer, setTranslated, update, token);
 
-	public void Push(string line) => _lines.Add(line.Trim());
+	internal void Push(string line) => _lines.Add(line.Trim());
 
-	public void ExpandTransient(Macro transient) => _lines = _lines.Select(l => Transient.Expand(l, transient)).ToList();
+	internal void ExpandTransient(Macro transient) => _lines = _lines.Select(l => Transient.Expand(l, transient)).ToList();
 
 	private async Task<string> GetSourceTextAsync()
 	{
@@ -194,4 +197,61 @@ public sealed class Procedure
 			return ex.Stringify();
 		}
 	}
+
+	public static ProcCall? Delegate(string name)
+	{
+		var proc = ModuleManager.Procedures.FirstOrDefault(p => p.Name == name) 
+			?? throw new NoSuchProcedureException($"Could not find a procedure '{name}'");
+
+		return (ProcCall)proc.RunAsync;
+	}
+}
+
+[DynamicLinqType]
+public class ProcCall
+{
+	private readonly ProcCallDelegate _proc;
+
+	internal ProcCall(ProcCallDelegate proc) => _proc = proc;
+
+	public static explicit operator ProcCall(ProcCallDelegate proc) => new(proc);
+
+	public AsyncProcCall Async() => new(this);
+
+	public object? Clone() => _proc.Clone();
+
+	public object? Invoke(dynamic arr)
+		=> ((Task<object?>)_proc.Invoke(Enumerable.ToArray(Enumerable.OfType<object>(arr)))).GetAwaiter().GetResult();
+
+	public ProcCallDelegate Delegate => _proc;
+
+	public MethodInfo Method => _proc.Method;
+
+	public object? Target => _proc.Target;
+}
+
+[DynamicLinqType]
+public class AsyncProcCall 
+{
+	private readonly ProcCallDelegate _proc;
+
+	internal AsyncProcCall(ProcCall proc) => _proc = proc.Delegate;
+
+	public object? Clone() => _proc.Clone();
+
+	public Task<object?> Invoke(dynamic arr)
+		=> _proc.Invoke(Enumerable.ToArray(Enumerable.OfType<object>(arr)));
+
+	public ProcCallDelegate Delegate => _proc;
+
+	public MethodInfo Method => _proc.Method;
+
+	public object? Target => _proc.Target;
+}
+
+public delegate Task<object?> ProcCallDelegate(object?[] args);
+
+internal class NoSuchProcedureException : Exception
+{
+	public NoSuchProcedureException(string message) : base(message) { }
 }

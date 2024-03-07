@@ -512,28 +512,24 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 	public override async Task<object?> VisitWideAssignment([NotNull] SBProcLangParser.WideAssignmentContext context)
 	{
 		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
-		await _update();
 		return "ASSIGNMENT_WIDE";
 	}
 
 	public override async Task<object?> VisitInternalAssignment([NotNull] SBProcLangParser.InternalAssignmentContext context)
 	{
 		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
-		await _update();
 		return "ASSIGNMENT_INTERNAL";
 	}
 
 	public override async Task<object?> VisitMemberAssignment([NotNull] SBProcLangParser.MemberAssignmentContext context)
 	{
 		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
-		await _update();
 		return "MEMBER_ASSIGN";
 	}
 
 	public override async Task<object?> VisitVariableDeletion([NotNull] SBProcLangParser.VariableDeletionContext context)
 	{
 		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
-		await _update();
 		return "VAR_DELETION";
 	}
 
@@ -557,6 +553,12 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		await Task.Delay((int)delay, _token);
 		await _update();
 		return "DELAY";
+	}
+
+	public override async Task<object?> VisitFlush_stat([NotNull] SBProcLangParser.Flush_statContext context)
+	{
+		await _update();
+		return "FLUSH";
 	}
 
 

@@ -2,7 +2,6 @@
 using System.Text.RegularExpressions;
 using Microsoft.JSInterop;
 using SBFirstLast4.Dynamic;
-using SBFirstLast4.Expression;
 using SBFirstLast4.Simulator;
 
 namespace SBFirstLast4;
@@ -164,8 +163,6 @@ public static class CollectionHelper
 	public static void Add(this List<AnnotatedString> list, Notice notice, int player1HP, int player2HP) => list.Add(new(string.Empty, notice) { Params = new[] { player1HP, player2HP } });
 
 	public static void Add(this List<AnnotatedString> list, Notice notice, BattleData data) => list.Add(new(string.Empty, notice) { Data = data });
-
-	public static void Add(this List<PipeElement> list, Func<Word, bool> pred, Pipe pipe) => list.Add(new(pred, pipe));
 
 	public static void Add<T>(this Stack<T> stack, T item) => stack.Push(item);
 
