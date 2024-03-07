@@ -573,124 +573,124 @@ public static class LinqExtension
 	public static TSource? FirstOrDefault<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate, TSource defaultValue)
 		=> Enumerable.FirstOrDefault(source, predicate, defaultValue);
 
-	public static IEnumerable<IGrouping<TKey, TSource>> GroupBy<TSource, TKey>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+	public static IEnumerable<IGrouping<TKey, TSource>> GroupBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
 		=> Enumerable.GroupBy(source, keySelector);
 
-	public static IEnumerable<IGrouping<TKey, TElement>> GroupBy<TSource, TKey, TElement>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
+	public static IEnumerable<IGrouping<TKey, TElement>> GroupBy<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
 		=> Enumerable.GroupBy(source, keySelector, elementSelector);
 
-	public static IEnumerable<TResult> GroupBy<TSource, TKey, TResult>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TKey, IEnumerable<TSource>, TResult> resultSelector)
+	public static IEnumerable<TResult> GroupBy<TSource, TKey, TResult>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TKey, IEnumerable<TSource>, TResult> resultSelector)
 		=> Enumerable.GroupBy(source, keySelector, resultSelector);
 
-	public static IEnumerable<TResult> GroupBy<TSource, TKey, TElement, TResult>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, Func<TKey, IEnumerable<TElement>, TResult> resultSelector)
+	public static IEnumerable<TResult> GroupBy<TSource, TKey, TElement, TResult>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, Func<TKey, IEnumerable<TElement>, TResult> resultSelector)
 		=> Enumerable.GroupBy(source, keySelector, elementSelector, resultSelector);
 
-	public static IEnumerable<TResult> GroupJoin<TOuter, TInner, TKey, TResult>(IEnumerable<TOuter> outer, IEnumerable<TInner> inner, Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, IEnumerable<TInner>, TResult> resultSelector)
+	public static IEnumerable<TResult> GroupJoin<TOuter, TInner, TKey, TResult>(this IEnumerable<TOuter> outer, IEnumerable<TInner> inner, Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, IEnumerable<TInner>, TResult> resultSelector)
 		=> Enumerable.GroupJoin(outer, inner, outerKeySelector, innerKeySelector, resultSelector);
 
-	public static IEnumerable<TSource> IntersectBy<TSource, TKey>(IEnumerable<TSource> first, IEnumerable<TKey> second, Func<TSource, TKey> keySelector)
+	public static IEnumerable<TSource> IntersectBy<TSource, TKey>(this IEnumerable<TSource> first, IEnumerable<TKey> second, Func<TSource, TKey> keySelector)
 		=> Enumerable.IntersectBy(first, second, keySelector);
 
-	public static IEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>(IEnumerable<TOuter> outer, IEnumerable<TInner> inner, Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector)
+	public static IEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>(this IEnumerable<TOuter> outer, IEnumerable<TInner> inner, Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector)
 		=> Enumerable.Join(outer, inner, outerKeySelector, innerKeySelector, resultSelector);
 
-	public static TSource Last<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
+	public static TSource Last<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
 		=> Enumerable.Last(source, predicate);
 
-	public static TSource? LastOrDefault<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
+	public static TSource? LastOrDefault<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
 		=> Enumerable.LastOrDefault(source, predicate);
 
-	public static TSource LastOrDefault<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate, TSource defaultValue)
+	public static TSource LastOrDefault<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate, TSource defaultValue)
 		=> Enumerable.LastOrDefault(source, predicate, defaultValue);
 
-	public static ILookup<TKey, TSource> ToLookup<TSource, TKey>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+	public static ILookup<TKey, TSource> ToLookup<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
 		=> Enumerable.ToLookup(source, keySelector);
 
-	public static ILookup<TKey, TElement> ToLookup<TSource, TKey, TElement>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
+	public static ILookup<TKey, TElement> ToLookup<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
 		=> Enumerable.ToLookup(source, keySelector, elementSelector);
 
-	public static TSource? MaxBy<TSource, TKey>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+	public static TSource? MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
 		=> Enumerable.MaxBy(source, keySelector);
 
-	public static int Max<TSource>(IEnumerable<TSource> source, Func<TSource, int> selector)
+	public static int Max<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selector)
 		=> Enumerable.Max(source, selector);
 
-	public static int? Max<TSource>(IEnumerable<TSource> source, Func<TSource, int?> selector)
+	public static int? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, int?> selector)
 		=> Enumerable.Max(source, selector);
 
-	public static long Max<TSource>(IEnumerable<TSource> source, Func<TSource, long> selector)
+	public static long Max<TSource>(this IEnumerable<TSource> source, Func<TSource, long> selector)
 		=> Enumerable.Max(source, selector);
 
-	public static long? Max<TSource>(IEnumerable<TSource> source, Func<TSource, long?> selector)
+	public static long? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, long?> selector)
 		=> Enumerable.Max(source, selector);
 
-	public static float Max<TSource>(IEnumerable<TSource> source, Func<TSource, float> selector)
+	public static float Max<TSource>(this IEnumerable<TSource> source, Func<TSource, float> selector)
 		=> Enumerable.Max(source, selector);
 
-	public static float? Max<TSource>(IEnumerable<TSource> source, Func<TSource, float?> selector)
+	public static float? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, float?> selector)
 		=> Enumerable.Max(source, selector);
 
-	public static double Max<TSource>(IEnumerable<TSource> source, Func<TSource, double> selector)
+	public static double Max<TSource>(this IEnumerable<TSource> source, Func<TSource, double> selector)
 		=> Enumerable.Max(source, selector);
 
-	public static double? Max<TSource>(IEnumerable<TSource> source, Func<TSource, double?> selector)
+	public static double? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, double?> selector)
 		=> Enumerable.Max(source, selector);
 
-	public static decimal Max<TSource>(IEnumerable<TSource> source, Func<TSource, decimal> selector)
+	public static decimal Max<TSource>(this IEnumerable<TSource> source, Func<TSource, decimal> selector)
 		=> Enumerable.Max(source, selector);
 
-	public static decimal? Max<TSource>(IEnumerable<TSource> source, Func<TSource, decimal?> selector)
+	public static decimal? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, decimal?> selector)
 		=> Enumerable.Max(source, selector);
 
-	public static TResult? Max<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector)
+	public static TResult? Max<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
 		=> Enumerable.Max(source, selector);
 
-	public static TSource? MinBy<TSource, TKey>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+	public static TSource? MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
 		=> Enumerable.MinBy(source, keySelector);
 
-	public static int Min<TSource>(IEnumerable<TSource> source, Func<TSource, int> selector)
+	public static int Min<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selector)
 		=> Enumerable.Min(source, selector);
 
-	public static int? Min<TSource>(IEnumerable<TSource> source, Func<TSource, int?> selector)
+	public static int? Min<TSource>(this IEnumerable<TSource> source, Func<TSource, int?> selector)
 		=> Enumerable.Min(source, selector);
 
-	public static long Min<TSource>(IEnumerable<TSource> source, Func<TSource, long> selector)
+	public static long Min<TSource>(this IEnumerable<TSource> source, Func<TSource, long> selector)
 		=> Enumerable.Min(source, selector);
 
-	public static long? Min<TSource>(IEnumerable<TSource> source, Func<TSource, long?> selector)
+	public static long? Min<TSource>(this IEnumerable<TSource> source, Func<TSource, long?> selector)
 		=> Enumerable.Min(source, selector);
 
-	public static float Min<TSource>(IEnumerable<TSource> source, Func<TSource, float> selector)
+	public static float Min<TSource>(this IEnumerable<TSource> source, Func<TSource, float> selector)
 		=> Enumerable.Min(source, selector);
 
-	public static float? Min<TSource>(IEnumerable<TSource> source, Func<TSource, float?> selector)
+	public static float? Min<TSource>(this IEnumerable<TSource> source, Func<TSource, float?> selector)
 		=> Enumerable.Min(source, selector);
 
-	public static double Min<TSource>(IEnumerable<TSource> source, Func<TSource, double> selector)
+	public static double Min<TSource>(this IEnumerable<TSource> source, Func<TSource, double> selector)
 		=> Enumerable.Min(source, selector);
 
-	public static double? Min<TSource>(IEnumerable<TSource> source, Func<TSource, double?> selector)
+	public static double? Min<TSource>(this IEnumerable<TSource> source, Func<TSource, double?> selector)
 		=> Enumerable.Min(source, selector);
 
-	public static decimal Min<TSource>(IEnumerable<TSource> source, Func<TSource, decimal> selector)
+	public static decimal Min<TSource>(this IEnumerable<TSource> source, Func<TSource, decimal> selector)
 		=> Enumerable.Min(source, selector);
 
-	public static decimal? Min<TSource>(IEnumerable<TSource> source, Func<TSource, decimal?> selector)
+	public static decimal? Min<TSource>(this IEnumerable<TSource> source, Func<TSource, decimal?> selector)
 		=> Enumerable.Min(source, selector);
 
-	public static TResult? Min<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector)
+	public static TResult? Min<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
 		=> Enumerable.Min(source, selector);
 
-	public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+	public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
 		=> Enumerable.OrderBy(source, keySelector);
 
-	public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
+	public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
 		=> Enumerable.OrderBy(source, keySelector, comparer);
 
-	public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+	public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
 		=> Enumerable.OrderByDescending(source, keySelector);
 
-	public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
+	public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
 		=> Enumerable.OrderByDescending(source, keySelector, comparer);
 
 	public static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector)
@@ -705,91 +705,91 @@ public static class LinqExtension
 	public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
 		=> Enumerable.ThenByDescending(source, keySelector, comparer);
 
-	public static IEnumerable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector)
+	public static IEnumerable<TResult> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
 		=> Enumerable.Select(source, selector);
 
-	public static IEnumerable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, int, TResult> selector)
+	public static IEnumerable<TResult> Select<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, int, TResult> selector)
 		=> Enumerable.Select(source, selector);
 
-	public static IEnumerable<TResult> SelectMany<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, IEnumerable<TResult>> selector)
+	public static IEnumerable<TResult> SelectMany<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, IEnumerable<TResult>> selector)
 		=> Enumerable.SelectMany(source, selector);
 
-	public static IEnumerable<TResult> SelectMany<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, int, IEnumerable<TResult>> selector)
+	public static IEnumerable<TResult> SelectMany<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, int, IEnumerable<TResult>> selector)
 		=> Enumerable.SelectMany(source, selector);
 
-	public static IEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(IEnumerable<TSource> source, Func<TSource, int, IEnumerable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
+	public static IEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(this IEnumerable<TSource> source, Func<TSource, int, IEnumerable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
 		=> Enumerable.SelectMany(source, collectionSelector, resultSelector);
 
-	public static IEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(IEnumerable<TSource> source, Func<TSource, IEnumerable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
+	public static IEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(this IEnumerable<TSource> source, Func<TSource, IEnumerable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
 		=> Enumerable.SelectMany(source, collectionSelector, resultSelector);
 
-	public static TSource Single<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
+	public static TSource Single<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
 		=> Enumerable.Single(source, predicate);
 
-	public static TSource? SingleOrDefault<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
+	public static TSource? SingleOrDefault<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
 		=> Enumerable.SingleOrDefault(source, predicate);
 
-	public static TSource SingleOrDefault<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate, TSource defaultValue)
+	public static TSource SingleOrDefault<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate, TSource defaultValue)
 		=> Enumerable.SingleOrDefault(source, predicate, defaultValue);
 
-	public static IEnumerable<TSource> SkipWhile<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
+	public static IEnumerable<TSource> SkipWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
 		=> Enumerable.SkipWhile(source, predicate);
 
-	public static IEnumerable<TSource> SkipWhile<TSource>(IEnumerable<TSource> source, Func<TSource, int, bool> predicate)
+	public static IEnumerable<TSource> SkipWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, int, bool> predicate)
 		=> Enumerable.SkipWhile(source, predicate);
 
-	public static int Sum<TSource>(IEnumerable<TSource> source, Func<TSource, int> selector)
+	public static int Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selector)
 		=> Enumerable.Sum(source, selector);
 
-	public static long Sum<TSource>(IEnumerable<TSource> source, Func<TSource, long> selector)
+	public static long Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, long> selector)
 		=> Enumerable.Sum(source, selector);
-	public static float Sum<TSource>(IEnumerable<TSource> source, Func<TSource, float> selector)
-		=> Enumerable.Sum(source, selector);
-
-	public static double Sum<TSource>(IEnumerable<TSource> source, Func<TSource, double> selector)
+	public static float Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, float> selector)
 		=> Enumerable.Sum(source, selector);
 
-	public static decimal Sum<TSource>(IEnumerable<TSource> source, Func<TSource, decimal> selector)
+	public static double Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, double> selector)
 		=> Enumerable.Sum(source, selector);
 
-	public static int? Sum<TSource>(IEnumerable<TSource> source, Func<TSource, int?> selector)
+	public static decimal Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, decimal> selector)
 		=> Enumerable.Sum(source, selector);
 
-	public static long? Sum<TSource>(IEnumerable<TSource> source, Func<TSource, long?> selector)
+	public static int? Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, int?> selector)
 		=> Enumerable.Sum(source, selector);
 
-	public static float? Sum<TSource>(IEnumerable<TSource> source, Func<TSource, float?> selector)
+	public static long? Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, long?> selector)
 		=> Enumerable.Sum(source, selector);
 
-	public static double? Sum<TSource>(IEnumerable<TSource> source, Func<TSource, double?> selector)
+	public static float? Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, float?> selector)
 		=> Enumerable.Sum(source, selector);
 
-	public static decimal? Sum<TSource>(IEnumerable<TSource> source, Func<TSource, decimal?> selector)
+	public static double? Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, double?> selector)
 		=> Enumerable.Sum(source, selector);
 
-	public static IEnumerable<TSource> TakeWhile<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
+	public static decimal? Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, decimal?> selector)
+		=> Enumerable.Sum(source, selector);
+
+	public static IEnumerable<TSource> TakeWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
 		=> Enumerable.TakeWhile(source, predicate);
 
-	public static IEnumerable<TSource> TakeWhile<TSource>(IEnumerable<TSource> source, Func<TSource, int, bool> predicate)
+	public static IEnumerable<TSource> TakeWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, int, bool> predicate)
 		=> Enumerable.TakeWhile(source, predicate);
 
-	public static Dictionary<TKey, TSource> ToDictionary<TSource, TKey>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+	public static Dictionary<TKey, TSource> ToDictionary<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
 		where TKey : notnull
 		=> Enumerable.ToDictionary(source, keySelector);
 
-	public static Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector) 
+	public static Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector) 
 		where TKey : notnull
 		=> Enumerable.ToDictionary(source, keySelector, elementSelector);
 
-	public static IEnumerable<TSource> UnionBy<TSource, TKey>(IEnumerable<TSource> first, IEnumerable<TSource> second, Func<TSource, TKey> keySelector)
+	public static IEnumerable<TSource> UnionBy<TSource, TKey>(this IEnumerable<TSource> first, IEnumerable<TSource> second, Func<TSource, TKey> keySelector)
 		=> Enumerable.UnionBy(first, second, keySelector);
 
-	public static IEnumerable<TSource> Where<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
+	public static IEnumerable<TSource> Where<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
 		=> Enumerable.Where(source, predicate);
 
-	public static IEnumerable<TSource> Where<TSource>(IEnumerable<TSource> source, Func<TSource, int, bool> predicate)
+	public static IEnumerable<TSource> Where<TSource>(this IEnumerable<TSource> source, Func<TSource, int, bool> predicate)
 		=> Enumerable.Where(source, predicate);
 
-	public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(IEnumerable<TFirst> first, IEnumerable<TSecond> second, Func<TFirst, TSecond, TResult> resultSelector)
+	public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second, Func<TFirst, TSecond, TResult> resultSelector)
 		=> Enumerable.Zip(first, second, resultSelector);
 }

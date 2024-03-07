@@ -208,7 +208,7 @@ public sealed class Procedure
 }
 
 [DynamicLinqType]
-public class ProcCall
+public sealed class ProcCall
 {
 	private readonly ProcCallDelegate _proc;
 
@@ -231,7 +231,7 @@ public class ProcCall
 }
 
 [DynamicLinqType]
-public class AsyncProcCall 
+public sealed class AsyncProcCall 
 {
 	private readonly ProcCallDelegate _proc;
 
@@ -251,7 +251,7 @@ public class AsyncProcCall
 
 public delegate Task<object?> ProcCallDelegate(object?[] args);
 
-internal class NoSuchProcedureException : Exception
+internal sealed class NoSuchProcedureException : Exception
 {
 	public NoSuchProcedureException(string message) : base(message) { }
 }
