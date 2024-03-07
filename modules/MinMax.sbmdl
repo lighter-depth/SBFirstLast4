@@ -7,3 +7,4 @@ requires: STD;
 #ephemeral /> )+"
 
 #define ,( tuple..(
+#define procof(_X) Procedure.Delegate("_X")
