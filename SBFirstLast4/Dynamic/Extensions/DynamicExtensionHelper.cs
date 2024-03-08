@@ -198,6 +198,14 @@ public static class Operators
 
 	public static object? Unchecked(dynamic x) => unchecked(x);
 
+	public static async Task<string> Await(Task task)
+	{
+		await task;
+		return string.Empty;
+	}
+
+	public static async Task<T> Await<T>(Task<T> task) => await task;
+
 	public static double Power(dynamic x, dynamic y) => Math.Pow(x, y);
 
 	public static object? Multiply(dynamic x, dynamic y) => x * y;
