@@ -81,6 +81,12 @@ public static partial class QueryRunner
 			return;
 		}
 
+		if(RecordRegex.Enum().Match(inputTrim) is var enumMatch && enumMatch.Success)
+		{
+			DefineEnum(inputTrim, enumMatch);
+			return;
+		}
+
 		if (WideVariableRegex.Hash().Match(inputTrim) is var hashMatch && hashMatch.Success)
 		{
 			await DefineHashAsync(hashMatch);
@@ -141,6 +147,15 @@ public static partial class QueryRunner
 		output.Add(result, result.Contains("Error:") ? TextType.Error : TextType.General);
 
 		output.AddReflect(interpret.Translated ?? string.Empty);
+	}
+
+	private static void DefineEnum(string input, Match match)
+	{
+		var enumName = match.Groups["name"].Value;
+		var lbrace = input.IndexOf('{') + 1;
+		var rbrace = input.LastIndexOf('}');
+		var enumMembers = input[lbrace..rbrace].Split(",").Select(s => s.Trim()).ToArray();
+		Record.EmitEnum(enumName, enumMembers);
 	}
 
 	private static async Task DefineHashAsync(Match hashMatch)

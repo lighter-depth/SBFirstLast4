@@ -425,6 +425,9 @@ public static partial class Interpreter
 
 		var result = await visitor.VisitExpr(tree) ?? input;
 
+		if (result == input)
+			return result;
+
 		if (result.Contains(".."))
 			result = await ReplacePostcallAsync(result);
 

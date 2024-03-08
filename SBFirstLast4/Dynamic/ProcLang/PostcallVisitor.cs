@@ -20,6 +20,10 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 	private static readonly Dictionary<MethodSignature, (MethodInfo MethodInfo, bool IsExtension)> _methodCache = new();
 
+#if DEBUG
+	internal static void ClearCache() => _methodCache.Clear();
+#endif
+
 	private static readonly Dictionary<string, Type> _typeCache = new();
 
 	internal PostcallVisitor(string source) => _source = source;
@@ -106,6 +110,8 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 			if (factor.tupleCall() is { } tupleCall)
 				await VisitTupleCall(tupleCall);
+
+			await EvaluateMethods(context.methodCall());
 
 			if (context.postcallRest() is null)
 				return _source;
@@ -215,7 +221,6 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 			return null;
 		}
 	}
-
 
 	private async Task EvaluateMethods(SBProcLangParser.MethodCallContext? methodCall)
 	{
@@ -389,7 +394,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 			var castedParameters = extensionParamTypes
 				.Zip(extensionMethod.GetParameterTypes())
-				.Select(t => t.Second.IsGenericParameter ? t.First : t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name)! : t.Second)
+				.Select(t => t.Second.IsGenericParameter ? t.First : t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name) ?? t.First : t.Second)
 				.ToArray();
 
 			var genericTypeArgs = locations.Select(l => l.Access(castedParameters)).ToArray();
@@ -502,10 +507,11 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 					if (instanceLocations.Contains(TypeArgumentLocation.Nowhere))
 						return await InvokeMethod(candidate.MakeGenericMethod(typeParameters ?? Type.EmptyTypes), target, args, signature, false);
 
-					var castedInstanceParameters = typeParameters?
-						.Zip(candidate.GetParameterTypes())
-						.Select(t => t.Second.IsGenericParameter ? t.First : t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name)! : t.Second)
-						.ToArray() ?? Type.EmptyTypes;
+					var candidateParameters = candidate.GetParameterTypes().ToArray();
+					var castedInstanceParameters = argTypes
+						.Zip(candidateParameters)
+						.Select(t => t.Second.IsGenericParameter ? t.First : t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name) ?? t.First : t.Second)
+						.ToArray();
 
 					var instanceGenericTypeArgs = instanceLocations.Select(l => l.Access(castedInstanceParameters)).ToArray();
 
@@ -518,11 +524,12 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 			var extensionParamTypes = new[] { type }.Concat(argTypes).ToArray();
 
-			var extensionMethod = extensionMethods
+			var extensionMethodCandidates = extensionMethods
 				.Where(m => m
 				.GetParameterTypes()
-				.SequenceEqual(extensionParamTypes, TypeEqualityComparer.Instance))
-				.FirstOrDefault();
+				.SequenceEqual(extensionParamTypes, TypeEqualityComparer.Instance));
+
+			var extensionMethod = (typeParameters?.Length > 0 ? extensionMethodCandidates.Where(m => m.GetGenericArguments().Length == typeParameters.Length) : extensionMethodCandidates).FirstOrDefault();
 
 			if (extensionMethod is null)
 			{
@@ -632,7 +639,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 			var castedParameters = argTypes
 				.Zip(method.GetParameterTypes())
-				.Select(t => t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name)! : t.Second)
+				.Select(t => t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name) ?? t.First : t.Second)
 				.ToArray();
 
 			var genericTypeArgs = locations.Select(l => l.Access(castedParameters)).ToArray();
@@ -928,7 +935,8 @@ internal sealed class InvalidPostcall
 internal sealed class ConstructorSignature : IEquatable<ConstructorSignature>
 {
 	private readonly string _value;
-	internal ConstructorSignature(Type type, Type[] parameters) => _value = $"{type.Name}({parameters.Select(p => p.Name).StringJoin(", ")})";
+	internal ConstructorSignature(Type type, Type[] parameters)
+		=> _value = $"{type.FullName}({parameters.Select(p => p.FullName).StringJoin(", ")})";
 	public bool Equals(ConstructorSignature? other) => _value == other?._value;
 	public override bool Equals(object? obj) => Equals(obj as ConstructorSignature);
 	public override int GetHashCode() => _value.GetHashCode();
@@ -938,7 +946,8 @@ internal sealed class ConstructorSignature : IEquatable<ConstructorSignature>
 internal sealed class MethodSignature : IEquatable<MethodSignature>
 {
 	private readonly string _value;
-	internal MethodSignature(Type target, string methodName, string? typeParameterText, Type[] parameters, bool isStatic = false) => _value = $"{(isStatic ? "static" : "instance")} {target.Name}.{methodName}<{typeParameterText}>({parameters.Select(p => p.Name).StringJoin(", ")})";
+	internal MethodSignature(Type target, string methodName, string? typeParameterText, Type[] parameters, bool isStatic = false) 
+		=> _value = $"{(isStatic ? "static" : "instance")} {target.FullName}.{methodName}<{typeParameterText}>({parameters.Select(p => p.FullName).StringJoin(", ")})";
 	public bool Equals(MethodSignature? other) => _value == other?._value;
 	public override bool Equals(object? obj) => Equals(obj as MethodSignature);
 	public override int GetHashCode() => _value.GetHashCode();

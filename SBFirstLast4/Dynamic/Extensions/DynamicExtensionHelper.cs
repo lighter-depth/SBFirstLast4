@@ -50,20 +50,72 @@ public static class DynamicExtensionHelper
 [DynamicLinqType]
 public static class ProcHelper
 {
-	public static Func<T, bool> Pred<T>(this ProcCall proc)
-		=> arg => (bool)proc.Invoke(new[] { arg })!;
+	public static Func<string> Action(this ProcCall proc)
+		=> () => proc.InvokeVoid(Array.Empty<object?>());
 
-	public static Func<T1, T2, bool> Pred2<T1, T2>(this ProcCall proc)
+	public static Func<T, string> Action<T>(this ProcCall proc)
+		=> arg => proc.InvokeVoid(new object?[] { arg });
+
+	public static Func<T1, T2, string> Action<T1, T2>(this ProcCall proc)
+		=> (arg1, arg2) => proc.InvokeVoid(new object?[] { arg1, arg2 });
+
+	public static Func<T1, T2, T3, string> Action<T1, T2, T3>(this ProcCall proc)
+		=> (arg1, arg2, arg3) => proc.InvokeVoid(new object?[] { arg1, arg2, arg3 });
+
+	public static Func<T1, T2, T3, T4, string> Action<T1, T2, T3, T4>(this ProcCall proc)
+		=> (arg1, arg2, arg3, arg4) => proc.InvokeVoid(new object?[] { arg1, arg2, arg3, arg4 });
+
+	public static Func<T1, T2, T3, T4, T5, string> Action<T1, T2, T3, T4, T5>(this ProcCall proc)
+		=> (arg1, arg2, arg3, arg4, arg5) => proc.InvokeVoid(new object?[] { arg1, arg2, arg3, arg4, arg5 });
+
+	public static Func<T1, T2, T3, T4, T5, T6, string> Action<T1, T2, T3, T4, T5, T6>(this ProcCall proc)
+		=> (arg1, arg2, arg3, arg4, arg5, arg6) => proc.InvokeVoid(new object?[] { arg1, arg2, arg3, arg4, arg5, arg6 });
+
+	public static Func<T1, T2, T3, T4, T5, T6, T7, string> Action<T1, T2, T3, T4, T5, T6, T7>(this ProcCall proc)
+		=> (arg1, arg2, arg3, arg4, arg5, arg6, arg7) => proc.InvokeVoid(new object?[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7 });
+
+	public static Func<T1, T2, T3, T4, T5, T6, T7, T8, string> Action<T1, T2, T3, T4, T5, T6, T7, T8>(this ProcCall proc)
+		=> (arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) => proc.InvokeVoid(new object?[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 });
+
+	public static Func<bool> Predicate(this ProcCall proc)
+		=> () => (bool)proc.Invoke(Array.Empty<object?>())!;
+
+	public static Func<T, bool> Predicate<T>(this ProcCall proc)
+		=> arg => (bool)proc.Invoke(new object?[] { arg })!;
+
+	public static Func<T1, T2, bool> Predicate<T1, T2>(this ProcCall proc)
 		=> (arg1, arg2) => (bool)proc.Invoke(new object?[] { arg1, arg2 })!;
 
-	public static Func<T, TResult> Func<T, TResult>(this ProcCall proc)
-		=> arg => (TResult)proc.Invoke(new[] { arg })!;
+	public static Func<T1, T2, T3, bool> Predicate<T1, T2, T3>(this ProcCall proc)
+		=> (arg1, arg2, arg3) => (bool)proc.Invoke(new object?[] { arg1, arg2, arg3 })!;
 
-	public static Func<T1, T2, TResult> Func2<T1, T2, TResult>(this ProcCall proc)
+	public static Func<TResult> Func<TResult>(this ProcCall proc)
+		=> () => (TResult)proc.Invoke(Array.Empty<object?>())!;
+
+	public static Func<T, TResult> Func<T, TResult>(this ProcCall proc)
+		=> arg => (TResult)proc.Invoke(new object?[] { arg })!;
+
+	public static Func<T1, T2, TResult> Func<T1, T2, TResult>(this ProcCall proc)
 		=> (arg1, arg2) => (TResult)proc.Invoke(new object?[] { arg1, arg2 })!;
 
-	public static Func<T1, T2, T3, TResult> Func3<T1, T2, T3, TResult>(this ProcCall proc)
+	public static Func<T1, T2, T3, TResult> Func<T1, T2, T3, TResult>(this ProcCall proc)
 		=> (arg1, arg2, arg3) => (TResult)proc.Invoke(new object?[] { arg1, arg2, arg3 })!;
+
+	public static Func<T1, T2, T3, T4, TResult> Func<T1, T2, T3, T4, TResult>(this ProcCall proc)
+		=> (arg1, arg2, arg3, arg4) => (TResult)proc.Invoke(new object?[] { arg1, arg2, arg3, arg4 })!;
+
+	public static Func<T1, T2, T3, T4, T5, TResult> Func<T1, T2, T3, T4, T5, TResult>(this ProcCall proc)
+		=> (arg1, arg2, arg3, arg4, arg5) => (TResult)proc.Invoke(new object?[] { arg1, arg2, arg3, arg4, arg5 })!;
+
+	public static Func<T1, T2, T3, T4, T5, T6, TResult> Func<T1, T2, T3, T4, T5, T6, TResult>(this ProcCall proc)
+		=> (arg1, arg2, arg3, arg4, arg5, arg6) => (TResult)proc.Invoke(new object?[] { arg1, arg2, arg3, arg4, arg5, arg6 })!;
+
+	public static Func<T1, T2, T3, T4, T5, T6, T7, TResult> Func<T1, T2, T3, T4, T5, T6, T7, TResult>(this ProcCall proc)
+		=> (arg1, arg2, arg3, arg4, arg5, arg6, arg7) => (TResult)proc.Invoke(new object?[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7 })!;
+
+	public static Func<T1, T2, T3, T4, T5, T6, T7, T8, TResult> Func<T1, T2, T3, T4, T5, T6, T7, T8, TResult>(this ProcCall proc)
+		=> (arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) => (TResult)proc.Invoke(new object?[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 })!;
+
 }
 
 #pragma warning disable IDE1006
@@ -130,6 +182,7 @@ public static class Operators
 	public static object? Minus(dynamic x) => Negate(x);
 
 	public static object? Minus(dynamic x, dynamic y) => Subtract(x, y);
+
 
 	public static object? UnaryPlus(dynamic x) => +x;
 
@@ -248,10 +301,10 @@ public static class Linq
 	public static IEnumerable<(TSource Item, int Index)> WithIndex<TSource>(this IEnumerable<TSource> source)
 		=> source.Select((x, i) => (x, i));
 
-	public static bool Any<TSource>(this IEnumerable<TSource> source) 
+	public static bool Any<TSource>(this IEnumerable<TSource> source)
 		=> Enumerable.Any(source);
 
-	public static IEnumerable<TSource> Append<TSource>(this IEnumerable<TSource> source, TSource element) 
+	public static IEnumerable<TSource> Append<TSource>(this IEnumerable<TSource> source, TSource element)
 		=> Enumerable.Append(source, element);
 
 	public static IEnumerable<TSource> Prepend<TSource>(this IEnumerable<TSource> source, TSource element)
@@ -290,7 +343,7 @@ public static class Linq
 	public static IEnumerable<TResult> OfType<TResult>(this IEnumerable source)
 		=> Enumerable.OfType<TResult>(source);
 
-	public static IEnumerable<TResult> Cast<TResult>(this IEnumerable source) 
+	public static IEnumerable<TResult> Cast<TResult>(this IEnumerable source)
 		=> Enumerable.Cast<TResult>(source);
 
 	public static IEnumerable<TSource[]> Chunk<TSource>(this IEnumerable<TSource> source, int size)
@@ -359,7 +412,7 @@ public static class Linq
 	public static int? Max(this IEnumerable<int?> source)
 		=> Enumerable.Max(source);
 
-	public static long Max(this	IEnumerable<long> source)
+	public static long Max(this IEnumerable<long> source)
 		=> Enumerable.Max(source);
 
 	public static long? Max(this IEnumerable<long?> source)
@@ -494,7 +547,7 @@ public static class Linq
 	public static HashSet<TSource> ToHashSet<TSource>(this IEnumerable<TSource> source)
 		=> Enumerable.ToHashSet(source);
 
-	public static IEnumerable<TSource> Union<TSource>(this IEnumerable<TSource> first,  IEnumerable<TSource> second)
+	public static IEnumerable<TSource> Union<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second)
 		=> Enumerable.Union(first, second);
 
 	public static IEnumerable<(TFirst First, TSecond Second)> Zip<TFirst, TSecond>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second)
@@ -777,7 +830,7 @@ public static class LinqExtension
 		where TKey : notnull
 		=> Enumerable.ToDictionary(source, keySelector);
 
-	public static Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector) 
+	public static Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
 		where TKey : notnull
 		=> Enumerable.ToDictionary(source, keySelector, elementSelector);
 
@@ -793,3 +846,15 @@ public static class LinqExtension
 	public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second, Func<TFirst, TSecond, TResult> resultSelector)
 		=> Enumerable.Zip(first, second, resultSelector);
 }
+
+#if false && DEBUG
+[DynamicLinqType]
+public static class DebugHelper
+{
+	public static string ClearCache()
+	{
+		PostcallVisitor.ClearCache();
+		return string.Empty;
+	}
+}
+#endif

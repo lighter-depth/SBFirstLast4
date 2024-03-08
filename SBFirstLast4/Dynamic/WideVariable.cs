@@ -39,9 +39,6 @@ public static class WideVariable
 		if (string.IsNullOrEmpty(typename))
 			return "null";
 
-		if (Record.TypeNames.Contains(typename))
-			return $"({typename}({nameof(WideVariable)}.{functionName}(\"{name}\")))";
-
 		return $"(\"{typename}\"({nameof(WideVariable)}.{functionName}(\"{name}\")))";
 	}
 

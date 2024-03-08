@@ -2,25 +2,23 @@
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
-using System.Text;
 
 namespace SBFirstLast4.Dynamic;
 
 [DynamicLinqType]
 public static class Record
 {
-	internal static readonly AssemblyBuilder AssemblyBuilder
-		= AssemblyBuilder.DefineDynamicAssembly(new("SBFirstLast4Dynamic"), AssemblyBuilderAccess.Run);
+	internal static readonly AssemblyBuilder AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new("SBFirstLast4Dynamic"), AssemblyBuilderAccess.Run);
 
 	internal static readonly ModuleBuilder ModuleBuilder = AssemblyBuilder.DefineDynamicModule("SBFirstLast4Dynamic");
 
 	internal static readonly List<Type> Types = new();
 
-	internal static readonly List<string> TypeNames = new();
+	private const string Namespace = "SBFirstLast4Dynamic";
 
 	public static string Emit(string recordName, string expression)
 	{
-		var builder = ModuleBuilder.DefineType(recordName);
+		var builder = ModuleBuilder.DefineType($"{Namespace}.{recordName}");
 
 		var parameters = expression.Split(',').Select(s => s.Trim());
 
@@ -58,8 +56,31 @@ public static class Record
 
 
 		Types.Add(builder.CreateType());
-		TypeNames.Add(recordName);
 
+		return string.Empty;
+	}
+
+	public static string EmitEnum(string enumName, string[] enumMembers)
+	{
+		var builder = ModuleBuilder.DefineEnum($"{Namespace}.{enumName}", TypeAttributes.Public, typeof(int));
+
+		builder.SetCustomAttribute(new(typeof(FlagsAttribute).GetConstructor(Type.EmptyTypes)!, Array.Empty<object?>()));
+
+		var value = 0;
+
+		foreach (var i in enumMembers)
+		{
+			if(i.Split('=') is var split && split.Length == 2)
+			{
+				value = int.Parse(split[1].Trim());
+				builder.DefineLiteral(split[0].Trim(), value);
+				value++;
+				continue;
+			}
+			builder.DefineLiteral(i, value);
+			value++;
+		}
+		Types.Add(builder.CreateType());
 		return string.Empty;
 	}
 
@@ -164,4 +185,7 @@ internal static partial class RecordRegex
 
 	[GeneratedRegex(@"^\s*(?<type>.+)\s+(?<name>[A-Za-z][0-9A-Z_a-z]*)\s*$")]
 	internal static partial Regex StatementParameter();
+
+	[GeneratedRegex(@"^\s*enum\s+(?<name>[A-Za-z][0-9A-Z_a-z]*)\s*{")]
+	internal static partial Regex Enum();
 }

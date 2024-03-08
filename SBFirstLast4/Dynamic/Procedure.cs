@@ -200,7 +200,7 @@ public sealed class Procedure
 
 	public static ProcCall? Delegate(string name)
 	{
-		var proc = ModuleManager.Procedures.FirstOrDefault(p => p.Name == name) 
+		var proc = ModuleManager.Procedures.FirstOrDefault(p => p.Name == name)
 			?? throw new NoSuchProcedureException($"Could not find a procedure '{name}'");
 
 		return (ProcCall)proc.RunAsync;
@@ -212,15 +212,23 @@ public sealed class ProcCall
 {
 	private readonly ProcCallDelegate _proc;
 
-	internal ProcCall(ProcCallDelegate proc) => _proc = proc;
+	internal static readonly ProcCallDelegate Default = args => Task.FromResult<object?>(new());
 
-	public static explicit operator ProcCall(ProcCallDelegate proc) => new(proc);
+	internal ProcCall(ProcCallDelegate proc) => _proc = proc;
 
 	public AsyncProcCall Async() => new(this);
 
 	public object? Clone() => _proc.Clone();
 
-	public object? Invoke(dynamic arr)
+	public object? Invoke(object?[] arr) => DynamicInvoke(arr);
+
+	public string InvokeVoid(object?[] arr)
+	{
+		DynamicInvoke(arr);
+		return string.Empty;
+	}
+
+	public object? DynamicInvoke(dynamic arr)
 		=> ((Task<object?>)_proc.Invoke(Enumerable.ToArray(Enumerable.OfType<object>(arr)))).GetAwaiter().GetResult();
 
 	public ProcCallDelegate Delegate => _proc;
@@ -228,14 +236,22 @@ public sealed class ProcCall
 	public MethodInfo Method => _proc.Method;
 
 	public object? Target => _proc.Target;
+
+	public static ProcCall operator +(ProcCall proc1, ProcCall proc2) => new(proc1._proc + proc2._proc);
+
+	public static ProcCall operator -(ProcCall proc1, ProcCall proc2) => new(proc1._proc - proc2._proc ?? Default);
+
+	public static explicit operator ProcCall(ProcCallDelegate proc) => new(proc);
 }
 
 [DynamicLinqType]
-public sealed class AsyncProcCall 
+public sealed class AsyncProcCall
 {
 	private readonly ProcCallDelegate _proc;
 
 	internal AsyncProcCall(ProcCall proc) => _proc = proc.Delegate;
+
+	private AsyncProcCall(ProcCallDelegate proc) => _proc = proc;
 
 	public object? Clone() => _proc.Clone();
 
@@ -247,6 +263,11 @@ public sealed class AsyncProcCall
 	public MethodInfo Method => _proc.Method;
 
 	public object? Target => _proc.Target;
+
+	public static AsyncProcCall operator +(AsyncProcCall proc1, AsyncProcCall proc2) => new(proc1._proc + proc2._proc);
+
+	public static AsyncProcCall operator -(AsyncProcCall proc1, AsyncProcCall proc2) => new(proc1._proc - proc2._proc ?? ProcCall.Default);
+
 }
 
 public delegate Task<object?> ProcCallDelegate(object?[] args);
