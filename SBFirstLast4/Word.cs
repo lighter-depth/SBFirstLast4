@@ -9,6 +9,7 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 {
 	public char Start => Name.At(0);
 	public char End => Name.GetLastChar();
+
 	public int Length => Name.Length;
 
 	public List<WordType> Types
@@ -211,6 +212,10 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	}
 
 	internal static Word FromType(WordType type) => Default with { Type1 = type };
+
+	public char FirstChar() => Start;
+
+	public char LastChar() => End;
 }
 
 [DynamicLinqType]

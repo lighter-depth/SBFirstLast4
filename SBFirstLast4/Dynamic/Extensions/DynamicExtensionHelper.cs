@@ -1,4 +1,5 @@
-﻿using System.Linq.Dynamic.Core.CustomTypeProviders;
+﻿using System.Globalization;
+using System.Linq.Dynamic.Core.CustomTypeProviders;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using IEnumerable = System.Collections.IEnumerable;
@@ -125,11 +126,12 @@ public static class @cast
 	public static T @static<T>(object? obj) => (T)obj!;
 
 	public static T? @dynamic<T>(object? obj) where T : class => obj as T;
+
+	public static T? @convert<T>(object? obj) => (T?)((IConvertible?)obj)?.ToType(typeof(T), CultureInfo.InvariantCulture);
 }
-#pragma warning restore
 
 [DynamicLinqType]
-public static class Operators
+public static class @operator
 {
 	public static object? Invoke(string op, dynamic x) => op switch
 	{
@@ -162,7 +164,7 @@ public static class Operators
 		"||" => OrElse(x, y),
 		"<<" => LeftShift(x, y),
 		">>" => RightShift(x, y),
-		">>>" => UnsignedRightShift(x, y),
+		">>>" => UnsignedRightShiftImpl(x, y),
 		"??" => Coalesce(x, y),
 		".." => Range(x, y),
 		_ => throw new ArgumentException($"Invalid binary operator: {op}")
@@ -228,9 +230,9 @@ public static class Operators
 
 	public static object? RightShift(dynamic x, dynamic y) => x >> y;
 
-	public static T UnsignedRightShift<T>(T x, int b) where T : IShiftOperators<T, int, T> => x >>> b;
+	public static object? UnsignedRightShift(dynamic x, dynamic y) => UnsignedRightShiftImpl(x, y);
 
-	public static TResult UnsignedRightShift<TLeft, TRight, TResult>(TLeft x, TRight b) where TLeft : IShiftOperators<TLeft, TRight, TResult> => x >>> b;
+	private static T UnsignedRightShiftImpl<T>(T x, int b) where T : IShiftOperators<T, int, T> => x >>> b;
 
 	public static object? Equal(dynamic x, dynamic y) => x == y;
 
@@ -282,6 +284,8 @@ public static class Operators
 
 	public static Range RangeEnd(Index end) => ..end;
 }
+
+#pragma warning restore
 
 [DynamicLinqType]
 public static class Linq

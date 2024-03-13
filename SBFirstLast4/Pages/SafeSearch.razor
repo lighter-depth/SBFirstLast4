@@ -543,11 +543,8 @@
 
 			var predicate = predicates.Aggregate((p1, p2) => word => p1(word) && p2(word));
 
-			SearchResult.TypedSearcher = new() { IsTypedOnly = true };
-			SearchResult.TypedPredicate = predicate;
-			SearchResult.IsTyped = true;
-			DownloadConfig.IsNotype = false;
-			DownloadConfig.DeclType = ListDeclType.TypedOnly;
+
+			SearchOptions.SetTD(new() { IsTypedOnly = true }, predicate: predicate);
 
 			Server.Log(new
 			{

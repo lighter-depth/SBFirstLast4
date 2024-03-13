@@ -1,12 +1,13 @@
-﻿using System.Text.RegularExpressions;
+﻿using SBFirstLast4.Pages;
+using System.Text.RegularExpressions;
 
 namespace SBFirstLast4;
 
-public class Searcher
+public partial class Searcher
 {
     public WordType? Type1 { get; init; } = null;
     public WordType? Type2 { get; init; } = null;
-    public Regex Body { get; init; } = new(".*");
+    public Regex Body { get; init; } = DefaultRegex();
     public bool IsTypedOnly { get; init; } = false;
     public bool IsSingleTypedOnly { get; init; } = false;
     public bool IsDoubleTypedOnly { get; init; } = false;
@@ -40,5 +41,31 @@ public class Searcher
 		return Words.PerfectNameDic.AsParallel().Where(x => x.At(0) == firstChar && x.GetLastChar() == lastChar && pred(x)).ToArray();
 	}
     public static string[] SearchRegex(Regex regex) => Words.PerfectNameDic.AsParallel().Where(x => regex.IsMatch(x)).ToArray();
+	
+    [GeneratedRegex(".*")]
+	private static partial Regex DefaultRegex();
 }
 
+public static class SearchOptions
+{
+    public static void SetTL(char first, char last, Func<string, bool>? length, Regex? regex, ListDeclType type)
+    {
+        SearchResult.IsTyped = false;
+        DownloadConfig.IsNotype = true;
+        SearchResult.FirstChar = first;
+        SearchResult.LastChar = last;
+        SearchResult.CustomLengthPred = length;
+        SearchResult.RegexBody = regex;
+        DownloadConfig.DeclType = type;
+    }
+
+    public static void SetTD(Searcher searcher, Func<Word, bool>? length = null, Func<Word, bool>? predicate = null)
+    {
+        SearchResult.IsTyped = true;
+        DownloadConfig.IsNotype = false;
+        DownloadConfig.DeclType = ListDeclType.TypedOnly;
+        SearchResult.TypedSearcher = searcher;
+        SearchResult.CustomLengthPredTyped = length;
+        SearchResult.TypedPredicate = predicate;
+    }
+}

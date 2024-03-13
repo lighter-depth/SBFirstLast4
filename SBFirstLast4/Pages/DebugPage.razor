@@ -1,64 +1,52 @@
 ﻿@page "/debug"
-@using System.Diagnostics
-@using System.Diagnostics.CodeAnalysis
-@using SpawnDev.BlazorJS.WebWorkers
+@implements IAsyncDisposable
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
-@inject IWordLoaderService WordLoader
 
-<button @onclick=TestBtn_OnClick>Test!</button>
-<br />
+<head>
+	<script type="text/javascript">
+		function onDblClick() {
+			alert("Hello World from Javascript!");
+		}
+		$(function () {
+			$("button").click(function () {
+				alert("Hello World from jQuery!");
+			});
+		});
+	</script>
+</head>
 
-@Message
+<button @onclick=@(async() => await Task.CompletedTask)>Button</button>
 
-<br />
+<select class="dropdown">
+	<option disabled hidden selected value>＋</option>
+	<option>Option 1</option>
+	<option>Option 2</option>
+</select>
 
-@WorkerTimeElapsed
+<style>
+	.dropdown {
+		-moz-appearance: none;
+		-webkit-appearance: none;
+	}
 
-<br />
-
-@BlockingTimeElapsed
+		.dropdown::-ms-expand {
+			display: none;
+		}
+</style>
 
 
 @code {
-
-	private string Message = string.Empty;
-
-	private string WorkerTimeElapsed = string.Empty;
-
-	private string BlockingTimeElapsed = string.Empty;
-
-
-	private async Task Progress(string msg)
+	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
-		Message = msg;
-		StateHasChanged();
-		await Task.Delay(1);
+		if (firstRender)
+			await JSRuntime.InvokeVoidAsync("eval", "document.addEventListener('dblclick', onDblClick);");
 	}
 
-	private async Task TestBtn_OnClick()
+	public async ValueTask DisposeAsync()
 	{
-		Words.NoTypeWords.Clear();
-
-		await JSRuntime.Alert("Running...");
-		var sw = new Stopwatch();
-
-		sw.Restart();
-
-		for (var i = 0; i < 6; i++)
-		{
-			var localParameter = i;
-			await Progress($"タイプレス ワードを読み込んでいます... ({i}/5) Count: {Words.NoTypeWords.Count}");
-			await WordLoader.LoadTL(localParameter, Http);
-		}
-
-		sw.Stop();
-		await JSRuntime.Alert($"Done! Count: {Words.NoTypeWords.Count}");
-
-		WorkerTimeElapsed = sw.Elapsed.ToString();
-		StateHasChanged();
+		await JSRuntime.Alert("Bye!!");
+		await JSRuntime.InvokeVoidAsync("eval", "document.removeEventListener('dblclick', onDblClick);");
 	}
 }
-
-.

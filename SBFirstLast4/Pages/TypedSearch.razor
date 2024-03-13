@@ -509,10 +509,8 @@
 			StateHasChanged();
 		}
 		if (returnFlag) return;
-		var first = FirstChar.At(0);
-		if (first is '*' or '＊') first = '.';
-		var last = LastChar.At(0);
-		if (last is '*' or '＊') last = '.';
+
+		var (first, last) = (GetChar(FirstChar), GetChar(LastChar));
 		var (type1, type2) = GetTypes();
 		var body = new Regex(SelectedSearchOptionItem switch
 		{
@@ -522,14 +520,8 @@
 			"すべて表示" => @".*",
 			_ => $"{RegexPattern}"
 		});
-		SearchResult.CustomLengthPredTyped = SelectedCustomLengthItem switch
-		{
-			"なし" => null,
-			"７文字以上" => word => word.Name.Length >= 7,
-			"６文字以上" => word => word.Name.Length >= 6,
-			_ => pred
-		};
-		SearchResult.TypedSearcher = new()
+
+		SearchOptions.SetTD(new()
 			{
 				Type1 = type1,
 				Type2 = type2,
@@ -537,11 +529,15 @@
 				IsTypedOnly = true,
 				IsSingleTypedOnly = SelectedTypeOptionItem is "単タイプ",
 				IsDoubleTypedOnly = SelectedTypeOptionItem is "複合タイプ"
-			};
-		SearchResult.TypedPredicate = null;
-		SearchResult.IsTyped = true;
-		DownloadConfig.IsNotype = false;
-		DownloadConfig.DeclType = ListDeclType.TypedOnly;
+			},
+			SelectedCustomLengthItem switch
+			{
+				"なし" => null,
+				"７文字以上" => word => word.Name.Length >= 7,
+				"６文字以上" => word => word.Name.Length >= 6,
+				_ => pred
+			}
+		);
 
 		Server.Log(new
 		{
@@ -574,6 +570,9 @@
 	}
 
 	private (WordType? Type1, WordType? Type2) GetTypes()
-	=> (SelectedType1Item is "指定なし" ? null : SelectedType1Item.StringToType(),
-		SelectedType2Item is "指定なし" ? null : SelectedType2Item.StringToType());
+		=> (SelectedType1Item is "指定なし" ? null : SelectedType1Item.StringToType(),
+			SelectedType2Item is "指定なし" ? null : SelectedType2Item.StringToType());
+
+	private char GetChar(string str)
+		=> str.At(0) is var tmp && tmp is '*' or '＊' ? '.' : tmp;
 }

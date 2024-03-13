@@ -1,0 +1,65 @@
+﻿namespace SBFirstLast4.Expressions;
+
+public class NodeBuilder
+{
+	public NodeOperator Operator { private protected get; set; }
+
+	public virtual Node Build() => new(Operator);
+
+	public static NodeBuilder Create(NodeType type) => type switch
+	{
+		NodeType.First => new FirstNodeBuilder(),
+		NodeType.Last => new LastNodeBuilder(),
+		NodeType.Length => new LengthNodeBuilder(),
+		NodeType.Type => new TypeNodeBuilder(),
+		NodeType.Regex => new RegexNodeBuilder(),
+		NodeType.Group => new GroupNodeBuilder(),
+		_ => throw new ArgumentException(null, nameof(type))
+	};
+}
+
+public class FirstNodeBuilder : NodeBuilder
+{
+	public EqualityOperator Equality { private get; set; }
+
+	public char First { private get; set; }
+
+	public override FirstNode Build() => new(Operator, Equality, First);
+}
+
+public class LastNodeBuilder : NodeBuilder 
+{
+	public EqualityOperator Equality { private get; set; }
+
+	public char Last { private get; set; }
+
+	public override LastNode Build() => new(Operator, Equality, Last);
+}
+
+public class LengthNodeBuilder : NodeBuilder
+{
+	public int Length { private get; set; }
+
+	public ComparisonOperator Comparison { private get; set; }
+
+	public override LengthNode Build() => new(Operator, Length, Comparison);
+}
+
+public class TypeNodeBuilder : NodeBuilder 
+{
+	public WordType Type { private get; set; }
+
+	public override TypeNode Build() => new(Operator, Type);
+}
+
+public class RegexNodeBuilder : NodeBuilder
+{
+	public string Pattern { private get; set; } = string.Empty;
+
+	public override RegexNode Build() => new(Operator, Pattern);
+}
+
+public class GroupNodeBuilder : NodeBuilder 
+{
+	public override GroupNode Build() => new(Operator, Array.Empty<Node>());
+}

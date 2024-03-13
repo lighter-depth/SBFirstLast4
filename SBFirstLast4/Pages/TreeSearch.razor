@@ -1,1 +1,190 @@
-﻿
+﻿@page "/treesearch"
+@using SBFirstLast4.Expressions
+@using Interpreter = SBFirstLast4.Dynamic.Interpreter;
+@using ScriptExecutor = SBFirstLast4.Dynamic.ScriptExecutor;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+<PageTitle>グループ検索</PageTitle>
+
+@{
+	string DisplayAttr(bool b) => b ? "block" : "none";
+
+	void OpenMenu(ref bool b)
+	{
+		b = true;
+		ShowMenu.Node = false;
+		StateHasChanged();
+	}
+
+	void HideMenu(ref bool b)
+	{
+		b = false;
+		StateHasChanged();
+	}
+}
+
+<div class="dropdown">
+	<button @onclick="() => ShowMenu.Node = true">＋<i class="fa fa-caret-down"></i></button>
+	<div class="dropdown-content" style="display: @DisplayAttr(ShowMenu.Node);">
+		<a @onclick="() => OpenMenu(ref ShowMenu.First)">最初の文字</a>
+		<a @onclick="() => OpenMenu(ref ShowMenu.Last)">最後の文字</a>
+		<a @onclick="() => OpenMenu(ref ShowMenu.Length)">長さ</a>
+		<a @onclick="() => OpenMenu(ref ShowMenu.Type)">タイプ</a>
+		<a @onclick="() => OpenMenu(ref ShowMenu.Regex)">正規表現</a>
+		<a @onclick="() => OpenMenu(ref ShowMenu.Group)">グループ</a>
+	</div>
+</div>
+
+
+<div class="dropdown-content" style="display: @DisplayAttr(ShowMenu.First);">
+	@foreach (var i in Utils.KanaListSpread)
+	{
+		<a @onclick="async() =>
+			{
+				await JSRuntime.Alert(i);
+				HideMenu(ref ShowMenu.First);
+			}">@i</a>
+	}
+</div>
+
+<div class="dropdown-content" style="display: @DisplayAttr(ShowMenu.Last);">
+	@foreach (var i in Utils.KanaListSpread)
+	{
+		<a @onclick="async() =>
+			{
+				await JSRuntime.Alert(i);
+				HideMenu(ref ShowMenu.Last);
+			}">@i</a>
+	}
+</div>
+
+<div class="dropdown-content" style="display: @DisplayAttr(ShowMenu.Length);">
+	<a>NA</a>
+</div>
+
+
+
+<div class="dropdown-content" style="display: @DisplayAttr(ShowMenu.Type);">
+
+	<a>単タイプ</a>
+
+	@foreach (var i in Enum.GetValues<WordType>().Skip(1).Select(t => t.TypeToString()))
+	{
+		<a @onclick="async() =>
+			{
+				await JSRuntime.Alert(i);
+				HideMenu(ref ShowMenu.Type);
+			}">@i</a>
+	}
+</div>
+
+<div class="dropdown-content" style="display: @DisplayAttr(ShowMenu.Regex);">
+	<a>NA</a>
+</div>
+
+
+<div class="dropdown-content" style="display: @DisplayAttr(ShowMenu.Group);">
+	<a>NA</a>
+</div>
+
+<div id="transparentScreen" style="display: @(ShowMenu == default ? "none" : "block")" @onclick="() =>
+{
+	ShowMenu = default;
+	StateHasChanged();
+}" />
+
+
+@Result
+
+<style>
+	.dropdown {
+		position: relative;
+		display: inline-block;
+	}
+
+	.dropdown-content {
+		display: block;
+		position: absolute;
+		background-color: #f9f9f9;
+		min-width: 160px;
+		max-height: 300px;
+		overflow-y: scroll;
+		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+		z-index: 1;
+	}
+
+		.dropdown-content a {
+			color: black;
+			padding: 12px 16px;
+			text-decoration: none;
+			display: block;
+		}
+
+			.dropdown-content a:hover {
+				background-color: #f1f1f1
+			}
+
+	#transparentScreen {
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		width: 100%;
+		height: 100%;
+		color: transparent;
+		z-index: 0;
+	}
+</style>
+
+@code {
+
+	private (bool Node, bool First, bool Last, bool Length, bool Type, bool Regex, bool Group) ShowMenu = default;
+
+	private string Result = string.Empty;
+
+	private readonly List<Node> Nodes = new();
+
+	protected override void OnInitialized()
+	{
+		if (!AppSettings.IsLoggedIn)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+		if (!Words.IsLoadedCorrectly)
+			NavigationManager.NavigateTo("top", false);
+	}
+
+	private async Task Test_OnClick()
+	{
+		_ = new Node[]
+		{
+			new FirstNode(NodeOperator.Head, EqualityOperator.Equal, 'あ'),
+			new GroupNode(NodeOperator.And, new Node[]
+			{
+				new LastNode(NodeOperator.Head, EqualityOperator.Equal, 'ぐ'),
+				new LastNode(NodeOperator.Or, EqualityOperator.Equal, 'ぬ'),
+				new LengthNode(NodeOperator.AndNot, 5, ComparisonOperator.GreaterThanOrEqual)
+			})
+		};
+
+		var query = $"@TW.Where({Nodes.Select(n => n.ToString()).StringJoin()})";
+
+		await JSRuntime.Alert(query);
+
+		try
+		{
+			var (success, translated, selector, errorMsg) = await Interpreter.TryInterpretAsync(query);
+
+			if (!success)
+				await JSRuntime.Alert(errorMsg);
+
+			var result = ScriptExecutor.Execute(translated, selector);
+			Result = result;
+			StateHasChanged();
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+		}
+	}
+}

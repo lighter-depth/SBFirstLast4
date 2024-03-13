@@ -380,27 +380,21 @@
 			StateHasChanged();
 		}
 		if (returnFlag) return;
-		SearchResult.FirstChar = FirstChar.At(0);
-		SearchResult.LastChar = LastChar.At(0);
-		SearchResult.CustomLengthPred = SelectedCustomLengthItem switch
+
+		SearchOptions.SetTL(FirstChar.At(0), LastChar.At(0), SelectedCustomLengthItem switch
 		{
 			"なし" => null,
 			"７文字以上" => word => word.Length >= 7,
 			"６文字以上" => word => word.Length >= 6,
 			_ => pred
-		};
-		SearchResult.RegexBody = isRegex ? new(RegexPattern) : null;
-		SearchResult.IsTyped = false;
-		DownloadConfig.DeclType = SelectedSearchOptionItem switch
+		}, isRegex ? new(RegexPattern) : null, SelectedSearchOptionItem switch
 		{
 			"前方後方一致" => ListDeclType.FirstLast,
 			"前方一致" => ListDeclType.First,
 			"後方一致" => ListDeclType.Last,
 			"正規表現" => ListDeclType.Regex,
 			_ => default
-		};
-		DownloadConfig.IsNotype = true;
-
+		});
 
 		Server.Log(new
 		{

@@ -20,15 +20,9 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 	private static readonly Dictionary<MethodSignature, (MethodInfo MethodInfo, bool IsExtension)> _methodCache = new();
 
-#if DEBUG
-	internal static void ClearCache() => _methodCache.Clear();
-#endif
-
 	private static readonly Dictionary<string, Type> _typeCache = new();
 
 	internal PostcallVisitor(string source) => _source = source;
-
-	protected override Task<string?>? DefaultResult => Task.FromResult("DEFAULT")!;
 
 	public override async Task<string?> VisitExpr([NotNull] SBProcLangParser.ExprContext context)
 	{
