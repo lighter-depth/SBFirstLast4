@@ -10,7 +10,7 @@ requires: STD;
 #define $+( operator..Plus(
 #define $-( operator..Minus(
 
-#define $^( operator..Circumflex(
+#define $^( operator..Hat(
 
 #define $!( operator..Not(
 #define $~( operator..Complement(
