@@ -1,43 +1,52 @@
 ﻿module STD_OPERATORS;
 requires: STD;
 
-#define STD_OPERATORS;
+#define STD_OPERATORS
 
-#transient __UOP__(X, O) (O(X))
+.static
+#exclude STD_OPERATORS [quiet]
+.end
 
-#define POS(X) (X)
-#define NEG(X) __UOP__(X, -)
-#define NOT(X) (-1 - (X))
-#define NOTL(X) __UOP__(X, !)
-#define ABS(X) (Math.Abs(X))
+#define $+( operator..Plus(
+#define $-( operator..Minus(
 
-#transient __BOP__(X, Y, O) ((X) O (Y))
+#define $^( operator..Circumflex(
 
-#define ADD(X, Y) __BOP__(X, Y, +)
-#define SUB(X, Y) __BOP__(X, Y, -)
-#define MUL(X, Y) __BOP__(X, Y, *)
-#define DIV(X, Y) __BOP__(X, Y, /)
-#define REM(X, Y) __BOP__(X, Y, %)
+#define $!( operator..Not(
+#define $~( operator..Complement(
 
-#define AND(X, Y) __BOP__(X, Y, &)
-#define OR(X, Y) __BOP__(X, Y, |)
-#define XOR(X, Y) (((X) | (Y)) - ((X) & (Y)))
+#define $checked( operator..Checked(
+#define $unchecked( operator..Unchecked(
 
-#define ANDL(X, Y) __BOP__(X, Y, &&)
-#define ORL(X, Y) __BOP__(X, Y, ||)
 
-#transient __TB__(X) Convert.ToBoolean(X)
-#transient __TI__(X) Convert.ToInt32(X)
+#define $await( operator..Await(
 
-#define XORL(X, Y) __TB__(__TI__((X) || (Y)) - __TI__((X) && (Y)))
+#define $*( operator..Multiply(
+#define $/( operator..Divide(
+#define $%( operator..Modulo(
+#define $**( operator..Power(
 
-#define SHL(X, Y) __BOP__(X, Y, <<)
-#define SHR(X, Y) __BOP__(X, Y, >>)
+#define $==( operator..Equal(
+#define $!=( operator..NotEqual(
 
-#define CRS(X, Y) __BOP__(X, Y, ??)
+#define $<( operator..LessThan(
+#define $<=( operator..LessThanOrEqual(
+#define $>( operator..GreaterThan(
+#define $>=( operator..GreaterThanOrEqual(
 
-#define POW(X, Y) (Math.Pow((X), (Y)))
+#define $&( operator..And(
+#define $|( operator..Or(
 
-#transient __TOP__(X, Y, Z, O1, O2) ((X) O1 (Y) O2 (Z))
+#define $&&( operator..AndAlso(
+#define $||( operator..OrElse(
 
-#define IIF(X, Y, Z) __TOP__(X, Y, Z, ?, :)
+#define $<<( operator..LeftShift(
+#define $>>( operator..RightShift(
+#define $>>>( operator..UnsignedRightShift(
+
+#define $??( operator..Coalesce(
+
+#define $..( operator..Range(
+#define $..^( operator..RangeEnd(
+
+#define $?:( operator..Condition(
