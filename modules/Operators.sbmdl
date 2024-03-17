@@ -18,9 +18,6 @@ requires: STD;
 #define $checked( operator..Checked(
 #define $unchecked( operator..Unchecked(
 
-
-#define $await( operator..Await(
-
 #define $*( operator..Multiply(
 #define $/( operator..Divide(
 #define $%( operator..Modulo(
