@@ -8,7 +8,7 @@ requires: STD;
 
 #define ,( tuple..(
 
-#define typeof(_T) Operators..TypeOf<_T>()
+#define typeof(_T) operator..TypeOf<_T>()
 #define procof(_P) Procedure.Delegate("_P")
 
-#define await( Operators..Await(
+#define await( operator..Await(
