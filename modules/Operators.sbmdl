@@ -50,4 +50,6 @@ requires: STD;
 #define $..( operator..Range(
 #define $..^( operator..RangeEnd(
 
+#define $in( operator..In(
+
 #define $?:( operator..Condition(
