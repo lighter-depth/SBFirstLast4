@@ -4,7 +4,7 @@ requires: STD;
 
 #define STD_LISTS
 
-#transient __GENARATE_DICTIONARY__(_X) @TW.Where(w => w.Contains($_X)).Sort()
+#transient __GENARATE_DICTIONARY__(_X) @TW.Where(w => w.Contains($_X)).OrderBy(it)
 
 #define @Animal __GENARATE_DICTIONARY__(A)
 #define @Body __GENARATE_DICTIONARY__(B)
@@ -32,7 +32,7 @@ requires: STD;
 #define @Plant __GENARATE_DICTIONARY__(Y)
 #define @Insult __GENARATE_DICTIONARY__(Z)
 
-#transient __GENERATE_TYPED_DICTIONARY__(_X) @_X.Select(s => s.Deduce()).Sort()
+#transient __GENERATE_TYPED_DICTIONARY__(_X) @_X.Select(s => s.Deduce()).OrderBy(it)
 
 
 #define @8XW __GENERATE_TYPED_DICTIONARY__(8X)
