@@ -52,4 +52,7 @@ requires: STD;
 
 #define $in( operator..In(
 
+#define $=~( operator..Match(
+#define $!~( operator.NotMatch(
+
 #define $?:( operator..Condition(
