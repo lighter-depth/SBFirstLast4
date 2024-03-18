@@ -18,6 +18,10 @@ requires: STD;
 #define $checked( operator..Checked(
 #define $unchecked( operator..Unchecked(
 
+#define $default< operator..Default<
+#define $typeof< operator..TypeOf<
+#define $sizeof< operator..SizeOf<
+
 #define $*( operator..Multiply(
 #define $/( operator..Divide(
 #define $%( operator..Modulo(
