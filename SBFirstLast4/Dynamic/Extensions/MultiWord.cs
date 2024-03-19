@@ -59,6 +59,8 @@ public readonly record struct MultiWord(string Name, IReadOnlyList<WordType> Typ
 
 	public static explicit operator MultiWord(string name) => new(name, new List<WordType>());
 
+	public static explicit operator MultiWord(Word word) => new(word);
+
 	public static MultiWord FromVerbatim(string? name, params string?[]? types)
 	{
 		if (string.IsNullOrWhiteSpace(name))

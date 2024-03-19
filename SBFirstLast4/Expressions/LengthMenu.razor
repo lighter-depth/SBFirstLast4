@@ -1,0 +1,127 @@
+﻿@page "/node-menu-length"
+@using SBFirstLast4.Pages
+@inject IJSRuntime JSRuntime
+
+<div class="menu-content" style="display: @NodeMenu.DisplayAttr(ShowMenu.Length)">
+	<div style="display: flex; flex-flow: row; text-align: center; padding-left: 12px; padding-right: 12px;">
+		<input class="select-menu" type="number" style="width: 110px;" @bind=BindInput />
+		<p style="margin-left: 16px; margin-right: 16px; align-self: center; margin-top: 12px; margin-bottom: 16px;">
+			文字
+		</p>
+		<select class="select-menu" @bind=BindComparison>
+			@foreach (var i in new[] { "ちょうど", "でない", "以上", "以下", "より大きい", "より小さい" })
+			{
+				<option value="@i">@i</option>
+			}
+		</select>
+	</div>
+</div>
+<style>
+	.menu-content {
+		display: block;
+		position: absolute;
+		background-color: #f9f9f9;
+		min-width: 160px;
+		max-height: 300px;
+		overflow-y: scroll;
+		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+		z-index: 3;
+	}
+
+	.select-menu {
+		-moz-appearance: none;
+		-webkit-appearance: none;
+		color: black;
+		padding: 8px 12px;
+		margin-top: 12px;
+		margin-bottom: 12px;
+		text-decoration: none;
+	}
+
+		.select-menu::-ms-expand {
+			display: none;
+		}
+
+</style>
+
+@code {
+	[Parameter]
+	public ShowMenuUI ShowMenu { get; set; } = new();
+
+	[Parameter]
+	public List<Node> Nodes { get; set; } = new();
+
+	[Parameter]
+	public LengthNode? EditNode { get; set; }
+
+	private string BindInput = string.Empty;
+
+	private string BindComparison = "ちょうど";
+
+	private LengthNodeBuilder Builder = new();
+
+	protected override void OnAfterRender(bool isFirstRender)
+	{
+		if (isFirstRender && ShowMenu.Length)
+		{
+			TreeSearch.OnHide += OnHide;
+			if (EditNode is null)
+				return;
+
+			BindInput = EditNode.Length.ToString();
+			BindComparison = EditNode.Comparison switch
+			{
+				ComparisonOperator.Equal => "ちょうど",
+				ComparisonOperator.NotEqual => "でない",
+				ComparisonOperator.GreaterThanOrEqual => "以上",
+				ComparisonOperator.LessThanOrEqual => "以下",
+				ComparisonOperator.GreaterThan => "より大きい",
+				ComparisonOperator.LessThan => "より小さい",
+				_ => "ちょうど"
+			};
+			StateHasChanged();
+		}
+	}
+
+	private void OnHide()
+	{
+		ShowMenu.AlterDefault();
+		if (string.IsNullOrWhiteSpace(BindInput))
+		{
+			Unsubscribe();
+			return;
+		}
+		if (!int.TryParse(BindInput, out var length))
+		{
+			JSRuntime.Alert($"値を整数に変換できません: '{BindInput}'");
+			Unsubscribe();
+			return;
+		}
+
+		if(EditNode is not null)
+		{
+			EditNode.Length = length;
+			EditNode.Comparison = Comparison();
+			Unsubscribe();
+			return;
+		}
+
+		Builder.Length = length;
+		Builder.Comparison = Comparison();
+		Nodes.Add(Builder.Build());
+		Unsubscribe();
+	}
+
+	private void Unsubscribe() => TreeSearch.OnHide -= OnHide;
+
+	private ComparisonOperator Comparison() => BindComparison switch
+	{
+		"ちょうど" => ComparisonOperator.Equal,
+		"でない" => ComparisonOperator.NotEqual,
+		"以上" => ComparisonOperator.GreaterThanOrEqual,
+		"以下" => ComparisonOperator.LessThanOrEqual,
+		"より大きい" => ComparisonOperator.GreaterThan,
+		"より小さい" => ComparisonOperator.LessThan,
+		_ => default
+	};
+}

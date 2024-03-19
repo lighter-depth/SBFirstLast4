@@ -21,3 +21,8 @@ public class Continue : Exception { }
 public class Redo : Exception { }
 
 public class Retry : Exception { }
+
+public class Halt : Exception 
+{
+	public Halt(string? message = "Procedure terminated.") : base(message) { }
+}

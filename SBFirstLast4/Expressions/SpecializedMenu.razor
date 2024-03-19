@@ -1,0 +1,119 @@
+﻿@page "/node-menu-specialized"
+@using SBFirstLast4.Pages
+@inject IJSRuntime JSRuntime
+
+<div class="menu-content" style="display: @NodeMenu.DisplayAttr(ShowMenu.Specialized)">
+	<div style="display: flex; flex-flow: row; text-align: center; padding-left: 12px; padding-right: 12px;">
+		<select class="select-menu" @bind=BindSelect>
+			@foreach (var i in Enum.GetValues<SpecializedCondition>().Select(OperatorExtension.ConditionToString))
+			{
+				<option value="@i">@i</option>
+			}
+		</select>
+		<p style="margin-left: 16px; margin-right: 16px; align-self: center; margin-top: 12px; margin-bottom: 16px;">
+			を
+		</p>
+		<select class="select-menu" @bind=BindFulfills>
+			<option value="満たす">満たす</option>
+			<option value="満たさない">満たさない</option>
+		</select>
+	</div>
+</div>
+
+<style>
+	.menu-content {
+		display: block;
+		position: absolute;
+		background-color: #f9f9f9;
+		min-width: 160px;
+		max-height: 300px;
+		overflow-y: scroll;
+		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+		z-index: 3;
+	}
+
+	.select-menu {
+		-moz-appearance: none;
+		-webkit-appearance: none;
+		color: black;
+		padding: 8px 12px;
+		margin-top: 12px;
+		margin-bottom: 12px;
+		text-decoration: none;
+	}
+
+		.select-menu::-ms-expand {
+			display: none;
+		}
+
+</style>
+@code {
+	[Parameter]
+	public ShowMenuUI ShowMenu { get; set; } = new();
+
+	[Parameter]
+	public List<Node> Nodes { get; set; } = new();
+
+	[Parameter]
+	public SpecializedNode? EditNode { get; set; }
+
+	private string BindSelect = string.Empty;
+
+	private string BindFulfills = "満たす";
+
+	private SpecializedNodeBuilder Builder = new();
+
+	protected override void OnAfterRender(bool isFirstRender)
+	{
+		if (isFirstRender && ShowMenu.Specialized)
+		{
+			TreeSearch.OnHide += OnHide;
+			if (EditNode is null)
+				return;
+
+			BindSelect = EditNode.Condition.ConditionToString();
+			BindFulfills = EditNode.Fulfills ? "満たす" : "満たさない";
+			StateHasChanged();
+		}
+	}
+
+	private void OnHide()
+	{
+		ShowMenu.AlterDefault();
+
+		if(BindSelect.Length == 0)
+		{
+			Unsubscribe();
+			return;
+		}
+
+		var condition = Condition();
+		var fulfills = BindFulfills == "満たす";
+
+		if(EditNode is not null)
+		{
+			Builder.Condition = condition;
+			EditNode.Fulfills = fulfills;
+			Unsubscribe();
+			return;
+		}
+
+		Builder.Condition = condition;
+		Builder.Fulfills = fulfills;
+		Nodes.Add(Builder.Build());
+		Unsubscribe();
+	}
+
+	private void Unsubscribe() => TreeSearch.OnHide -= OnHide;
+
+	private SpecializedCondition Condition() => BindSelect switch
+	{
+		"単タイプ" => SpecializedCondition.SingleTyped,
+		"複合タイプ" => SpecializedCondition.DoubleTyped,
+		"即死可能" => SpecializedCondition.Killable,
+		"準即死可能" => SpecializedCondition.Semikillable,
+		"４注単語" => SpecializedCondition.Danger4,
+		"４倍可能" => SpecializedCondition.Fourxable,
+		_ => default
+	};
+}

@@ -187,6 +187,8 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	}
 	public static explicit operator Word(string name) => new(name, WordType.Empty, WordType.Empty);
 
+	public static explicit operator Word(MultiWord word) => new(word);
+
 	public static Word FromString(string? name)
 	{
 		if (string.IsNullOrWhiteSpace(name)) 
@@ -212,10 +214,6 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	}
 
 	internal static Word FromType(WordType type) => Default with { Type1 = type };
-
-	public char FirstChar() => Start;
-
-	public char LastChar() => End;
 }
 
 [DynamicLinqType]

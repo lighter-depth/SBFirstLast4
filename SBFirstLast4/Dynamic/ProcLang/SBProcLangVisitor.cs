@@ -400,7 +400,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			await Visit(context.try_stat);
 		}
 		catch (Exception ex)
-		when (ex is not (Break or Continue or Redo or Return or Retry or Raise or OperationCanceledException or TaskCanceledException or SBProcLangVisitorException))
+		when (ex is not (Break or Continue or Redo or Return or Retry or Raise or Halt or OperationCanceledException or TaskCanceledException or SBProcLangVisitorException))
 		{
 			var handled = false;
 			var catchStatements = new List<(SBProcLangParser.Stat_blockContext Block, string? TypeName, string? VarName)>();
@@ -559,6 +559,31 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 	{
 		await _update();
 		return "FLUSH";
+	}
+
+	public override async Task<object?> VisitAssert_stat([NotNull] SBProcLangParser.Assert_statContext context)
+	{
+		var expr = context.expr()[0];
+
+		var result = await QueryRunner.EvaluateExpressionAsync(expr.GetText());
+
+		if ((bool?)result == true)
+			return "ASSERT";
+
+		if (context.assert_msg is not { } msgExpr)
+			throw new Halt(expr.GetText());
+
+		var msg = await QueryRunner.EvaluateExpressionAsync(msgExpr.GetText());
+		throw new Halt((string?)msg);
+	}
+
+	public override async Task<object?> VisitHalt_stat([NotNull] SBProcLangParser.Halt_statContext context)
+	{
+		if (context.expr() is not { } expr)
+			throw new Halt();
+
+		var msg = await QueryRunner.EvaluateExpressionAsync(expr.GetText());
+		throw new Halt((string?)msg);
 	}
 
 

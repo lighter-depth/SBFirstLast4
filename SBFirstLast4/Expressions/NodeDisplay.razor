@@ -1,0 +1,159 @@
+﻿@page "/node-display"
+@using SBFirstLast4.Pages
+@inject IJSRuntime JSRuntime
+
+<div style="display: flex; flex-flow: column; position: relative;">
+	<div class="node-wrapper">
+		@if (Node is FirstNode first)
+		{
+			<div class="node-pane" style="background-color: #6C5CE7;" @onclick="() => OpenMenu(nameof(ShowMenuUI.First))">
+				@first.Description
+				<div class="node-title">
+					First
+				</div>
+			</div>
+		}
+
+		else if (Node is LastNode last)
+		{
+			<div class="node-pane" style="background-color: #6CD95C" @onclick="() => OpenMenu(nameof(ShowMenuUI.Last))">
+				@last.Description
+				<div class="node-title">
+					Last
+				</div>
+			</div>
+		}
+
+		else if (Node is LengthNode length)
+		{
+			<div class="node-pane" style="background-color: #4CE7E7" @onclick="() => OpenMenu(nameof(ShowMenuUI.Length))">
+				@length.Description
+				<div class="node-title">
+					Length
+				</div>
+			</div>
+		}
+
+		else if (Node is TypeNode type)
+		{
+			<div class="node-pane" style="background-color: #E75C9C" @onclick="() => OpenMenu(nameof(ShowMenuUI.Type))">
+				@type.Description
+				<div class="node-title">
+					Type
+				</div>
+			</div>
+		}
+
+		else if (Node is RegexNode regex)
+		{
+			<div class="node-pane" style="background-color: #E76C5C" @onclick="() => OpenMenu(nameof(ShowMenuUI.Regex))">
+				@regex.Description
+				<div class="node-title">
+					Regex
+				</div>
+			</div>
+		}
+
+		else if(Node is SpecializedNode specialized)
+		{
+			<div class="node-pane" style="background-color: goldenrod" @onclick="() => OpenMenu(nameof(ShowMenuUI.Specialized))">
+				@specialized.Description
+				<div class="node-title">
+					Other
+				</div>
+			</div>
+		}
+	</div>
+	<div class="node-close" @onclick=NodeClose_OnClick>
+		<span class="oi oi-x" />
+	</div>
+	@if (ShowMenu.First)
+	{
+		<FirstMenu ShowMenu="ShowMenu" EditNode="Node as FirstNode" />
+	}
+	else if (ShowMenu.Last)
+	{
+		<LastMenu ShowMenu="ShowMenu" EditNode="Node as LastNode" />
+	}
+	else if (ShowMenu.Length)
+	{
+		<LengthMenu ShowMenu="ShowMenu" EditNode="Node as LengthNode" />
+	}
+	else if (ShowMenu.Type)
+	{
+		<TypeMenu ShowMenu="ShowMenu" EditNode="Node as TypeNode" />
+	}
+	else if (ShowMenu.Regex)
+	{
+		<RegexMenu ShowMenu="ShowMenu" EditNode="Node as RegexNode" />
+	}
+	else if (ShowMenu.Specialized)
+	{
+		<SpecializedMenu ShowMenu="ShowMenu" EditNode="Node as SpecializedNode" />
+	}
+</div>
+
+<style>
+	.node-wrapper {
+		margin: 0px 20px 0px 20px;
+		border: 2px solid #777777;
+		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+		border-radius: 20px;
+	}
+
+	.node-pane {
+		position: relative;
+		padding: 20px 20px 20px 20px;
+		border: 6px solid white;
+		border-radius: 20px;
+		text-align: center;
+		color: white;
+		font-weight: bold;
+		justify-content: center;
+		align-items: center;
+		min-width: 200px;
+		cursor: pointer;
+		font-size: 20px;
+	}
+
+	.node-title {
+		position: absolute;
+		color: white;
+		top: 5px;
+		left: 10px;
+		font-size: 14px;
+		font-weight: normal;
+		font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+	}
+
+	.node-close {
+		position: absolute;
+		top: 80px;
+	}
+</style>
+
+@code {
+
+	[Parameter]
+	public Node Node { get; set; } = null!;
+
+	[Parameter]
+	public List<Node> Nodes { get; set; } = null!;
+
+	private ShowMenuUI ShowMenu = new();
+
+	private void OpenMenu(string target)
+	{
+		ShowMenu.Alter(true, target);
+		TreeSearch.ShowTransparentScreen = true;
+		TreeSearch.RaiseStateHasChanged();
+	}
+
+	private async Task NodeClose_OnClick()
+	{
+		if (await JSRuntime.Confirm("ノードを消去しますか？"))
+			Nodes.RemoveAll(n => n.Id == Node.Id);
+
+		TreeSearch.RaiseStateHasChanged();
+	}
+}

@@ -1,0 +1,102 @@
+﻿@page "/node-menu-first"
+@using SBFirstLast4.Pages
+@inject IJSRuntime JSRuntime
+
+<div class="menu-content" style="display: @NodeMenu.DisplayAttr(ShowMenu.First)">
+	<div style="display: flex; flex-flow: row; text-align: center; padding-left: 12px; padding-right: 12px;">
+		<input class="select-menu" maxlength="1" style="width: 46px;" @bind=BindInput />
+		<p style="margin-left: 16px; margin-right: 16px; align-self: center; margin-top: 12px; margin-bottom: 16px;">
+			から
+		</p>
+		<select class="select-menu" @bind=BindEquality>
+			<option value="始まる">始まる</option>
+			<option value="始まらない">始まらない</option>
+		</select>
+	</div>
+</div>
+
+<style>
+	.menu-content {
+		display: block;
+		position: absolute;
+		background-color: #f9f9f9;
+		min-width: 160px;
+		max-height: 300px;
+		overflow-y: scroll;
+		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+		z-index: 3;
+	}
+
+	.select-menu {
+		-moz-appearance: none;
+		-webkit-appearance: none;
+		color: black;
+		padding: 8px 12px;
+		margin-top: 12px;
+		margin-bottom: 12px;
+		text-decoration: none;
+	}
+
+		.select-menu::-ms-expand {
+			display: none;
+		}
+
+</style>
+@code {
+	[Parameter]
+	public ShowMenuUI ShowMenu { get; set; } = new();
+
+	[Parameter]
+	public List<Node> Nodes { get; set; } = new();
+
+	[Parameter]
+	public FirstNode? EditNode { get; set; }
+
+	private string BindInput = string.Empty;
+
+	private string BindEquality = "始まる";
+
+	private FirstNodeBuilder Builder = new();
+
+	protected override void OnAfterRender(bool isFirstRender)
+	{
+		if (isFirstRender && ShowMenu.First)
+		{
+			TreeSearch.OnHide += OnHide;
+			if (EditNode is null)
+				return;
+
+			BindInput = EditNode.First.ToString();
+			BindEquality = EditNode.Equality == EqualityOperator.Equal ? "始まる" : "始まらない";
+			StateHasChanged();
+		}
+	}
+
+	private void OnHide()
+	{
+		ShowMenu.AlterDefault();
+		var first = BindInput.At(0);
+		if (first == default)
+		{
+			Unsubscribe();
+			return;
+		}
+
+		if(EditNode is not null)
+		{
+			EditNode.First = first;
+			EditNode.Equality = Equality();
+			Unsubscribe();
+			return;
+		}
+
+		Builder.First = first;
+		Builder.Equality = Equality();
+		Nodes.Add(Builder.Build());
+		Unsubscribe();
+	}
+
+	private void Unsubscribe() => TreeSearch.OnHide -= OnHide;
+
+	private EqualityOperator Equality() => BindEquality == "始まる" ? EqualityOperator.Equal : EqualityOperator.NotEqual;
+}

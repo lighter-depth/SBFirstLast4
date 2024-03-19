@@ -30,6 +30,8 @@ statement: assignment
          | clear_stat
          | delay_stat
          | flush_stat
+         | assert_stat
+         | halt_stat
          | expr_stat
          | empty_stat
          ;
@@ -79,6 +81,10 @@ clear_stat: 'clear' '(' ')' ';' ;
 delay_stat: 'delay' '(' Number ')' ';' ;
 
 flush_stat: 'flush' ';' ;
+
+assert_stat: 'assert' '(' expr ( ',' assert_msg=expr )? ')' ';' ;
+
+halt_stat: 'halt' '(' expr? ')' ';' ;
 
 assignment: ID '=' expr ';' ;
 

@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
 using System.Numerics;
 using System.Text.RegularExpressions;
@@ -40,6 +41,9 @@ public static class DynamicExtensionHelper
 	public static void Add<T>(this Stack<T> stack, T value) => stack.Push(value);
 
 	public static void Add<T>(this Queue<T> queue, T value) => queue.Enqueue(value);
+
+	public static void Add<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, (TKey Key, TValue Value) tuple)
+		where TKey : notnull => dictionary.Add(tuple.Key, tuple.Value);
 
 	/// <summary>
 	/// SO dictionary for query source
@@ -120,10 +124,32 @@ public static class ProcHelper
 }
 
 #pragma warning disable IDE1006
+
+[DynamicLinqType]
+public static class TreeSearchHelper
+{
+	public static char FirstChar(this Word word) => word.Start;
+
+	public static char LastChar(this Word word) => word.End;
+
+	public static bool IsKillable(this Word word) => AuxLists.Killable.Contains(word.Name);
+
+	public static bool IsSemikillable(this Word word) => AuxLists.SemiKillable.Contains(word.Name);
+
+	public static bool IsDanger4(this Word word) => AuxLists.Danger4.Contains(word.Name);
+
+	public static bool Is4xable(this Word word) => AuxLists.CanBe4xed.Contains(word.Name);
+
+	public static bool __Regex_IsMatch__(this string str, string pattern) => Regex.IsMatch(str, pattern);
+
+	public static bool __Regex_IsMatch__(this Word word, string pattern) => Regex.IsMatch(word.Name, pattern);
+}
+
+
 [DynamicLinqType]
 public static class @cast
 {
-	public static T @static<T>(object? obj) => (T)obj!;
+	public static T @static<T>(dynamic obj) => (T)obj;
 
 	public static T? @dynamic<T>(object? obj) where T : class => obj as T;
 
@@ -166,6 +192,9 @@ public static class @operator
 		">>" => RightShift(x, y),
 		">>>" => UnsignedRightShiftImpl(x, y),
 		"??" => Coalesce(x, y),
+		"in" => In(x, y),
+		"=~" => Match(x, y),
+		"!~" => NotMatch(x, y),
 		".." => Range(x, y),
 		_ => throw new ArgumentException($"Invalid binary operator: {op}")
 	};
@@ -184,6 +213,10 @@ public static class @operator
 	public static object? Minus(dynamic x) => Negate(x);
 
 	public static object? Minus(dynamic x, dynamic y) => Subtract(x, y);
+
+	public static Index Hat(dynamic x) => Index(x);
+
+	public static object? Hat(dynamic x, dynamic y) => Xor(x, y);
 
 
 	public static object? UnaryPlus(dynamic x) => +x;
@@ -258,11 +291,19 @@ public static class @operator
 
 	public static object? Coalesce(dynamic x, dynamic y) => x ?? y;
 
+	public static bool In(dynamic x, dynamic y) => Enumerable.Contains(y, x);
+
+	public static bool Match(Regex x, string y) => x.IsMatch(y);
+
+	public static bool NotMatch(Regex x, string y) => !x.IsMatch(y);
+
 	public static object? Condition(dynamic x, dynamic y, dynamic z) => x ? y : z;
 
 	public static T? Default<T>() => default;
 
 	public static Type TypeOf<T>() => typeof(T);
+
+	public static int SizeOf<T>() => System.Runtime.InteropServices.Marshal.SizeOf<T>();
 
 	public static Index Index(int x) => ^x;
 
@@ -286,6 +327,16 @@ public static class @operator
 }
 
 #pragma warning restore
+
+[DynamicLinqType]
+public static class BooleanOperators
+{
+	public static bool And(bool x, bool y) => x && y;
+
+	public static bool Or(bool x, bool y) => x || y;
+
+	public static bool Xor(bool x, bool y) => x ^ y;
+}
 
 [DynamicLinqType]
 public static class Linq
@@ -312,6 +363,12 @@ public static class Linq
 
 	public static IEnumerable<(TSource Item, int Index)> WithIndex<TSource>(this IEnumerable<TSource> source)
 		=> source.Select((x, i) => (x, i));
+
+	public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> source)
+		where TKey : notnull => source.ToDictionary(kv => kv.Key, kv => kv.Value);
+
+	public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<(TKey, TValue)> source)
+		where TKey : notnull => source.ToDictionary(t => t.Item1, t => t.Item2);
 
 	public static bool Any<TSource>(this IEnumerable<TSource> source)
 		=> Enumerable.Any(source);
