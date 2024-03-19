@@ -3,13 +3,24 @@
 @inject IJSRuntime JSRuntime
 
 <div class="dropdown-content" style="display: @DisplayAttr(ShowMenu.Node)">
-	<a @onclick="() => OpenMenu(nameof(ShowMenuUI.First))">最初の文字</a>
-	<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Last))">最後の文字</a>
-	<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Length))">長さ</a>
-	<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Type))">タイプ</a>
-	<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Regex))">正規表現</a>
-	<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Specialized))">特殊条件</a>
-	<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Group))">グループ</a>
+	@if (IsTyped)
+	{
+		<a @onclick="() => OpenMenu(nameof(ShowMenuUI.First))">最初の文字</a>
+		<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Last))">最後の文字</a>
+		<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Length))">長さ</a>
+		<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Type))">タイプ</a>
+		<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Regex))">正規表現</a>
+		<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Specialized))">特殊条件</a>
+		<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Group))">グループ</a>
+	}
+	else
+	{
+		<a @onclick="() => OpenMenu(nameof(ShowMenuUI.First))">最初の文字</a>
+		<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Last))">最後の文字</a>
+		<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Length))">長さ</a>
+		<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Regex))">正規表現</a>
+		<a @onclick="() => OpenMenu(nameof(ShowMenuUI.Group))">グループ</a>
+	}
 </div>
 
 
@@ -76,6 +87,9 @@ else if (ShowMenu.Specialized)
 
 	[Parameter]
 	public List<Node> Nodes { get; set; } = new();
+
+	[Parameter]
+	public bool IsTyped { get; set; }
 
 	internal static string DisplayAttr(bool b) => b ? "block;" : "none;";
 

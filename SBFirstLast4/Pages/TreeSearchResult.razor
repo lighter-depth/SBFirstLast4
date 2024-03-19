@@ -1,13 +1,16 @@
-﻿@page "/result"
+﻿@page "/treesearch-result"
 @using System.Text.RegularExpressions
+@using Interpreter = SBFirstLast4.Dynamic.Interpreter;
+@using ScriptExecutor = SBFirstLast4.Dynamic.ScriptExecutor;
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 <PageTitle>検索結果</PageTitle>
 
 
 <h1>検索結果</h1>
 
 <div class="container">
-	@if (isSearching)
+	@if (IsSearching)
 	{
 		<p class="loading-text">
 			単語を検索中...<br>
@@ -31,7 +34,7 @@
 		<button @onclick="GoToNextPage" disabled="@IsLastPage">つぎへ</button>
 	</div>
 	<div class="download-button">
-		@if (!isSearching && VisibleItems.Any())
+		@if (!IsSearching && VisibleItems.Any())
 		{
 			<a @onclick="DownloadButton_OnClick" class="btn-download">ファイルに保存</a>
 		}
@@ -39,7 +42,7 @@
 </div>
 
 <div class="indicators">
-	<div class="count-indicator">合計 @(IsTyped ? wordDataArr.Length : dataArr.Length) 件</div>
+	<div class="count-indicator">合計 @(IsTyped ? TypedData.Length : TypelessData.Length) 件</div>
 	<div class="page-indicator">@CurrentPage/@TotalPages</div>
 </div>
 
@@ -104,32 +107,32 @@
 			cursor: not-allowed;
 		}
 
-	.download-button{
+	.download-button {
 		width: max(10%, 200px);
 	}
 
-	.download-button a {
-		padding: 10px 20px;
-		border: none;
-		border-radius: 30px;
-		font-size: 16px;
-		cursor: pointer;
-		background: linear-gradient(to right, #45aaf2, #007bff);
-		color: white;
-		transition: background-color 0.3s, color 0.3s;
-		text-decoration: none;
-	}
-
-		.download-button a:hover {
-			background-color: white;
-			color: #45aaf2;
+		.download-button a {
+			padding: 10px 20px;
+			border: none;
+			border-radius: 30px;
+			font-size: 16px;
+			cursor: pointer;
+			background: linear-gradient(to right, #45aaf2, #007bff);
+			color: white;
+			transition: background-color 0.3s, color 0.3s;
+			text-decoration: none;
 		}
 
-		.download-button a:disabled {
-			background-color: #ddd;
-			color: #999;
-			cursor: not-allowed;
-		}
+			.download-button a:hover {
+				background-color: white;
+				color: #45aaf2;
+			}
+
+			.download-button a:disabled {
+				background-color: #ddd;
+				color: #999;
+				cursor: not-allowed;
+			}
 
 	.indicators {
 		display: flex;
@@ -151,27 +154,25 @@
 </style>
 
 @code {
-	public static char FirstChar { get; set; }
-	public static char LastChar { get; set; }
-	public static Func<string, bool>? CustomLengthPred { get; set; }
-	public static Func<Word, bool>? CustomLengthPredTyped{ get; set; }
-	public static Regex? RegexBody { get; set; }
-	public static bool IsTyped { get; set; } = false;
-	public static Searcher TypedSearcher { get; set; } = new();
-	public static Func<Word, bool>? TypedPredicate { get; set; }
-	private string[] dataArr = Array.Empty<string>();
-	private Word[] wordDataArr = Array.Empty<Word>();
-	private bool IsFirstPage => CurrentPage == 1;
-	private bool IsLastPage => CurrentPage == TotalPages;
-	private bool isSearching = true;
-	private const int ItemsPerPage = 20;
-	private int CurrentPage = 1;
-	private int TotalPages => (int)Math.Ceiling((double)(IsTyped ? wordDataArr.Length : dataArr.Length) / ItemsPerPage);
-	private List<string> VisibleItems
-	=> (IsTyped ? wordDataArr.Select(x => x.ToString()) : dataArr)
+	private bool IsSearching = true;
+	private List<string> VisibleItems 
+	=> (IsTyped ? TypedData.Select(x => x.ToString()) : TypelessData)
 		.Skip((CurrentPage - 1) * ItemsPerPage)
 		.Take(ItemsPerPage)
 		.ToList();
+
+	internal static bool IsTyped;
+	internal static string Query = string.Empty;
+
+	private string[] TypelessData = Array.Empty<string>();
+
+	private Word[] TypedData = Array.Empty<Word>();
+
+	private bool IsFirstPage => CurrentPage == 1;
+	private bool IsLastPage => CurrentPage == TotalPages;
+	private const int ItemsPerPage = 20;
+	private int CurrentPage = 1;
+	private int TotalPages => (int)Math.Ceiling((double)(IsTyped ? TypedData.Length : TypelessData.Length) / ItemsPerPage);
 
 	protected override void OnInitialized()
 	{
@@ -183,33 +184,47 @@
 		if (!Words.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("top", false);
+			return;
 		}
 	}
 
-	protected override void OnAfterRender(bool firstRender)
+	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
 		{
-			if (IsTyped)
+			try
 			{
-				wordDataArr = TypedSearcher.SearchTyped(TypedPredicate, CustomLengthPredTyped);
-				if (AppSettings.SortResult)
-					Array.Sort(wordDataArr);
-			}
+				var (success, translated, selector, errorMsg) = await Interpreter.TryInterpretAsync(Query);
 
-			else
+				if (!success)
+				{
+					await JSRuntime.Alert(errorMsg);
+					NavigationManager.NavigateTo("treesearch", false);
+					return;
+				}
+
+				var result = ScriptExecutor.ExecuteDynamic(translated, selector);
+				if (IsTyped)
+				{
+					TypedData = (Word[])result!;
+					if (AppSettings.SortResult)
+						Array.Sort(TypedData);
+				}
+				else
+				{
+					TypelessData = (string[])result!;
+					if (AppSettings.SortResult)
+						Array.Sort(TypelessData);
+				}
+
+				IsSearching = false;
+				StateHasChanged();
+			}
+			catch (Exception ex)
 			{
-				dataArr = RegexBody is null
-							? CustomLengthPred is null
-							? Searcher.SearchFirstLast(FirstChar, LastChar)
-							: Searcher.SearchFirstLast(FirstChar, LastChar, CustomLengthPred)
-							: Searcher.SearchRegex(RegexBody);
-				if (AppSettings.SortResult)
-					Array.Sort(dataArr);
+				await JSRuntime.AlertEx(ex);
+				NavigationManager.NavigateTo("treesearch", false);
 			}
-
-			isSearching = false;
-			StateHasChanged();
 		}
 	}
 
@@ -232,8 +247,8 @@
 	}
 	private void DownloadButton_OnClick()
 	{
-		if (IsTyped) DownloadConfig.DataListWord = wordDataArr;
-		else DownloadConfig.DataListStr = dataArr;
+		if (IsTyped) DownloadConfig.DataListWord = TypedData;
+		else DownloadConfig.DataListStr = TypelessData;
 		NavigationManager.NavigateTo("download-config");
 	}
 }

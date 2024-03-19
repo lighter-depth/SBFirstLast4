@@ -10,6 +10,8 @@ public class Node
 
 	private static int IdGenerator = 0;
 
+	public bool IsTypedOnly => this is TypeNode or SpecializedNode;
+
 	public Node(NodeOperator op) => (Operator, Id) = (op, IdGenerator++);
 }
 
