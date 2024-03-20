@@ -35,6 +35,8 @@ requires: STD;
 #define $>( operator..GreaterThan(
 #define $>=( operator..GreaterThanOrEqual(
 
+#define $<=>( operator..Spaceship(
+
 #define $&( operator..And(
 #define $|( operator..Or(
 
