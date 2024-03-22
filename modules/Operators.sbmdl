@@ -30,6 +30,9 @@ requires: STD;
 #define $==( operator..Equal(
 #define $!=( operator..NotEqual(
 
+#define $===( operator..StrictEqual(
+#define $!==( operator..StrictNotEqual(
+
 #define $<( operator..LessThan(
 #define $<=( operator..LessThanOrEqual(
 #define $>( operator..GreaterThan(
