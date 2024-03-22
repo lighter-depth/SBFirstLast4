@@ -1,4 +1,5 @@
 ﻿using SBFirstLast4.Pages;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text.RegularExpressions;
 
 namespace SBFirstLast4;
@@ -68,4 +69,12 @@ public static class SearchOptions
         SearchResult.CustomLengthPredTyped = length;
         SearchResult.TypedPredicate = predicate;
     }
+
+    public static void SetTree(bool isTD, string query)
+    {
+		TreeSearchResult.Query = query;
+		TreeSearchResult.IsTyped = isTD;
+		if (isTD) SetTD(null!);
+		else SetTL(default, default, null, null, ListDeclType.Last);
+	}
 }

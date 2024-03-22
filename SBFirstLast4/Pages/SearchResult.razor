@@ -27,8 +27,8 @@
 
 <div class="pagination">
 	<div class="pagination-buttons">
-		<button @onclick="GoToPreviousPage" disabled="@IsFirstPage">まえへ</button>
-		<button @onclick="GoToNextPage" disabled="@IsLastPage">つぎへ</button>
+		<button @onclick="GoToPreviousPage" disabled="@IsFirstPage"><span class="oi oi-chevron-left" /></button>
+		<button @onclick="GoToNextPage" disabled="@IsLastPage"><span class="oi oi-chevron-right" /></button>
 	</div>
 	<div class="download-button">
 		@if (!isSearching && VisibleItems.Any())

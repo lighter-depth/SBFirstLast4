@@ -126,27 +126,6 @@ public static class ProcHelper
 #pragma warning disable IDE1006
 
 [DynamicLinqType]
-public static class TreeSearchHelper
-{
-	public static char FirstChar(this Word word) => word.Start;
-
-	public static char LastChar(this Word word) => word.End;
-
-	public static bool IsKillable(this Word word) => AuxLists.Killable.Contains(word.Name);
-
-	public static bool IsSemikillable(this Word word) => AuxLists.SemiKillable.Contains(word.Name);
-
-	public static bool IsDanger4(this Word word) => AuxLists.Danger4.Contains(word.Name);
-
-	public static bool Is4xable(this Word word) => AuxLists.CanBe4xed.Contains(word.Name);
-
-	public static bool __Regex_IsMatch__(this string str, string pattern) => Regex.IsMatch(str, pattern);
-
-	public static bool __Regex_IsMatch__(this Word word, string pattern) => Regex.IsMatch(word.Name, pattern);
-}
-
-
-[DynamicLinqType]
 public static class @cast
 {
 	public static T @static<T>(dynamic obj) => (T)obj;
@@ -179,10 +158,13 @@ public static class @operator
 		"**" => Power(x, y),
 		"==" => Equal(x, y),
 		"!=" => NotEqual(x, y),
+		"===" => StrictEqual(x, y),
+		"!==" => StrictNotEqual(x, y),
 		"<" => LessThan(x, y),
 		"<=" => LessThanOrEqual(x, y),
 		">" => GreaterThan(x, y),
 		">=" => GreaterThenOrEqual(x, y),
+		"<=>" => Spaceship(x, y),
 		"&" => And(x, y),
 		"|" => Or(x, y),
 		"^" => Xor(x, y),
@@ -271,6 +253,10 @@ public static class @operator
 
 	public static object? NotEqual(dynamic x, dynamic y) => x != y;
 
+	public static bool StrictEqual(dynamic x, dynamic y) => ReferenceEquals(x, y);
+
+	public static bool StrictNotEqual(dynamic x, dynamic y) => !ReferenceEquals(x, y);
+
 	public static object? LessThan(dynamic x, dynamic y) => x < y;
 
 	public static object? LessThanOrEqual(dynamic x, dynamic y) => x <= y;
@@ -278,6 +264,8 @@ public static class @operator
 	public static object? GreaterThan(dynamic x, dynamic y) => x > y;
 
 	public static object? GreaterThenOrEqual(dynamic x, dynamic y) => x >= y;
+
+	public static int Spaceship(dynamic x, dynamic y) => x == y ? 0 : x < y ? -1 : 1;
 
 	public static object? And(dynamic x, dynamic y) => x & y;
 
@@ -327,16 +315,6 @@ public static class @operator
 }
 
 #pragma warning restore
-
-[DynamicLinqType]
-public static class BooleanOperators
-{
-	public static bool And(bool x, bool y) => x && y;
-
-	public static bool Or(bool x, bool y) => x || y;
-
-	public static bool Xor(bool x, bool y) => x ^ y;
-}
 
 [DynamicLinqType]
 public static class Linq

@@ -30,8 +30,8 @@
 
 <div class="pagination">
 	<div class="pagination-buttons">
-		<button @onclick="GoToPreviousPage" disabled="@IsFirstPage">まえへ</button>
-		<button @onclick="GoToNextPage" disabled="@IsLastPage">つぎへ</button>
+		<button @onclick="GoToPreviousPage" disabled="@IsFirstPage"><span class="oi oi-chevron-left" /></button>
+		<button @onclick="GoToNextPage" disabled="@IsLastPage"><span class="oi oi-chevron-right" /></button>
 	</div>
 	<div class="download-button">
 		@if (!IsSearching && VisibleItems.Any())
@@ -92,7 +92,7 @@
 	}
 
 	.pagination-buttons button {
-		padding: 10px 20px;
+		padding: 10px 10px;
 		border: none;
 		border-radius: 30px;
 		font-size: 16px;
@@ -155,7 +155,7 @@
 
 @code {
 	private bool IsSearching = true;
-	private List<string> VisibleItems 
+	private List<string> VisibleItems
 	=> (IsTyped ? TypedData.Select(x => x.ToString()) : TypelessData)
 		.Skip((CurrentPage - 1) * ItemsPerPage)
 		.Take(ItemsPerPage)
@@ -198,7 +198,7 @@
 
 				if (!success)
 				{
-					await JSRuntime.Alert(errorMsg);
+					await JSRuntime.Alert($"{errorMsg} Query: {Query}");
 					NavigationManager.NavigateTo("treesearch", false);
 					return;
 				}
@@ -223,6 +223,7 @@
 			catch (Exception ex)
 			{
 				await JSRuntime.AlertEx(ex);
+				await JSRuntime.Alert(Query);
 				NavigationManager.NavigateTo("treesearch", false);
 			}
 		}

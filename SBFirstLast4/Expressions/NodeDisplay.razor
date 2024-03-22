@@ -54,12 +54,22 @@
 			</div>
 		}
 
-		else if(Node is SpecializedNode specialized)
+		else if (Node is SpecializedNode specialized)
 		{
 			<div class="node-pane" style="background-color: goldenrod" @onclick="() => OpenMenu(nameof(ShowMenuUI.Specialized))">
 				@specialized.Description
 				<div class="node-title">
 					Other
+				</div>
+			</div>
+		}
+
+		else if (Node is GroupNode group)
+		{
+			<div class="node-pane">
+				グループ
+				<div class="node-title">
+					Group
 				</div>
 			</div>
 		}

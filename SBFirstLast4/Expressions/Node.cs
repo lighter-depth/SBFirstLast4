@@ -32,7 +32,7 @@ public class FirstNode : Node
 	public FirstNode(NodeOperator op, EqualityOperator equality, char first)
 		: base(op) => (First, Equality) = (first, equality);
 
-	public override string ToString() => $"{String(Operator)}(FirstChar {String(Equality)} '{First}')";
+	public override string ToString() => $".{String(Operator)}(FirstChar {String(Equality)} '{First}')";
 }
 
 public class LastNode : Node
@@ -46,7 +46,7 @@ public class LastNode : Node
 	public LastNode(NodeOperator op, EqualityOperator equality, char last)
 		: base(op) => (Last, Equality) = (last, equality);
 
-	public override string ToString() => $"{String(Operator)}(LastChar {String(Equality)} '{Last}')";
+	public override string ToString() => $".{String(Operator)}(LastChar {String(Equality)} '{Last}')";
 }
 
 public class LengthNode : Node
@@ -60,7 +60,7 @@ public class LengthNode : Node
 	public LengthNode(NodeOperator op, int length, ComparisonOperator comparison)
 		: base(op) => (Length, Comparison) = (length, comparison);
 
-	public override string ToString() => $"{String(Operator)}(Length {String(Comparison)} {Length})";
+	public override string ToString() => $".{String(Operator)}(Length {String(Comparison)} {Length})";
 }
 
 public class TypeNode : Node
@@ -75,7 +75,7 @@ public class TypeNode : Node
 		: base(op) => (Type, Contains) = (type, contains);
 
 	public override string ToString()
-		=> $"{String(Operator)}({String(Contains)}Contains(WordType.{Type}))";
+		=> $".{String(Operator)}({String(Contains)}Contains(WordType.{Type}))";
 }
 
 public class RegexNode : Node
@@ -99,7 +99,7 @@ public class RegexNode : Node
 		: base(op) => (Pattern, Matches) = (pattern, matches);
 
 	public override string ToString()
-		=> $"{String(Operator)}({String(Matches)}{nameof(Dynamic.Extensions.TreeSearchHelper.__Regex_IsMatch__)}(\"{Pattern}\"))";
+		=> $".{String(Operator)}({String(Matches)}{nameof(Extensions.TreeSearchHelper.__Regex_IsMatch__)}(\"{Pattern}\"))";
 }
 
 public class SpecializedNode : Node
@@ -129,7 +129,7 @@ public class SpecializedNode : Node
 	public SpecializedNode(NodeOperator op, SpecializedCondition condition, bool fulfills)
 		: base(op) => (Condition, Fulfills) = (condition, fulfills);
 
-	public override string ToString() => $"{String(Operator)}({String(Fulfills)}{String(Condition)})";
+	public override string ToString() => $".{String(Operator)}({String(Fulfills)}{String(Condition)})";
 }
 
 public class GroupNode : Node
@@ -139,5 +139,5 @@ public class GroupNode : Node
 	public GroupNode(NodeOperator op, IReadOnlyList<Node> nodes)
 		: base(op) => Nodes = nodes;
 
-	public override string ToString() => $"{String(Operator)}({Nodes.Select(n => n.ToString()).StringJoin()})";
+	public override string ToString() => $".{String(Operator)}({nameof(Extensions.BooleanEvaluator)}(){Nodes.Select(n => n.ToString()).StringJoin()}.{nameof(Extensions.BooleanEvaluator.Evaluate)}())";
 }

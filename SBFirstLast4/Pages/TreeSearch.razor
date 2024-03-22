@@ -33,14 +33,19 @@
 			if (node.Operator != op) StateHasChanged();
 			var color = OperatorToColor(node.Operator);
 			<div class="pipe" style="height: 30px; background-color: @color;" />
-			<select class="operator-selector" value="@OperatorExtension.String(node.Operator)" @onchange="e =>
+			<select class="operator-selector" value="@node.Operator.ToSymbol()" @onchange="e =>
 				{
-					var value = e.Value as string;
-					node.Operator = value == AND ? NodeOperator.And : NodeOperator.Or;
+					node.Operator = (e.Value as string).SymbolToOperator();
 					StateHasChanged();
 				}">
 				<option value="&&">&&</option>
 				<option value="||">||</option>
+				<option value="^">^</option>
+				<option value="!&&">!&&</option>
+				<option value="!||">!||</option>
+				<option value="!^">!^</option>
+				<option value="→">→</option>
+				<option value="!→">!→</option>
 			</select>
 			<div class="pipe" style="height: 30px; background-color: @color;" />
 		}
@@ -94,11 +99,17 @@
 		font-size: 16px;
 		background-color: white;
 		margin: 10px 10px 10px 10px;
-		min-width: 110px;
+		min-width: 120px;
 	}
 
 		.source-selector::-ms-expand {
 			display: none;
+		}
+
+		.source-selector option {
+			padding-left: 5px;
+			padding-right: 5px;
+			text-align: center;
 		}
 
 	.pipe {
@@ -212,33 +223,53 @@
 	private static string OperatorToColor(NodeOperator op) => op switch
 	{
 		NodeOperator.And => "olivedrab",
-		NodeOperator.Or => "violet",
+		NodeOperator.Or => "darkmagenta",
+		NodeOperator.Xor => "cadetblue",
+		NodeOperator.Nand => "indianred",
+		NodeOperator.Nor => "dimgray",
+		NodeOperator.Xnor => "limegreen",
+		NodeOperator.Imply => "darkgoldenrod",
+		NodeOperator.Nimply => "steelblue",
 		_ => "lightgray"
 	};
 
 	private async Task SourceSelector_OnChange(ChangeEventArgs e)
 	{
 		var value = e.Value as string ?? string.Empty;
-		const string message = "有属性辞書でのみ有効なノードが含まれています。無属性辞書に変更しますか？（無効なノードは削除されます）";
-		if (value == "無属性辞書" && Nodes.Any(n => n.IsTypedOnly) && !await JSRuntime.Confirm(message))
+
+		var isTL = value == "無属性辞書";
+
+		if (isTL && Words.IsLite)
+		{
+			var backToTop = await JSRuntime.Confirm("完全版の辞書が読み込まれていないため、辞書選択画面に戻ります。よろしいですか？");
+
+			if (backToTop)
+			{
+				NavigationManager.NavigateTo("top", false);
+				return;
+			}
+
+			await JSRuntime.SetElementValueById("source-selector-inst", "有属性辞書");
+			return;
+		}
+
+		if (isTL && Nodes.Any(n => n.IsTypedOnly) && !await JSRuntime.Confirm("有属性辞書でのみ有効なノードが含まれています。無属性辞書に変更しますか？（無効なノードは削除されます）"))
 		{
 			await JSRuntime.SetElementValueById("source-selector-inst", "有属性辞書");
 			return;
 		}
+
 		SourceName = value;
-		if (value == "無属性辞書")
+		if (isTL)
 			Nodes.RemoveAll(n => n.IsTypedOnly);
 	}
 
 	private void SearchBtn_OnClick()
 	{
 		var selector = IsTyped ? "@TW" : "@NN";
-		var query = $"{selector}.Where(true && {Nodes.Select(n => n.ToString()).StringJoin()}).ToArray()";
+		var query = $"{selector}.Where({nameof(Expressions.Extensions.BooleanEvaluator)}(){Nodes.Select(n => n.ToString()).StringJoin()}.{nameof(Expressions.Extensions.BooleanEvaluator.Evaluate)}()).ToArray()";
 
-		TreeSearchResult.Query = query;
-		TreeSearchResult.IsTyped = IsTyped;
-		if (IsTyped) SearchOptions.SetTD(null!);
-		else SearchOptions.SetTL(default, default, null, null, ListDeclType.Last);
+		SearchOptions.SetTree(IsTyped, query);
 
 		Server.Log(new
 		{

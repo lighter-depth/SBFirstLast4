@@ -54,6 +54,14 @@ else if (ShowMenu.Specialized)
 	<SpecializedMenu ShowMenu="ShowMenu" Nodes="Nodes" />
 }
 
+else if (ShowMenu.Group)
+{
+	<div class="dropdown-content">
+		<a @onclick=EmptyGroupBtn_OnClick>空のグループ</a>
+		<a @onclick=LoadGroupBtn_OnClick>作成済みのグループ</a>
+	</div>
+}
+
 
 <style>
 
@@ -93,11 +101,32 @@ else if (ShowMenu.Specialized)
 
 	internal static string DisplayAttr(bool b) => b ? "block;" : "none;";
 
+	private new void StateHasChanged()
+	{
+		base.StateHasChanged();
+		TreeSearch.RaiseStateHasChanged();
+	}
+
 	private void OpenMenu(string target)
 	{
 		ShowMenu.Alter(true, target);
 		ShowMenu.Node = false;
 		TreeSearch.ShowTransparentScreen = true;
+		StateHasChanged();
+	}
+
+	private void EmptyGroupBtn_OnClick()
+	{
+		Nodes.Add(new GroupNodeBuilder().Build());
+		ShowMenu.AlterDefault();
+		TreeSearch.ShowTransparentScreen = false;
+		StateHasChanged();
+	}
+
+	private void LoadGroupBtn_OnClick()
+	{
+		ShowMenu.AlterDefault();
+		TreeSearch.ShowTransparentScreen = false;
 		StateHasChanged();
 	}
 }

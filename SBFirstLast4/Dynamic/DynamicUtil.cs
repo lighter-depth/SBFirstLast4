@@ -31,8 +31,8 @@ internal static class DynamicUtil
 internal static class TypeHelper
 {
 	internal static Type[] GetGenericArgumentsOrElementTypes(this Type? type)
-		=> type is null ? throw new ArgumentNullException(nameof(type)) 
-		: type.IsArray ? new[] { type.GetElementType() ?? typeof(object) } 
+		=> type is null ? throw new ArgumentNullException(nameof(type))
+		: type.IsArray ? new[] { type.GetElementType() ?? typeof(object) }
 		: type.GetGenericArguments();
 
 	internal static int GetParameterLength(this MethodInfo method) => method.GetParameters().Length;

@@ -74,5 +74,7 @@ public class SpecializedNodeBuilder : NodeBuilder
 
 public class GroupNodeBuilder : NodeBuilder 
 {
-	public override GroupNode Build() => new(Operator, Array.Empty<Node>());
+	public List<Node> Nodes { private get; set; } = new();
+
+	public override GroupNode Build() => new(Operator, Nodes);
 }

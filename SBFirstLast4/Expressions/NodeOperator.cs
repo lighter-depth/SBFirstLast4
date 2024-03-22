@@ -2,7 +2,7 @@
 
 public enum NodeOperator
 {
-	Head, And, Or
+	Head, And, Or, Xor, Nand, Nor, Xnor, Imply, Nimply
 }
 
 public enum EqualityOperator
@@ -26,9 +26,9 @@ public static class OperatorExtension
 
 	public static string String(NodeOperator op) => op switch
 	{
-		NodeOperator.And => "&&",
-		NodeOperator.Or => "||",
-		_ => string.Empty
+		NodeOperator.And or NodeOperator.Or => $"@{op}",
+		NodeOperator.Head => "@And",
+		_ => op.ToString()
 	};
 
 	public static string String(EqualityOperator op) => op switch
@@ -53,10 +53,10 @@ public static class OperatorExtension
 	{
 		SpecializedCondition.SingleTyped => nameof(Word.IsSingleType),
 		SpecializedCondition.DoubleTyped => nameof(Word.IsDoubleType),
-		SpecializedCondition.Killable => $"{nameof(Dynamic.Extensions.TreeSearchHelper.IsKillable)}()",
-		SpecializedCondition.Semikillable => $"{nameof(Dynamic.Extensions.TreeSearchHelper.IsSemikillable)}()",
-		SpecializedCondition.Danger4 => $"{nameof(Dynamic.Extensions.TreeSearchHelper.IsDanger4)}()",
-		SpecializedCondition.Fourxable => $"{nameof(Dynamic.Extensions.TreeSearchHelper.Is4xable)}()",
+		SpecializedCondition.Killable => $"{nameof(Extensions.TreeSearchHelper.IsKillable)}()",
+		SpecializedCondition.Semikillable => $"{nameof(Extensions.TreeSearchHelper.IsSemikillable)}()",
+		SpecializedCondition.Danger4 => $"{nameof(Extensions.TreeSearchHelper.IsDanger4)}()",
+		SpecializedCondition.Fourxable => $"{nameof(Extensions.TreeSearchHelper.Is4xable)}()",
 		_ => throw new ArgumentException(null, nameof(condition))
 	};
 
@@ -72,5 +72,31 @@ public static class OperatorExtension
 		SpecializedCondition.Danger4 => "４注単語",
 		SpecializedCondition.Fourxable => "４倍可能",
 		_ => "不明な条件"
+	};
+
+	public static NodeOperator SymbolToOperator(this string? str) => str switch
+	{
+		"&&" => NodeOperator.And,
+		"||" => NodeOperator.Or,
+		"^" => NodeOperator.Xor,
+		"!&&" => NodeOperator.Nand,
+		"!||" => NodeOperator.Nor,
+		"!^" => NodeOperator.Xor,
+		"→" => NodeOperator.Imply,
+		"!→" => NodeOperator.Nimply,
+		_ => NodeOperator.And
+	};
+
+	public static string ToSymbol(this NodeOperator op) => op switch
+	{
+		NodeOperator.And => "&&",
+		NodeOperator.Or => "||",
+		NodeOperator.Xor => "^",
+		NodeOperator.Nand => "!&&",
+		NodeOperator.Nor => "!||",
+		NodeOperator.Xnor => "!^",
+		NodeOperator.Imply => "→",
+		NodeOperator.Nimply => "!→",
+		_ => "??"
 	};
 }
