@@ -81,7 +81,7 @@ public static class OperatorExtension
 		"^" => NodeOperator.Xor,
 		"!&&" => NodeOperator.Nand,
 		"!||" => NodeOperator.Nor,
-		"!^" => NodeOperator.Xor,
+		"!^" => NodeOperator.Xnor,
 		"→" => NodeOperator.Imply,
 		"!→" => NodeOperator.Nimply,
 		_ => NodeOperator.And

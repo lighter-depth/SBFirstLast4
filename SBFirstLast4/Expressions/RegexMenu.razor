@@ -24,7 +24,7 @@
 		max-height: 300px;
 		overflow-y: scroll;
 		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-		z-index: 3;
+		z-index: 10;
 	}
 
 	.select-menu {
@@ -44,13 +44,16 @@
 </style>
 @code {
 	[Parameter]
-	public ShowMenuUI ShowMenu { get; set; } = new();
+	public ShowMenuUI ShowMenu { get; set; } = null!;
 
 	[Parameter]
-	public List<Node> Nodes { get; set; } = new();
+	public List<Node> Nodes { get; set; } = null!;
 
 	[Parameter]
 	public RegexNode? EditNode { get; set; }
+
+	[Parameter]
+	public ActionWrapper OnHide { get; set; } = null!;
 
 	private string BindInput = string.Empty;
 
@@ -62,7 +65,7 @@
 	{
 		if (isFirstRender && ShowMenu.Regex)
 		{
-			TreeSearch.OnHide += OnHide;
+			OnHide.Add(OnHide_Handler);
 			if (EditNode is null)
 				return;
 
@@ -72,7 +75,7 @@
 		}
 	}
 
-	private void OnHide()
+	private void OnHide_Handler()
 	{
 		ShowMenu.AlterDefault();
 		if (string.IsNullOrWhiteSpace(BindInput))
@@ -104,6 +107,6 @@
 		Unsubscribe();
 	}
 
-	private void Unsubscribe() => TreeSearch.OnHide -= OnHide;
+	private void Unsubscribe() => OnHide.Remove(OnHide_Handler);
 }
 

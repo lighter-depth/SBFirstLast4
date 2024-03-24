@@ -192,6 +192,9 @@
 	{
 		if (firstRender)
 		{
+			// 画面遷移が完了するまで待機
+			await Task.Delay(100);
+
 			try
 			{
 				var (success, translated, selector, errorMsg) = await Interpreter.TryInterpretAsync(Query);

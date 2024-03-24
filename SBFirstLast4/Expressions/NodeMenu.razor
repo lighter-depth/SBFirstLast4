@@ -26,39 +26,39 @@
 
 @if (ShowMenu.First)
 {
-	<FirstMenu ShowMenu="ShowMenu" Nodes="Nodes" />
+	<FirstMenu ShowMenu="ShowMenu" Nodes="Nodes" OnHide="OnHide" />
 }
 
 else if (ShowMenu.Last)
 {
-	<LastMenu ShowMenu="ShowMenu" Nodes="Nodes" />
+	<LastMenu ShowMenu="ShowMenu" Nodes="Nodes" OnHide="OnHide" />
 }
 
 else if (ShowMenu.Length)
 {
-	<LengthMenu ShowMenu="ShowMenu" Nodes="Nodes" />
+	<LengthMenu ShowMenu="ShowMenu" Nodes="Nodes" OnHide="OnHide" />
 }
 
 else if (ShowMenu.Type)
 {
-	<TypeMenu ShowMenu="ShowMenu" Nodes="Nodes" />
+	<TypeMenu ShowMenu="ShowMenu" Nodes="Nodes" OnHide="OnHide" />
 }
 
 else if (ShowMenu.Regex)
 {
-	<RegexMenu ShowMenu="ShowMenu" Nodes="Nodes" />
+	<RegexMenu ShowMenu="ShowMenu" Nodes="Nodes" OnHide="OnHide" />
 }
 
 else if (ShowMenu.Specialized)
 {
-	<SpecializedMenu ShowMenu="ShowMenu" Nodes="Nodes" />
+	<SpecializedMenu ShowMenu="ShowMenu" Nodes="Nodes" OnHide="OnHide" />
 }
 
 else if (ShowMenu.Group)
 {
 	<div class="dropdown-content">
 		<a @onclick=EmptyGroupBtn_OnClick>空のグループ</a>
-		<a @onclick=LoadGroupBtn_OnClick>作成済みのグループ</a>
+		@*<a @onclick=LoadGroupBtn_OnClick>作成済みのグループ</a>*@
 	</div>
 }
 
@@ -73,31 +73,41 @@ else if (ShowMenu.Group)
 		max-height: 350px;
 		overflow-y: scroll;
 		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-		z-index: 3;
+		z-index: 10;
 	}
 
 		.dropdown-content a {
+			position: relative;
 			color: black;
 			padding: 12px 16px;
 			text-decoration: none;
 			display: block;
+			z-index: 10;
 		}
 
 			.dropdown-content a:hover {
-				background-color: #f1f1f1
+				background-color: #f1f1f1;
+				position: relative;
+				z-index: 10;
 			}
 
 </style>
 
 @code {
 	[Parameter]
-	public ShowMenuUI ShowMenu { get; set; } = new();
+	public ShowMenuUI ShowMenu { get; set; } = null!;
 
 	[Parameter]
-	public List<Node> Nodes { get; set; } = new();
+	public List<Node> Nodes { get; set; } = null!;
 
 	[Parameter]
 	public bool IsTyped { get; set; }
+
+	[Parameter]
+	public ActionWrapper OnHide { get; set; } = null!;
+
+	[Parameter]
+	public Wrapper<bool> ShowScreen { get; set; } = null!;
 
 	internal static string DisplayAttr(bool b) => b ? "block;" : "none;";
 
@@ -111,7 +121,7 @@ else if (ShowMenu.Group)
 	{
 		ShowMenu.Alter(true, target);
 		ShowMenu.Node = false;
-		TreeSearch.ShowTransparentScreen = true;
+		ShowScreen.Value = true;
 		StateHasChanged();
 	}
 
@@ -119,14 +129,14 @@ else if (ShowMenu.Group)
 	{
 		Nodes.Add(new GroupNodeBuilder().Build());
 		ShowMenu.AlterDefault();
-		TreeSearch.ShowTransparentScreen = false;
+		ShowScreen.Value = false;
 		StateHasChanged();
 	}
 
 	private void LoadGroupBtn_OnClick()
 	{
 		ShowMenu.AlterDefault();
-		TreeSearch.ShowTransparentScreen = false;
+		ShowScreen.Value = false;
 		StateHasChanged();
 	}
 }

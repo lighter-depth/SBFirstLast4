@@ -5,17 +5,6 @@ public class NodeBuilder
 	public NodeOperator Operator { private protected get; set; }
 
 	public virtual Node Build() => new(Operator);
-
-	public static NodeBuilder Create(NodeType type) => type switch
-	{
-		NodeType.First => new FirstNodeBuilder(),
-		NodeType.Last => new LastNodeBuilder(),
-		NodeType.Length => new LengthNodeBuilder(),
-		NodeType.Type => new TypeNodeBuilder(),
-		NodeType.Regex => new RegexNodeBuilder(),
-		NodeType.Group => new GroupNodeBuilder(),
-		_ => throw new ArgumentException(null, nameof(type))
-	};
 }
 
 public class FirstNodeBuilder : NodeBuilder

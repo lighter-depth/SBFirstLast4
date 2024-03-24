@@ -15,12 +15,6 @@ public class Node
 	public Node(NodeOperator op) => (Operator, Id) = (op, IdGenerator++);
 }
 
-public enum NodeType
-{
-	First, Last, Length, Type, Regex, Group
-}
-
-
 public class FirstNode : Node
 {
 	public char First { get; internal set; }
@@ -28,6 +22,8 @@ public class FirstNode : Node
 	public EqualityOperator Equality { get; internal set; }
 
 	public string Description => $"{String(Equality == default)}{First} =>";
+
+	public string ShortDescription => $"{String(Equality == default)}{First}";
 
 	public FirstNode(NodeOperator op, EqualityOperator equality, char first)
 		: base(op) => (First, Equality) = (first, equality);
@@ -42,6 +38,8 @@ public class LastNode : Node
 	public EqualityOperator Equality { get; internal set; }
 
 	public string Description => $"=> {String(Equality == EqualityOperator.Equal)}{Last}";
+
+	public string ShortDescription => $"{String(Equality == EqualityOperator.Equal)}{Last}";
 
 	public LastNode(NodeOperator op, EqualityOperator equality, char last)
 		: base(op) => (Last, Equality) = (last, equality);
@@ -70,6 +68,8 @@ public class TypeNode : Node
 	public bool Contains { get; internal set; }
 
 	public string Description => $"{String(Contains)}{Space(Contains)}${Type.TypeToString()}";
+
+	public string ShortDescription => $"{String(Contains)}{Space(Contains)}${Type.TypeToChar()}";
 
 	public TypeNode(NodeOperator op, WordType type, bool contains)
 		: base(op) => (Type, Contains) = (type, contains);
@@ -118,8 +118,8 @@ public class SpecializedNode : Node
 				SpecializedCondition.DoubleTyped => "複合タイプ",
 				SpecializedCondition.Killable => "8X",
 				SpecializedCondition.Semikillable => "6X",
-				SpecializedCondition.Danger4 => "4X",
-				SpecializedCondition.Fourxable => "D4",
+				SpecializedCondition.Danger4 => "D4",
+				SpecializedCondition.Fourxable => "4X",
 				_ => "不明な条件"
 			};
 			return $"{String(Fulfills)}{Space(Fulfills)}{condition}"; 

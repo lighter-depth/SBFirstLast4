@@ -44,3 +44,25 @@ public class ShowMenuUI
 	public void AlterDefault()
 		=> (Node, First, Last, Length, Type, Regex, Specialized, Group) = _tuple;
 }
+
+public class ActionWrapper
+{
+	private Action _action = () => { };
+
+	public Action Add(Action action) => _action += action;
+
+	//public Action Add(ActionWrapper wrapper) => Add(wrapper._action);
+
+	public Action Remove(Action action) => _action = _action - action ?? (() => { });
+
+	//public Action Remove(ActionWrapper wrapper) => Remove(wrapper._action);
+
+	public void Invoke() => _action();
+}
+
+public class Wrapper<T>
+{
+	public T Value { get; set; }
+
+	public Wrapper(T value) => Value = value;
+}

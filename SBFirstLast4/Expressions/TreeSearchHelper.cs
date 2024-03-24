@@ -12,18 +12,20 @@ public static class TreeSearchHelper
 
 	public static char LastChar(this Word word) => word.End;
 
-	public static bool IsKillable(this Word word) => AuxLists.Killable.Contains(word.Name);
+	public static bool IsKillable(this Word word) => Array.BinarySearch(AuxLists.Killable, word.Name) > -1;
 
-	public static bool IsSemikillable(this Word word) => AuxLists.SemiKillable.Contains(word.Name);
+	public static bool IsSemikillable(this Word word) => Array.BinarySearch(AuxLists.SemiKillable, word.Name) > -1;
 
-	public static bool IsDanger4(this Word word) => AuxLists.Danger4.Contains(word.Name);
+	public static bool IsDanger4(this Word word) => Array.BinarySearch(AuxLists.Danger4, word.Name) > -1;
 
-	public static bool Is4xable(this Word word) => AuxLists.CanBe4xed.Contains(word.Name);
+	public static bool Is4xable(this Word word) => Array.BinarySearch(AuxLists.CanBe4xed, word.Name) > -1;
 
 	public static bool __Regex_IsMatch__(this string str, string pattern) => Regex.IsMatch(str, pattern);
 
 	public static bool __Regex_IsMatch__(this Word word, string pattern) => Regex.IsMatch(word.Name, pattern);
 }
+
+#pragma warning restore
 
 [DynamicLinqType]
 public class BooleanEvaluator
@@ -83,6 +85,8 @@ public class BooleanEvaluator
 		_value = BooleanOperators.Nimply(_value, expr);
 		return this;
 	}
+
+	public static implicit operator bool(BooleanEvaluator b) => b._value;
 }
 
 [DynamicLinqType]

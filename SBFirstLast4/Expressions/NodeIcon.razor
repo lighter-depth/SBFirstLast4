@@ -1,0 +1,91 @@
+﻿@page "/node-icon"
+
+<div class="node-icon" style="background-color: @NodeToColor(Node);">
+	@if (Node is FirstNode first)
+	{
+		@first.ShortDescription
+	}
+	else if (Node is LastNode last)
+	{
+		@last.ShortDescription
+	}
+	else if (Node is LengthNode length)
+	{
+		@length.Description
+	}
+	else if (Node is TypeNode type)
+	{
+		@type.ShortDescription
+	}
+	else if (Node is RegexNode regex)
+	{
+		@("/r/")
+	}
+	else if (Node is SpecializedNode specialized)
+	{
+		@specialized.Description.At(0)
+	}
+	else if (Node is GroupNode group)
+	{
+		<div class="group-node-grid">
+			<div class="group-node-grid-element" style="grid-row: 1; grid-column: 1; background-color: #6C5CE7;" />
+			<div class="group-node-grid-element" style="grid-row: 1; grid-column: 2; background-color: #6CD95C;" />
+			<div class="group-node-grid-element" style="grid-row: 2; grid-column: 1; background-color: #E76C5C;" />
+			<div class="group-node-grid-element" style="grid-row: 2; grid-column: 2; background-color: goldenrod;" />
+		</div>
+	}
+	else
+	{
+		@("...")
+	}
+</div>
+
+<style>
+	.node-icon {
+		padding-left: 10px;
+		padding-right: 10px;
+		min-width: 50px;
+		height: 50px;
+		line-height: 50px;
+		border-radius: 20px;
+		color: white;
+		font-weight: bold;
+		align-self: center;
+		text-align: center;
+		border: 2px solid gray;
+	}
+
+	.group-node-grid {
+		align-self: center;
+		display: grid;
+		grid-template-rows: 50% 50%;
+		grid-template-columns: 50% 50%;
+		grid-gap: 3px;
+		padding-top: 5px;
+		padding-bottom: 5px;
+	}
+
+	.group-node-grid-element {
+		border-radius: 5px;
+		width: 15px;
+		height: 15px;
+	}
+</style>
+
+
+@code {
+	[Parameter]
+	public Node? Node { get; set; }
+
+	private static string NodeToColor(Node? node) => node switch
+	{
+		FirstNode => "#6C5CE7",
+		LastNode => "#6CD95C",
+		LengthNode => "#4CE7E7",
+		TypeNode => "#E75C9C",
+		RegexNode => "#E76C5C",
+		SpecializedNode => "goldenrod",
+		GroupNode => "#F5F6F1",
+		_ => "lightgray"
+	};
+}

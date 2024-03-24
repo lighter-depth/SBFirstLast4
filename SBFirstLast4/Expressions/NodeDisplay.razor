@@ -66,11 +66,35 @@
 
 		else if (Node is GroupNode group)
 		{
-			<div class="node-pane">
-				グループ
-				<div class="node-title">
-					Group
-				</div>
+			<div class="node-pane" style="background-color: white; width: 60vw; height: auto; min-height: 100px; padding: 2px 2px 2px 2px;" @onclick="() => OpenMenu(nameof(ShowMenuUI.Group))">
+				@if (group.Nodes.Count == 0)
+				{
+					<div style="color: lightgray; font-weight: normal; line-height: 60px;">
+						空のグループ
+					</div>
+					<div class="node-title" style="color: #333333">
+						Group
+					</div>
+				}
+				else if (group.Nodes.Count < 16)
+				{
+					<div style="display: flex; flex-flow: row; flex-wrap: wrap; justify-content: center; gap: 10px;">
+						@foreach (var node in group.Nodes)
+						{
+							<NodeIcon Node="node" />
+						}
+					</div>
+				}
+				else
+				{
+					<div style="display: flex; flex-flow: row; flex-wrap: wrap; justify-content: space-around; gap: 5px;">
+						@foreach (var node in group.Nodes.Take(15))
+						{
+							<NodeIcon Node="node" />
+						}
+						<NodeIcon />
+					</div>
+				}
 			</div>
 		}
 	</div>
@@ -79,27 +103,31 @@
 	</div>
 	@if (ShowMenu.First)
 	{
-		<FirstMenu ShowMenu="ShowMenu" EditNode="Node as FirstNode" />
+		<FirstMenu ShowMenu="ShowMenu" EditNode="Node as FirstNode" OnHide="OnHide" />
 	}
 	else if (ShowMenu.Last)
 	{
-		<LastMenu ShowMenu="ShowMenu" EditNode="Node as LastNode" />
+		<LastMenu ShowMenu="ShowMenu" EditNode="Node as LastNode" OnHide="OnHide" />
 	}
 	else if (ShowMenu.Length)
 	{
-		<LengthMenu ShowMenu="ShowMenu" EditNode="Node as LengthNode" />
+		<LengthMenu ShowMenu="ShowMenu" EditNode="Node as LengthNode" OnHide="OnHide" />
 	}
 	else if (ShowMenu.Type)
 	{
-		<TypeMenu ShowMenu="ShowMenu" EditNode="Node as TypeNode" />
+		<TypeMenu ShowMenu="ShowMenu" EditNode="Node as TypeNode" OnHide="OnHide" />
 	}
 	else if (ShowMenu.Regex)
 	{
-		<RegexMenu ShowMenu="ShowMenu" EditNode="Node as RegexNode" />
+		<RegexMenu ShowMenu="ShowMenu" EditNode="Node as RegexNode" OnHide="OnHide" />
 	}
 	else if (ShowMenu.Specialized)
 	{
-		<SpecializedMenu ShowMenu="ShowMenu" EditNode="Node as SpecializedNode" />
+		<SpecializedMenu ShowMenu="ShowMenu" EditNode="Node as SpecializedNode" OnHide="OnHide" />
+	}
+	else if (ShowMenu.Group)
+	{
+		<GroupMenu ShowMenu="ShowMenu" EditNode="Node as GroupNode" OnHide="OnHide" />
 	}
 </div>
 
@@ -150,12 +178,18 @@
 	[Parameter]
 	public List<Node> Nodes { get; set; } = null!;
 
+	[Parameter]
+	public ActionWrapper OnHide { get; set; } = null!;
+
+	[Parameter]
+	public Wrapper<bool> ShowScreen { get; set; } = null!;
+
 	private ShowMenuUI ShowMenu = new();
 
 	private void OpenMenu(string target)
 	{
 		ShowMenu.Alter(true, target);
-		TreeSearch.ShowTransparentScreen = true;
+		ShowScreen.Value = true;
 		TreeSearch.RaiseStateHasChanged();
 	}
 

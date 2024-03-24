@@ -1,0 +1,151 @@
+﻿@page "/node-menu-group"
+@using SBFirstLast4.Pages
+@inject IJSRuntime JSRuntime
+
+<div class="group-menu-content" style="display: @NodeMenu.DisplayAttr(ShowMenu.Group)">
+	<div class="transparent-screen-group" style="display: @(NodeMenu.DisplayAttr(Group_ShowScreen.Value)) height: @((100 + (GroupNodes?.Count ?? 1) * 30).ToString())%;" @onclick="TransparentScreen_OnClick" />
+	<div style="display: flex; flex-flow: column; justify-content: center; align-items: center;">
+		@foreach (var (node, index) in GroupNodes!.WithIndex())
+		{
+			@if (index > 0)
+			{
+				var op = node.Operator;
+				node.Operator = op == NodeOperator.Head ? NodeOperator.And : op;
+				if (node.Operator != op) StateHasChanged();
+				var color = TreeSearch.OperatorToColor(node.Operator);
+				<div class="pipe" style="height: 30px; background-color: @color;" />
+				<select class="operator-selector" value="@node.Operator.ToSymbol()" @onchange="e =>
+				{
+					node.Operator = (e.Value as string).SymbolToOperator();
+					StateHasChanged();
+				}">
+					<option value="&&">&&</option>
+					<option value="||">||</option>
+					<option value="^">^</option>
+					<option value="!&&">!&&</option>
+					<option value="!||">!||</option>
+					<option value="!^">!^</option>
+					<option value="→">→</option>
+					<option value="!→">!→</option>
+				</select>
+				<div class="pipe" style="height: 30px; background-color: @color;" />
+			}
+			else
+			{
+				var op = node.Operator;
+				node.Operator = NodeOperator.Head;
+				if (op != node.Operator)
+					StateHasChanged();
+				<div class="pipe" style="height: 40px;" />
+			}
+			<NodeDisplay Node="node" Nodes="GroupNodes" OnHide="Group_OnHide" ShowScreen="Group_ShowScreen" />
+		}
+		<div class="pipe" style="height: 40px;" />
+		<div class="dropdown" style="margin-top: 0px;">
+			<button @onclick="() => (Group_ShowMenu.Node, Group_ShowScreen.Value) = (true, true)">
+				＋
+			</button>
+			<div style="display: block; margin-left: max(-50vw, -100px);">
+				<NodeMenu ShowMenu="Group_ShowMenu" Nodes="GroupNodes" IsTyped="Group_IsTyped" OnHide="Group_OnHide" ShowScreen="Group_ShowScreen" />
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	.group-menu-content {
+		display: block;
+		position: fixed;
+		top: 7vh;
+		left: 10vw;
+		background-color: #f9f9f9;
+		min-width: 160px;
+		width: 80vw;
+		height: 86vh;
+		overflow-y: scroll;
+		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+		z-index: 5;
+	}
+
+	.transparent-screen-group {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		color: transparent;
+		z-index: 5;
+	}
+
+</style>
+@code {
+	[Parameter]
+	public ShowMenuUI ShowMenu { get; set; } = null!;
+
+	[Parameter]
+	public List<Node> Nodes { get; set; } = null!;
+
+	[Parameter]
+	public GroupNode? EditNode { get; set; }
+
+	[Parameter]
+	public ActionWrapper OnHide { get; set; } = null!;
+
+	private List<Node> GroupNodes = new();
+
+	private GroupNodeBuilder Builder = new();
+
+	private ShowMenuUI Group_ShowMenu = new();
+
+	private ActionWrapper Group_OnHide = new();
+
+	private Wrapper<bool> Group_ShowScreen = new(false);
+
+	private bool Group_IsTyped = true;
+
+	protected override void OnAfterRender(bool isFirstRender)
+	{
+		if (isFirstRender && ShowMenu.Group)
+		{
+			OnHide.Add(OnHide_Handler);
+
+			if (EditNode is null)
+				return;
+
+			GroupNodes = (List<Node>)EditNode.Nodes;
+			StateHasChanged();
+		}
+	}
+
+	private string GetHeight()
+	{
+		return $"{Math.Max((Nodes.Count - 3) * 300 + 100, 100)}%";
+	}
+
+	private void TransparentScreen_OnClick()
+	{
+		Group_OnHide.Invoke();
+		Group_ShowScreen.Value = false;
+		Group_ShowMenu.AlterDefault();
+		StateHasChanged();
+	}
+
+	private void OnHide_Handler()
+	{
+		Group_OnHide.Invoke();
+		ShowMenu.AlterDefault();
+
+		if (EditNode is not null)
+		{
+			EditNode.Nodes = GroupNodes;
+			Unsubscribe();
+			return;
+		}
+
+		Builder.Nodes = GroupNodes;
+		Nodes.Add(Builder.Build());
+		Unsubscribe();
+	}
+
+	private void Unsubscribe() => OnHide.Remove(OnHide_Handler);
+
+}

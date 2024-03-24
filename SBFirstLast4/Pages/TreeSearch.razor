@@ -7,13 +7,7 @@
 @inject IJSRuntime JSRuntime
 <PageTitle>グループ検索</PageTitle>
 
-<div id="transparentScreen" style="display: @NodeMenu.DisplayAttr(ShowTransparentScreen)" @onclick="() =>
-{
-	OnHide();
-	ShowTransparentScreen = false;
-	ShowMenu.AlterDefault();
-	StateHasChanged();
-}" />
+<div id="transparent-screen" style="display: @(NodeMenu.DisplayAttr(ShowScreen.Value))" @onclick="TransparentScreen_OnClick" />
 
 <div class="source-pane">
 	ソース辞書
@@ -38,14 +32,10 @@
 					node.Operator = (e.Value as string).SymbolToOperator();
 					StateHasChanged();
 				}">
-				<option value="&&">&&</option>
-				<option value="||">||</option>
-				<option value="^">^</option>
-				<option value="!&&">!&&</option>
-				<option value="!||">!||</option>
-				<option value="!^">!^</option>
-				<option value="→">→</option>
-				<option value="!→">!→</option>
+				@foreach(var i in new[] { "&&", "||", "^", "!&&", "!||", "!^", "→", "!→"})
+				{
+					<option value="@i">@i</option>
+				}
 			</select>
 			<div class="pipe" style="height: 30px; background-color: @color;" />
 		}
@@ -57,19 +47,19 @@
 				StateHasChanged();
 			<div class="pipe" style="height: 40px;" />
 		}
-		<NodeDisplay Node="node" Nodes="Nodes" />
+		<NodeDisplay Node="node" Nodes="Nodes" OnHide="OnHide" ShowScreen="ShowScreen"/>
 	}
 	<div class="pipe" style="height: 40px;" />
 	<div class="dropdown" style="margin-top: 0px;">
-		<button @onclick="() => (ShowMenu.Node, ShowTransparentScreen) = (true, true)">
+		<button @onclick="() => (ShowMenu.Node, ShowScreen.Value) = (true, true)">
 			＋
 		</button>
 		<div style="display: block; margin-left: max(-50vw, -100px);">
-			<NodeMenu ShowMenu=ShowMenu Nodes=Nodes IsTyped=IsTyped />
+			<NodeMenu ShowMenu="ShowMenu" Nodes="Nodes" IsTyped="IsTyped" OnHide="OnHide" ShowScreen="ShowScreen"/>
 		</div>
 	</div>
 
-	<div class="search-button" @onclick=SearchBtn_OnClick>Search!</div>
+	<div class="search-button" @onclick="SearchBtn_OnClick">検索!</div>
 </div>
 
 <style type="text/css">
@@ -89,17 +79,22 @@
 		align-items: center;
 		text-align: center;
 		font-size: 20px;
+		padding-top: 10px;
+		padding-bottom: 10px;
 	}
 
 	.source-selector {
 		-moz-appearance: none;
 		-webkit-appearance: none;
 		text-align: center;
+		text-align-last: center;
 		padding: 5px 10px 5px 10px;
 		font-size: 16px;
 		background-color: white;
+		color: black;
 		margin: 10px 10px 10px 10px;
 		min-width: 120px;
+		border: 2px solid lightgray;
 	}
 
 		.source-selector::-ms-expand {
@@ -130,8 +125,12 @@
 		align-items: center;
 		justify-content: center;
 		text-align: center;
+		text-align-last: center;
 		font-weight: bold;
 		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+		background-color: white;
+		color: black;
+		position: relative;
 	}
 
 		.operator-selector::-ms-expand {
@@ -145,7 +144,14 @@
 		margin-top: 30px;
 	}
 
-	#transparentScreen {
+		.dropdown button {
+			border: 1px solid black;
+			background-color: white;
+			color: black;
+			border-radius: 0px;
+		}
+
+	#transparent-screen {
 		position: absolute;
 		top: 0px;
 		left: 0px;
@@ -181,17 +187,15 @@
 
 	private IEnumerable<string?> NodeStrings => Nodes.Select(n => n.ToString());
 
-	private string Result = string.Empty;
-
 	private readonly List<Node> Nodes = new();
 
 	private string SourceName = "有属性辞書";
 
 	private bool IsTyped => SourceName == "有属性辞書";
 
-	internal static event Action OnHide = () => { };
+	private ActionWrapper OnHide = new();
 
-	internal static bool ShowTransparentScreen = false;
+	private Wrapper<bool> ShowScreen = new(false);
 
 	private static Action _stateHasChanged = () => { };
 
@@ -213,14 +217,14 @@
 	protected override void OnAfterRender(bool firstRender)
 	{
 		if (firstRender)
-			ShowTransparentScreen = false;
+			ShowScreen.Value = false;
 
 		_stateHasChanged = StateHasChanged;
 	}
 
 	internal static void RaiseStateHasChanged() => _stateHasChanged();
 
-	private static string OperatorToColor(NodeOperator op) => op switch
+	internal static string OperatorToColor(NodeOperator op) => op switch
 	{
 		NodeOperator.And => "olivedrab",
 		NodeOperator.Or => "darkmagenta",
@@ -232,6 +236,14 @@
 		NodeOperator.Nimply => "steelblue",
 		_ => "lightgray"
 	};
+
+	private void TransparentScreen_OnClick()
+	{
+		OnHide.Invoke();
+		ShowScreen.Value = false;
+		ShowMenu.AlterDefault();
+		StateHasChanged();
+	}
 
 	private async Task SourceSelector_OnChange(ChangeEventArgs e)
 	{

@@ -186,10 +186,13 @@
 		}
 	}
 
-	protected override void OnAfterRender(bool firstRender)
+	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
 		{
+			// 画面遷移が完了するまで待機
+			await Task.Delay(100);
+
 			if (IsTyped)
 			{
 				wordDataArr = TypedSearcher.SearchTyped(TypedPredicate, CustomLengthPredTyped);
