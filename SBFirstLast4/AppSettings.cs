@@ -42,6 +42,18 @@ internal static class AppSettings
 	{
 		BetaMode = value;
 		await localStorage.SetItemAsync("BETA_MODE", value);
+		Server.Log(new
+		{
+			Type = "TOGGLE_BETA",
+			Value = value,
+			UserInfo = new
+			{
+				Name = UserName,
+				Guid,
+				Hash
+			},
+			Date = DateTime.Now
+		});
 	}
 	internal static async Task InitUserInfoAsync(ILocalStorageService localStorage, Func<string, Task> update)
 	{
