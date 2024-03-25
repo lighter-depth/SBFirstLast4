@@ -1,6 +1,5 @@
 ﻿#pragma warning disable IDE0230
 using Blazored.LocalStorage;
-using System.Text;
 using System.Text.Json;
 using System.Security.Cryptography;
 using SBFirstLast4.Logging;

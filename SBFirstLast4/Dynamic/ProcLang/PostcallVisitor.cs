@@ -14,13 +14,13 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 	private Exception? @throw;
 
-	private static readonly Dictionary<ConstructorSignature, ConstructorInfo> _ctorCache = new();
+	private static readonly Dictionary<ConstructorSignature, ConstructorInfo> _ctorCache = [];
 
-	private static readonly Dictionary<MethodSignature, (MethodInfo MethodInfo, bool IsExtension)> _addCache = new();
+	private static readonly Dictionary<MethodSignature, (MethodInfo MethodInfo, bool IsExtension)> _addCache = [];
 
-	private static readonly Dictionary<MethodSignature, (MethodInfo MethodInfo, bool IsExtension)> _methodCache = new();
+	private static readonly Dictionary<MethodSignature, (MethodInfo MethodInfo, bool IsExtension)> _methodCache = [];
 
-	private static readonly Dictionary<string, Type> _typeCache = new();
+	private static readonly Dictionary<string, Type> _typeCache = [];
 
 	internal PostcallVisitor(string source) => _source = source;
 
@@ -259,7 +259,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 			var signature = new ConstructorSignature(type, argTypes);
 
 			if (_ctorCache.TryGetValue(signature, out var cachedCtor))
-				return cachedCtor.Invoke(args.ToArray());
+				return cachedCtor.Invoke([.. args]);
 
 			var ctor = type.GetConstructor(argTypes);
 
@@ -271,7 +271,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 			_ctorCache.Add(signature, ctor);
 
-			var result = ctor.Invoke(args.ToArray());
+			var result = ctor.Invoke([.. args]);
 
 			return result;
 		}
@@ -328,11 +328,11 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 				if (cachedMethod.IsExtension)
 					foreach (var arg in args)
-						cachedMethod.MethodInfo.Invoke(null, new[] { obj, arg });
+						cachedMethod.MethodInfo.Invoke(null, [obj, arg]);
 
 				else
 					foreach (var arg in args)
-						cachedMethod.MethodInfo.Invoke(obj, new[] { arg });
+						cachedMethod.MethodInfo.Invoke(obj, [arg]);
 
 				return obj;
 			}
@@ -343,7 +343,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 			{
 				var obj = Activator.CreateInstance(type);
 				foreach (var arg in args)
-					method.Invoke(obj, new[] { arg });
+					method.Invoke(obj, [arg]);
 
 				_addCache.Add(signature, (method, false));
 				return obj;
@@ -375,7 +375,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 			if (!extensionMethod.IsGenericMethod)
 			{
 				foreach (var arg in args)
-					extensionMethod.Invoke(null, new[] { target, arg });
+					extensionMethod.Invoke(null, [target, arg]);
 
 				_addCache.Add(signature, (extensionMethod, true));
 				return target;
@@ -395,7 +395,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 			var genericMethod = extensionMethod.MakeGenericMethod(genericTypeArgs);
 			foreach (var arg in args)
-				genericMethod.Invoke(null, new[] { target, arg });
+				genericMethod.Invoke(null, [target, arg]);
 
 			_addCache.Add(signature, (genericMethod, true));
 			return target;
@@ -423,7 +423,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 			foreach (var i in argStr)
 				args.Add(await QueryRunner.EvaluateExpressionAsync(i));
 
-			var result = MakeTuple(args.ToArray());
+			var result = MakeTuple([.. args]);
 
 			return result;
 		}
@@ -535,7 +535,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 			var extensionParameters = new[] { target }.Concat(args).ToList();
 
 			if (!extensionMethod.IsGenericMethod)
-				return await InvokeMethod(extensionMethod, target, new[] { target }.Concat(args).ToList(), signature, true);
+				return await InvokeMethod(extensionMethod, target, [target, .. args], signature, true);
 
 			if (typeParameters?.Length > 0)
 				return await InvokeMethod(extensionMethod.MakeGenericMethod(typeParameters), target, extensionParameters, signature, true);
@@ -649,7 +649,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 	private static async Task<object?> InvokeCachedMethod(MethodInfo method, object? obj, List<object?> args, bool isExtension)
 	{
-		var result = isExtension ? method.Invoke(null, new[] { obj }.Concat(args).ToArray()) : method.Invoke(obj, args.ToArray());
+		var result = isExtension ? method.Invoke(null, [obj, .. args]) : method.Invoke(obj, [.. args]);
 
 		if (method.ReturnType == typeof(void))
 			result = string.Empty;
@@ -670,7 +670,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 	{
 		_methodCache.Add(signature, (method, isExtension));
 
-		var result = method.Invoke(obj, args.ToArray());
+		var result = method.Invoke(obj, [.. args]);
 
 		if (method.ReturnType == typeof(void))
 			result = string.Empty;
@@ -765,7 +765,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 	private Type[] GetGenericTypeArgument(string argStr)
 	{
 		if (!argStr.Contains(','))
-			return new[] { GetTypeByName(argStr) };
+			return [GetTypeByName(argStr)];
 
 		return Split.By(',', argStr).Select(GetTypeByName).ToArray();
 	}
@@ -777,7 +777,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 		static TypeArgumentLocation GetLocationCore(Type typeArg, Type paramType, int paramIndex, int depth, List<int> indices)
 		{
 			if (paramType == typeArg)
-				return new TypeArgumentLocation(paramIndex, depth, indices.ToArray());
+				return new TypeArgumentLocation(paramIndex, depth, [.. indices]);
 
 			if (paramType.IsGenericType)
 				foreach (var (innerArg, i) in paramType.GetGenericArguments().WithIndex())
@@ -798,7 +798,7 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 		foreach (var (typeArg, index) in method.GetGenericArguments().WithIndex())
 			foreach (var (param, i) in method.GetParameters().WithIndex())
 			{
-				var loc = GetLocationCore(typeArg, param.ParameterType, i, 0, new());
+				var loc = GetLocationCore(typeArg, param.ParameterType, i, 0, []);
 
 				if (loc != TypeArgumentLocation.Nowhere)
 					location[index] = loc;
@@ -845,19 +845,13 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 		var ctor = tupleType.GetConstructor(longTypeArgs)
 			?? throw new NoSuchConstructorException($"Could not find a matching constructor");
 
-		return ctor.Invoke(count < 8 ? args : args[..7].Append(MakeTuple(args[7..])).ToArray());
+		return ctor.Invoke(count < 8 ? args : [.. args[..7], MakeTuple(args[7..])]);
 	}
 }
 
-internal class NoSuchConstructorException : Exception
-{
-	public NoSuchConstructorException(string message) : base(message) { }
-}
+internal class NoSuchConstructorException(string message) : Exception(message);
 
-internal class NoSuchMethodException : Exception
-{
-	public NoSuchMethodException(string message) : base(message) { }
-}
+internal class NoSuchMethodException(string message) : Exception(message);
 
 internal class TypeEqualityComparer : IEqualityComparer<Type>
 {

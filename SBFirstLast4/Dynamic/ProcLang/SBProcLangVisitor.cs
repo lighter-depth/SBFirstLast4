@@ -14,7 +14,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 	private readonly Func<Task> _update;
 	private readonly CancellationToken _token;
 
-	private static readonly Buffer _discardBuffer = new();
+	private static readonly Buffer _discardBuffer = [];
 	private static readonly Action<string> _discardSetTranslated = _ => { };
 	private static readonly Func<Task> _discardUpdate = () => Task.CompletedTask;
 
@@ -622,7 +622,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 					var index = await QueryRunner.EvaluateExpressionAsync(part);
 					var argType = new[] { index?.GetType() ?? typeof(object) };
 					var indexer = type?.GetProperty(type?.GetCustomAttribute<DefaultMemberAttribute>()?.MemberName ?? string.Empty, argType);
-					indexer?.SetValue(obj, value, new[] { index });
+					indexer?.SetValue(obj, value, [index]);
 					continue;
 				}
 
@@ -652,7 +652,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 				var argType = new[] { index?.GetType() ?? typeof(object) };
 				var indexer = type?.GetProperty(type?.GetCustomAttribute<DefaultMemberAttribute>()?.MemberName ?? string.Empty, argType);
 
-				obj = indexer?.GetValue(obj, new[] { index });
+				obj = indexer?.GetValue(obj, [index]);
 			}
 
 
@@ -845,17 +845,8 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 	}
 }
 
-internal class InvalidSyntaxException : Exception
-{
-	public InvalidSyntaxException(string message = "") : base(message) { }
-}
+internal class InvalidSyntaxException(string message = "") : Exception(message);
 
-internal class SBProcLangVisitorException : Exception
-{
-	public SBProcLangVisitorException(string message = "") : base(message) { }
-}
+internal class SBProcLangVisitorException(string message = "") : Exception(message);
 
-internal class SBMemberAccessException : Exception
-{
-	public SBMemberAccessException(string message = "") : base(message) { }
-}
+internal class SBMemberAccessException(string message = "") : Exception(message);

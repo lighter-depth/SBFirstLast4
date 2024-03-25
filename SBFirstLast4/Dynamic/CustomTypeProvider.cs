@@ -5,16 +5,16 @@ using System.Linq.Dynamic.Core.CustomTypeProviders;
 
 namespace SBFirstLast4.Dynamic;
 
-public class CustomTypeProvider : DefaultDynamicLinqCustomTypeProvider, IDynamicLinkCustomTypeProvider
+public class CustomTypeProvider(bool cacheCustomTypes = true) : DefaultDynamicLinqCustomTypeProvider(cacheCustomTypes), IDynamicLinkCustomTypeProvider
 {
 	private static readonly Type[] BuiltInTypes =
-	{
+	[
 		typeof(object), typeof(string), typeof(bool), typeof(byte),
 		typeof(char), typeof(DateTime), typeof(DateTimeOffset), typeof(decimal),
 		typeof(double), typeof(Guid), typeof(short), typeof(TimeSpan),
 		typeof(int), typeof(long), typeof(sbyte), typeof(float),
 		typeof(Half), typeof(ushort), typeof(uint), typeof(ulong)
-	};
+	];
 
 	internal static readonly Dictionary<string, Type> BuiltInTypeMap = GetTypeMap();
 
@@ -50,23 +50,24 @@ public class CustomTypeProvider : DefaultDynamicLinqCustomTypeProvider, IDynamic
 
 	private Dictionary<Type, List<MethodInfo>>? _cachedExtensionMethods;
 
-	public CustomTypeProvider(bool cacheCustomTypes = true) : base(cacheCustomTypes) { }
-
 	public override HashSet<Type> GetCustomTypes()
 	{
 		var types = base.GetCustomTypes();
-		types = types
-				.Concat(typeof(Random).Assembly.GetTypes())
-				.Concat(typeof(Regex).Assembly.GetTypes())
-				.Concat(typeof(Enumerable).Assembly.GetTypes())
-				.Concat(typeof(StringBuilder).Assembly.GetTypes())
-				.Concat(Record.Types)
-				.ToHashSet();
+		types =
+		[
+			.. types
+,
+			.. typeof(Random).Assembly.GetTypes(),
+			.. typeof(Regex).Assembly.GetTypes(),
+			.. typeof(Enumerable).Assembly.GetTypes(),
+			.. typeof(StringBuilder).Assembly.GetTypes(),
+			.. Record.Types,
+		];
 
 		return types;
 	}
 
-	internal HashSet<Type> GetAllTypes() => BuiltInTypes.Concat(GetCustomTypes()).ToHashSet();
+	internal HashSet<Type> GetAllTypes() => [.. BuiltInTypes, .. GetCustomTypes()];
 
 	internal Type GetTypeByName(string typeStr) => BuiltInTypeMap.TryGetValue(typeStr, out var value) 
 												? value

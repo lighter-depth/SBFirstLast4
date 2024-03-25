@@ -70,7 +70,7 @@
 				<label class="text-label" style="font-weight:600; font-size: 22px;">攻撃側のとくせい</label>
 				<div class="dropdown-container">
 					<select class="dropdown" @bind-value="SelectedAbilityItem" @bind-value:event="oninput" @onchange=UpdateLblDamage>
-						@foreach (var item in new[] { "なし", "俺文字", "デバッガー", "グローバル", "じっけん", "きょじん", "しんこうしん", "からて", "ずぼし" })
+						@foreach (var item in (ReadOnlySpan<string>)["なし", "俺文字", "デバッガー", "グローバル", "じっけん", "きょじん", "しんこうしん", "からて", "ずぼし"])
 						{
 							<option value="@item">@item</option>
 						}
@@ -81,7 +81,7 @@
 			<div class="inner-grid">
 				<label class="text-label" style="font-weight:600; font-size: 22px;">自然急所</label>
 				<input type="checkbox" id="switch" class="checkbox"
-				@onchange="async e =>
+					   @onchange="async e =>
 					{
 						CritIfPossible = (bool)(e.Value ?? false);
 						StateHasChanged();
@@ -228,11 +228,12 @@
 	private string ReceiverTypeIndicator { get; set; } = string.Empty;
 	private string SelectedValueAItem = "1.0 倍";
 	private string SelectedValueBItem = "1.0 倍";
-	private List<string> StatusValueItemList = new()
-	{
+	private List<string> StatusValueItemList =
+	[
 		"0.25 倍", "0.28 倍", "0.33 倍", "0.4 倍", "0.5 倍", "0.66 倍",
 		"1.0 倍", "1.5 倍", "2.0 倍", "2.5 倍", "3.0 倍", "3.5 倍", "4.0 倍"
-	};
+	];
+
 	private string SelectedAbilityItem = "なし";
 	private bool CritIfPossible;
 	private string LblDamage = string.Empty;

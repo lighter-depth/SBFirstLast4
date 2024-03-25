@@ -13,13 +13,13 @@ public partial class Battle
 
 	public bool WasPlayer1sTurn => !IsPlayer1sTurn;
 	public int TurnNum { get; private set; }
-	public List<string> UsedWords { get; private set; } = new();
+	public List<string> UsedWords { get; private set; } = [];
 	public required Func<Task<Order>> In { get; init; } = () => Task.FromResult(Order.Empty);
 	public required Func<IEnumerable<AnnotatedString>, Task> Out { get; init; } = _ => Task.CompletedTask;
-	public List<AnnotatedString> Buffer { get; private set; } = new();
+	public List<AnnotatedString> Buffer { get; private set; } = [];
 	public required Action<CancellationTokenSource> OnReset { get; init; } = _ => { };
 
-	private Dictionary<OrderType, Action<Order, CancellationTokenSource>> OrderFunctions = new();
+	private Dictionary<OrderType, Action<Order, CancellationTokenSource>> OrderFunctions = [];
 	public Player CurrentPlayer => IsPlayer1sTurn ? Player1 : Player2;
 	public Player OtherPlayer => IsPlayer1sTurn ? Player2 : Player1;
 	public OrderType CurrentOrderType { get; private set; } = OrderType.None;
@@ -42,7 +42,7 @@ public partial class Battle
 				kv.Value.IsEdited = true;
 	}
 
-	private Dictionary<int, BattleData> _dHistory = new();
+	private Dictionary<int, BattleData> _dHistory = [];
 
 	private CancellationTokenSource Cancellation = new();
 	public static Battle Default => new(new(Ability.Default), new(Ability.Default));

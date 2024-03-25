@@ -140,7 +140,7 @@ public class AnnotatedString
 	/// アノテーションの種類
 	/// </summary>
 	public Notice Notice { get; set; } = Notice.None;
-	public int[] Params { get; set; } = Array.Empty<int>();
+	public int[] Params { get; set; } = [];
 
 	public BattleData? Data { get; set; }
 	/// <summary>

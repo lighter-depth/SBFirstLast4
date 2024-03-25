@@ -19,7 +19,7 @@ internal abstract class CustomAbility : Ability
 internal class MagicMirror : CustomAbility
 {
 	public override AbilityType Type => AbilityType.Received;
-	public override List<string> CustomName => new() { "mm", "MM", "マジックミラー", "まじっくみらー", "magicmirror", "MagicMirror", "MAGICMIRROR" };
+	public override List<string> CustomName => ["mm", "MM", "マジックミラー", "まじっくみらー", "magicmirror", "MagicMirror", "MAGICMIRROR"];
 	public override string Description => "状態異常を受けず、そのまま跳ね返す";
 	public override string ImgFile => "mirror.gif";
 	public override void Execute(Contract c)
@@ -49,7 +49,7 @@ internal class MagicMirror : CustomAbility
 internal class Tennen : CustomAbility
 {
 	public override AbilityType Type => AbilityType.MtpCalced;
-	public override List<string> CustomName => new() { "ua", "UA", "てんねん", "天然", "unaware", "Unaware", "UNAWARE" };
+	public override List<string> CustomName => ["ua", "UA", "てんねん", "天然", "unaware", "Unaware", "UNAWARE"];
 	public override string Description => "相手の能力の変化を無視する";
 	public override string ImgFile => "unaware.gif";
 	public override void Execute(Contract c)
@@ -71,7 +71,7 @@ internal class Tennen : CustomAbility
 internal class WonderGuard : CustomAbility
 {
 	public override AbilityType Type => AbilityType.PropCalced;
-	public override List<string> CustomName => new() { "wg", "WG", "ふしぎなまもり", "不思議な守り", "wonderguard", "WonderGuard", "WONDERGUARD" };
+	public override List<string> CustomName => ["wg", "WG", "ふしぎなまもり", "不思議な守り", "wonderguard", "WonderGuard", "WONDERGUARD"];
 	public override string Description => "こうかばつぐんの技しか当たらない不思議な力";
 	public override string ImgFile => "shield.gif";
 	public override void Execute(Contract c)
@@ -95,7 +95,7 @@ internal class WonderGuard : CustomAbility
 internal class Ganjou : CustomAbility
 {
 	public override AbilityType Type => AbilityType.ActionBegin | AbilityType.Received;
-	public override List<string> CustomName => new() { "st", "ST", "がんじょう", "頑丈", "sturdy", "Sturdy", "STURDY" };
+	public override List<string> CustomName => ["st", "ST", "がんじょう", "頑丈", "sturdy", "Sturdy", "STURDY"];
 	public override string Description => "HPが満タンのとき、技を受けても一撃で倒されることがない";
 	public override string ImgFile => "ganjou.gif";
 	bool _invokeFlag;
@@ -121,7 +121,7 @@ internal class Ganjou : CustomAbility
 internal class God : CustomAbility
 {
 	public override AbilityType Type => AbilityType.AmpDecided | AbilityType.CritDecided | AbilityType.ViolenceUsed | AbilityType.ActionEnd | AbilityType.Received;
-	public override List<string> CustomName => new() { "gd", "GD", "神", "かみ", "カミ", "god", "God", "GOD" };
+	public override List<string> CustomName => ["gd", "GD", "神", "かみ", "カミ", "god", "God", "GOD"];
 
 	// ほんとは本家のテキスト入れたかったけど流石に長すぎる
 	public override string Description => "「最強の特性」";
@@ -172,7 +172,7 @@ internal class God : CustomAbility
 internal class Kakutei : CustomAbility
 {
 	public override AbilityType Type => AbilityType.PropCalced | AbilityType.CritDecided | AbilityType.ActionExecuted | AbilityType.ActionEnd;
-	public override List<string> CustomName => new() { "dc", "DC", "かくてい", "確定", "kakutei", "Kakutei", "KAKUTEI" };
+	public override List<string> CustomName => ["dc", "DC", "かくてい", "確定", "kakutei", "Kakutei", "KAKUTEI"];
 	public override string Description => "人体タイプの言葉を使った時、「確定」することがある";
 	public override string ImgFile => "kakutei.gif";
 	const int KAKUTEI = 12140000;
@@ -206,7 +206,7 @@ internal class Kakutei : CustomAbility
 internal class GouyokunaTsubo : CustomAbility, ISingleTypedBufAbility
 {
 	public override AbilityType Type => AbilityType.ActionBegin;
-	public override List<string> CustomName => new() { "pg", "PG", "ごうよくなつぼ", "強欲な壺", "gouyokunatsubo", "GouyokunaTsubo", "GOUYOKUNATSUBO" };
+	public override List<string> CustomName => ["pg", "PG", "ごうよくなつぼ", "強欲な壺", "gouyokunatsubo", "GouyokunaTsubo", "GOUYOKUNATSUBO"];
 	public override string Description => "感情タイプの言葉を使うと、ダメージを与える代わりにとくせいの変更上限が１増える";
 	public override string ImgFile => "tsubo.gif";
 	public WordType BufType => WordType.Emote;
@@ -225,7 +225,7 @@ internal class GouyokunaTsubo : CustomAbility, ISingleTypedBufAbility
 internal class Rewind : CustomAbility, ISingleTypedBufAbility
 {
 	public override AbilityType Type => AbilityType.ContractEnd;
-	public override List<string> CustomName => new() { "rw", "RW", "りわいんど", "リワインド", "rewind", "Rewind", "REWIND" };
+	public override List<string> CustomName => ["rw", "RW", "りわいんど", "リワインド", "rewind", "Rewind", "REWIND"];
 	public override string Description => "時間タイプの言葉を使うと、１ターン時を巻き戻す";
 	public override string ImgFile => "rewindskill.gif";
 	public WordType BufType => WordType.Time;

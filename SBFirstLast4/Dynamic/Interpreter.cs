@@ -249,7 +249,7 @@ public static partial class Interpreter
 				var evaluated = new List<object?>();
 				foreach (var parameter in parameters)
 					evaluated.Add(await QueryRunner.EvaluateExpressionAsync(parameter));
-				var result = await procedure.RunAsync(evaluated.ToArray());
+				var result = await procedure.RunAsync([.. evaluated]);
 				var varName = $"__proc_result_{_procedureID}_generated";
 				++_procedureID;
 				WideVariable.Variables[varName] = result;

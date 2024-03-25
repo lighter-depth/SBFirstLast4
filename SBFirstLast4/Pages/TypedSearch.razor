@@ -42,13 +42,15 @@
 					<label class="label">タイプ１</label>
 					<div class="dropdown-container">
 						<select class="dropdown" @bind="SelectedType1Item">
-							@foreach (var item in new[]{
-						"指定なし", "ノーマル", "動物", "植物", "地名",
-						"感情", "芸術", "食べ物", "暴力", "医療",
-						"人体", "機械", "理科", "時間", "人物",
-						"工作", "服飾", "社会", "遊び", "虫",
-						"数学", "暴言", "宗教", "スポーツ", "天気",
-						"物語"})
+							@foreach (var item in (ReadOnlySpan<string>)
+							[
+								"指定なし", "ノーマル", "動物", "植物", "地名",
+								"感情", "芸術", "食べ物", "暴力", "医療",
+								"人体", "機械", "理科", "時間", "人物",
+								"工作", "服飾", "社会", "遊び", "虫",
+								"数学", "暴言", "宗教", "スポーツ", "天気",
+								"物語"
+							])
 							{
 								<option value="@item">@item</option>
 							}
@@ -60,13 +62,15 @@
 					<label class="label">タイプ2</label>
 					<div class="dropdown-container">
 						<select class="dropdown" @bind="SelectedType2Item">
-							@foreach (var item in new[]{
-						"指定なし", "無属性", "ノーマル", "動物", "植物", "地名",
-						"感情", "芸術", "食べ物", "暴力", "医療",
-						"人体", "機械", "理科", "時間", "人物",
-						"工作", "服飾", "社会", "遊び", "虫",
-						"数学", "暴言", "宗教", "スポーツ", "天気",
-						"物語"})
+							@foreach (var item in (ReadOnlySpan<string>)
+							[
+								"指定なし", "無属性", "ノーマル", "動物", "植物", "地名",
+								"感情", "芸術", "食べ物", "暴力", "医療",
+								"人体", "機械", "理科", "時間", "人物",
+								"工作", "服飾", "社会", "遊び", "虫",
+								"数学", "暴言", "宗教", "スポーツ", "天気",
+								"物語"
+							])
 							{
 								<option value="@item">@item</option>
 							}
@@ -80,13 +84,15 @@
 					<label class="label">タイプ１</label>
 					<div class="dropdown-container">
 						<select class="dropdown" @bind="SelectedType1Item">
-							@foreach (var item in new[]{
-						"指定なし", "ノーマル", "動物", "植物", "地名",
-						"感情", "芸術", "食べ物", "暴力", "医療",
-						"人体", "機械", "理科", "時間", "人物",
-						"工作", "服飾", "社会", "遊び", "虫",
-						"数学", "暴言", "宗教", "スポーツ", "天気",
-						"物語"})
+							@foreach (var item in (ReadOnlySpan<string>)
+							[
+								"指定なし", "ノーマル", "動物", "植物", "地名",
+								"感情", "芸術", "食べ物", "暴力", "医療",
+								"人体", "機械", "理科", "時間", "人物",
+								"工作", "服飾", "社会", "遊び", "虫",
+								"数学", "暴言", "宗教", "スポーツ", "天気",
+								"物語"
+							])
 							{
 								<option value="@item">@item</option>
 							}
@@ -100,13 +106,15 @@
 					<label class="label">タイプ１</label>
 					<div class="dropdown-container">
 						<select class="dropdown" @bind="SelectedType1Item">
-							@foreach (var item in new[]{
-						"指定なし", "ノーマル", "動物", "植物", "地名",
-						"感情", "芸術", "食べ物", "暴力", "医療",
-						"人体", "機械", "理科", "時間", "人物",
-						"工作", "服飾", "社会", "遊び", "虫",
-						"数学", "暴言", "宗教", "スポーツ", "天気",
-						"物語"})
+							@foreach (var item in (ReadOnlySpan<string>)
+							[
+								"指定なし", "ノーマル", "動物", "植物", "地名",
+								"感情", "芸術", "食べ物", "暴力", "医療",
+								"人体", "機械", "理科", "時間", "人物",
+								"工作", "服飾", "社会", "遊び", "虫",
+								"数学", "暴言", "宗教", "スポーツ", "天気",
+								"物語"
+							])
 							{
 								<option value="@item">@item</option>
 							}
@@ -118,13 +126,15 @@
 					<label class="label">タイプ2</label>
 					<div class="dropdown-container">
 						<select class="dropdown" @bind="SelectedType2Item">
-							@foreach (var item in new[]{
-						"指定なし", "ノーマル", "動物", "植物", "地名",
-						"感情", "芸術", "食べ物", "暴力", "医療",
-						"人体", "機械", "理科", "時間", "人物",
-						"工作", "服飾", "社会", "遊び", "虫",
-						"数学", "暴言", "宗教", "スポーツ", "天気",
-						"物語"})
+							@foreach (var item in (ReadOnlySpan<string>)
+							[
+								"指定なし", "ノーマル", "動物", "植物", "地名",
+								"感情", "芸術", "食べ物", "暴力", "医療",
+								"人体", "機械", "理科", "時間", "人物",
+								"工作", "服飾", "社会", "遊び", "虫",
+								"数学", "暴言", "宗教", "スポーツ", "天気",
+								"物語"
+							])
 							{
 								<option value="@item">@item</option>
 							}
@@ -409,31 +419,13 @@
 	private string CustomLength = string.Empty;
 	private bool ShowCustomLengthWarning;
 	private string CustomLengthWarning = string.Empty;
-	private List<string> CustomLengthItemList = new()
-	{
-		"なし",
-		"７文字以上",
-		"６文字以上",
-		"カスタム"
-	};
+	private List<string> CustomLengthItemList = ["なし", "７文字以上", "６文字以上", "カスタム"];
 
 	private string SelectedTypeOptionItem = "単純指定";
-	private List<string> TypeOptionItemList = new()
-	{
-		"単純指定",
-		"単タイプ",
-		"複合タイプ"
-	};
+	private List<string> TypeOptionItemList = ["単純指定", "単タイプ", "複合タイプ"];
 
 	private string SelectedSearchOptionItem = "すべて表示";
-	private List<string> SearchOptionItemList = new()
-	{
-		"すべて表示",
-		"前方後方一致",
-		"前方一致",
-		"後方一致",
-		"正規表現"
-	};
+	private List<string> SearchOptionItemList = ["すべて表示", "前方後方一致", "前方一致", "後方一致", "正規表現"];
 
 	private string SelectedType1Item = "指定なし";
 	private string SelectedType2Item = "指定なし";
@@ -495,7 +487,7 @@
 		}
 		Func<Word, bool>? pred = null;
 		if (!isRegex && SelectedCustomLengthItem == "カスタム"
-			&& !WordLengthSyntax.TryParseInputToPredicate(CustomLength, out pred, out var errorMsg))
+		&& !WordLengthSyntax.TryParseInputToPredicate(CustomLength, out pred, out var errorMsg))
 		{
 			CustomLengthWarning = errorMsg;
 			ShowCustomLengthWarning = true;
@@ -530,13 +522,13 @@
 				IsSingleTypedOnly = SelectedTypeOptionItem is "単タイプ",
 				IsDoubleTypedOnly = SelectedTypeOptionItem is "複合タイプ"
 			},
-			SelectedCustomLengthItem switch
-			{
-				"なし" => null,
-				"７文字以上" => word => word.Name.Length >= 7,
-				"６文字以上" => word => word.Name.Length >= 6,
-				_ => pred
-			}
+		SelectedCustomLengthItem switch
+		{
+			"なし" => null,
+			"７文字以上" => word => word.Name.Length >= 7,
+			"６文字以上" => word => word.Name.Length >= 6,
+			_ => pred
+		}
 		);
 
 		Server.Log(new
@@ -570,9 +562,9 @@
 	}
 
 	private (WordType? Type1, WordType? Type2) GetTypes()
-		=> (SelectedType1Item is "指定なし" ? null : SelectedType1Item.StringToType(),
-			SelectedType2Item is "指定なし" ? null : SelectedType2Item.StringToType());
+	=> (SelectedType1Item is "指定なし" ? null : SelectedType1Item.StringToType(),
+	SelectedType2Item is "指定なし" ? null : SelectedType2Item.StringToType());
 
 	private char GetChar(string str)
-		=> str.At(0) is var tmp && tmp is '*' or '＊' ? '.' : tmp;
+	=> str.At(0) is var tmp && tmp is '*' or '＊' ? '.' : tmp;
 }

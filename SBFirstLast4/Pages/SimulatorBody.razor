@@ -585,7 +585,7 @@
 
 		#form {
 			/*position: fixed;
-																																																																					bottom: 0;*/
+																																																																									bottom: 0;*/
 			z-index: 1;
 			text-align: center;
 		}
@@ -1207,7 +1207,7 @@
 	private bool IsDead;
 
 
-	private List<AnnotatedString> BattleLogItems = new();
+	private List<AnnotatedString> BattleLogItems = [];
 
 	private TaskCompletionSource<Order> OrderCompletion = new();
 
@@ -1446,12 +1446,12 @@
 
 	private static List<AnnotatedString> GetMessages(IEnumerable<AnnotatedString> list)
 	{
-		var filter = new List<Notice>()
-		{
-		Notice.HPUpdated, Notice.NoDmgProp, Notice.NonEffectiveProp, Notice.MidDmgProp, Notice.EffectiveProp, Notice.CritInfo,
-		Notice.PoisonHeal,Notice.Heal, Notice.Buf, Notice.Debuf, Notice.Barrier, Notice.Portal,Notice.Rewind, Notice.Alter, Notice.RevInfo,Notice.Poison, Notice.PoisonDmg, Notice.Seed,
-		Notice.SeedDmg, Notice.InvokeBufInfo, Notice.Caution, Notice.DeathInfo
-		};
+		var filter = (List<Notice>)
+		[
+			Notice.HPUpdated, Notice.NoDmgProp, Notice.NonEffectiveProp, Notice.MidDmgProp, Notice.EffectiveProp, Notice.CritInfo,
+			Notice.PoisonHeal,Notice.Heal, Notice.Buf, Notice.Debuf, Notice.Barrier, Notice.Portal,Notice.Rewind, Notice.Alter, Notice.RevInfo,Notice.Poison, Notice.PoisonDmg, Notice.Seed,
+			Notice.SeedDmg, Notice.InvokeBufInfo, Notice.Caution, Notice.DeathInfo
+		];
 		return list.Where(x => filter.Contains(x.Notice)).ToList();
 	}
 

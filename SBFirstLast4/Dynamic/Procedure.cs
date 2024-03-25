@@ -17,7 +17,7 @@ public sealed class Procedure
 
 	public string ModuleName { get; init; }
 
-	private List<string> _lines = new();
+	private List<string> _lines = [];
 
 	private Buffer _buffer;
 
@@ -33,7 +33,7 @@ public sealed class Procedure
 
 	internal static readonly QueryAgent DiscardAgent = new();
 
-	internal static readonly Buffer DiscardBuffer = new();
+	internal static readonly Buffer DiscardBuffer = [];
 
 	internal static readonly Func<Task> DiscardHandleDeletedFiles = () => Task.CompletedTask;
 
@@ -44,7 +44,7 @@ public sealed class Procedure
 	internal Procedure(string name, List<string> parameters, string moduleName, QueryAgent agent, Buffer buffer, Action<string> setTranslated, Func<Task> update, CancellationToken token)
 		=> (Name, Parameters, ModuleName, Agent, _buffer, _setTranslated, _update, _token) = (name, parameters, moduleName, agent, buffer, setTranslated, update, token);
 
-	internal Procedure Clone() => new(Name, Parameters, ModuleName, Agent, _buffer, _setTranslated, _update, _token) { Id = Id, _lines = _lines.ToList() };
+	internal Procedure Clone() => new(Name, Parameters, ModuleName, Agent, _buffer, _setTranslated, _update, _token) { Id = Id, _lines = [.. _lines] };
 
 	internal void Update(QueryAgent agent, Buffer buffer, Action<string> setTranslated, Func<Task> update, CancellationToken token)
 		=> (Agent, _buffer, _setTranslated, _update, _token) = (agent, buffer, setTranslated, update, token);
@@ -272,7 +272,6 @@ public sealed class AsyncProcCall
 
 public delegate Task<object?> ProcCallDelegate(object?[] args);
 
-internal sealed class NoSuchProcedureException : Exception
+internal sealed class NoSuchProcedureException(string message) : Exception(message)
 {
-	public NoSuchProcedureException(string message) : base(message) { }
 }

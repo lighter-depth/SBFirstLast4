@@ -196,7 +196,7 @@ public static partial class QueryRunner
 			var key = await EvaluateExpressionAsync(match.Groups["key"].Value);
 			var value = await EvaluateExpressionAsync(match.Groups["value"].Value + collectionEnd);
 
-			add?.Invoke(hashBase, new[] { key, value });
+			add?.Invoke(hashBase, [key, value]);
 		}
 
 		WideVariable.Variables[name] = hashBase;

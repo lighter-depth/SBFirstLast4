@@ -60,7 +60,7 @@ public abstract class Macro
 
 public enum MacroType { None, ObjectLike, FunctionLike }
 
-public sealed class ObjectLikeMacro : Macro { }
+public sealed class ObjectLikeMacro : Macro;
 
 public sealed class FunctionLikeMacro : Macro
 {

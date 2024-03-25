@@ -132,12 +132,9 @@ public class SpecializedNode : Node
 	public override string ToString() => $".{String(Operator)}({String(Fulfills)}{String(Condition)})";
 }
 
-public class GroupNode : Node
+public class GroupNode(NodeOperator op, IReadOnlyList<Node> nodes) : Node(op)
 {
-	public IReadOnlyList<Node> Nodes { get; internal set; }
-
-	public GroupNode(NodeOperator op, IReadOnlyList<Node> nodes)
-		: base(op) => Nodes = nodes;
+	public IReadOnlyList<Node> Nodes { get; internal set; } = nodes;
 
 	public override string ToString() => $".{String(Operator)}({nameof(Extensions.BooleanEvaluator)}(){Nodes.Select(n => n.ToString()).StringJoin()}.{nameof(Extensions.BooleanEvaluator.Evaluate)}())";
 }

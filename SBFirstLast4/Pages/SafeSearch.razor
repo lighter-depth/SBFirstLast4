@@ -22,13 +22,13 @@
 				<label class="text-label" style="font-weight:600; font-size: 22px;">タイプ</label>
 				<div class="dropdown-container">
 					<select class="dropdown" @bind="SelectedTypeItem">
-						@foreach (var item in new[]{
-						"指定なし", "ノーマル", "動物", "植物", "地名",
-						"感情", "芸術", "食べ物", "暴力", "医療",
-						"人体", "機械", "理科", "時間", "人物",
-						"工作", "服飾", "社会", "遊び", "虫",
-						"数学", "暴言", "宗教", "スポーツ", "天気",
-						"物語"})
+						@foreach (var item in (ReadOnlySpan<string>)[
+											"指定なし", "ノーマル", "動物", "植物", "地名",
+									"感情", "芸術", "食べ物", "暴力", "医療",
+									"人体", "機械", "理科", "時間", "人物",
+									"工作", "服飾", "社会", "遊び", "虫",
+									"数学", "暴言", "宗教", "スポーツ", "天気",
+									"物語"])
 						{
 							<option value="@item">@item</option>
 						}
@@ -52,7 +52,7 @@
 				</label>
 				<div class="dropdown-container">
 					<select class="dropdown" @bind="SelectedCategoryFilterItem">
-						@foreach (var item in new[] { "なし", "おまかせ（弱）", "おまかせ（中）", "おまかせ（強）", "カスタム" })
+						@foreach (var item in (ReadOnlySpan<string>)["なし", "おまかせ（弱）", "おまかせ（中）", "おまかせ（強）", "カスタム"])
 						{
 							<option value="@item">@item</option>
 						}
@@ -134,7 +134,7 @@
 				</label>
 				<div class="dropdown-container">
 					<select class="dropdown" @bind="SelectedCharFilterItem">
-						@foreach (var item in new[] { "なし", "カスタム" })
+						@foreach (var item in (ReadOnlySpan<string>)["なし", "カスタム"])
 						{
 							<option value="@item">@item</option>
 						}
@@ -473,16 +473,16 @@
 
 	private string SelectedTypeItem = "指定なし";
 	private string SelectedCategoryFilterItem = "なし";
-	private List<string> AppliedCategoryFilters = new();
-	private List<string> CategoryFilters = new()
-	{
+	private List<string> AppliedCategoryFilters = [];
+	private List<string> CategoryFilters =
+	[
 		"即死", "準即死", "４注", "４倍","暴力", "安全暴力", "強ロクロ", "中ロクロ", "弱ロクロ", "強毒針", "中毒針", "弱毒針", "強やどりぎ"
-	};
+	];
 	private List<string> AvailableFilters => CategoryFilters.Except(AppliedCategoryFilters).ToList();
 	private bool ShowCategoryFilters { get; set; } = false;
 
 	private string SelectedCharFilterItem = "なし";
-	private List<string> AppliedEndFilters = new();
+	private List<string> AppliedEndFilters = [];
 
 	protected override void OnInitialized()
 	{
@@ -530,11 +530,11 @@
 
 			foreach (var i in SelectedCategoryFilterItem switch
 			{
-				"おまかせ（弱）" => new() { "即死", "準即死", "強ロクロ", "強毒針" },
-				"おまかせ（中）" => new() { "即死", "準即死", "４注", "強ロクロ", "中ロクロ", "強毒針", "中毒針" },
-				"おまかせ（強）" => new() { "即死", "準即死", "４注", "４倍", "安全暴力", "強ロクロ", "中ロクロ", "強毒針", "中毒針", "強やどりぎ" },
+				"おまかせ（弱）" => ["即死", "準即死", "強ロクロ", "強毒針" ],
+				"おまかせ（中）" => ["即死", "準即死", "４注", "強ロクロ", "中ロクロ", "強毒針", "中毒針"],
+				"おまかせ（強）" => ["即死", "準即死", "４注", "４倍", "安全暴力", "強ロクロ", "中ロクロ", "強毒針", "中毒針", "強やどりぎ" ],
 				"カスタム" => AppliedCategoryFilters,
-				_ => new()
+				_ => []
 			})
 				predicates.Add(GetCategoryPredicate(i));
 
@@ -573,7 +573,7 @@
 
 			NavigationManager.NavigateTo("result");
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			JSRuntime.InvokeVoidAsync("alert", ex.GetType().Name + " " + ex.Message);
 		}

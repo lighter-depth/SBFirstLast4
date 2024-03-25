@@ -159,8 +159,8 @@
 	public static bool IsTyped { get; set; } = false;
 	public static Searcher TypedSearcher { get; set; } = new();
 	public static Func<Word, bool>? TypedPredicate { get; set; }
-	private string[] dataArr = Array.Empty<string>();
-	private Word[] wordDataArr = Array.Empty<Word>();
+	private string[] dataArr = [];
+	private Word[] wordDataArr = [];
 	private bool IsFirstPage => CurrentPage == 1;
 	private bool IsLastPage => CurrentPage == TotalPages;
 	private bool isSearching = true;

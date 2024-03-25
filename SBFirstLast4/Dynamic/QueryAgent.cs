@@ -10,19 +10,19 @@ public partial class QueryAgent
 {
 	public QueryContext CurrentContext => ContextStack.Peek();
 
-	internal readonly Stack<QueryContext> ContextStack = new() { QueryContext.Script };
+	internal readonly Stack<QueryContext> ContextStack = [QueryContext.Script];
 
-	private readonly Stack<ValueTuple> _moduleContextTrackingStack = new();
+	private readonly Stack<ValueTuple> _moduleContextTrackingStack = [];
 
 	public string StatementKind { get; private set; } = TextType.General;
 
-	private readonly List<string> _statements = new();
+	private readonly List<string> _statements = [];
 
-	private readonly List<string> _newlineBuffer = new();
+	private readonly List<string> _newlineBuffer = [];
 
 	private Procedure? _currentProcedure;
 
-	private readonly List<string> _moduleBuffer = new();
+	private readonly List<string> _moduleBuffer = [];
 
 	public async Task RunAsync(string input, Buffer output, Action<string> setTranslated, Func<Task> handleDeletedFiles, Func<Task> update, IBlazorDownloadFileService service)
 	{
@@ -243,7 +243,7 @@ public partial class QueryAgent
 	}
 
 	private static int HashId = 0;
-	private static readonly List<string> HashDeclarations = new();
+	private static readonly List<string> HashDeclarations = [];
 	private static string ReplaceHash(string input)
 	{
 		HashDeclarations.Clear();

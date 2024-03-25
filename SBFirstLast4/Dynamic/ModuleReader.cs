@@ -7,38 +7,38 @@ internal class ModuleReader
 {
 	private readonly string _moduleName;
 	private readonly Stack<bool> _isDisabled;
-	private readonly Stack<bool> _ifDefStack = new();
+	private readonly Stack<bool> _ifDefStack = [];
 
 	private QueryContext CurrentContext => _contextStack.Peek();
 
-	private readonly Stack<QueryContext> _contextStack = new() { QueryContext.Module };
+	private readonly Stack<QueryContext> _contextStack = [QueryContext.Module];
 
-	private readonly Stack<ValueTuple> _scriptContextTrackingStack = new();
+	private readonly Stack<ValueTuple> _scriptContextTrackingStack = [];
 
-	private readonly List<string> _newlineBuffer = new();
+	private readonly List<string> _newlineBuffer = [];
 
 	private Procedure? _currentProcedure;
 
-	internal List<string> Symbols { get; private set; } = new();
+	internal List<string> Symbols { get; private set; } = [];
 
-	internal List<Macro> Macros { get; private set; } = new();
+	internal List<Macro> Macros { get; private set; } = [];
 
-	internal List<Macro> Ephemerals { get; private set; } = new();
+	internal List<Macro> Ephemerals { get; private set; } = [];
 
-	internal List<Procedure> Procedures { get; private set; } = new();
+	internal List<Procedure> Procedures { get; private set; } = [];
 
-	internal List<string> InitStatements { get; private set; } = new();
+	internal List<string> InitStatements { get; private set; } = [];
 
-	internal List<string> StaticStatements { get; private set; } = new();
+	internal List<string> StaticStatements { get; private set; } = [];
 
-	private readonly List<Macro> Transients = new();
+	private readonly List<Macro> Transients = [];
 
-	private readonly List<string> OmitSymbols = new();
+	private readonly List<string> OmitSymbols = [];
 
 	public ModuleReader(string moduleName)
 	{
 		_moduleName = moduleName;
-		_isDisabled = new();
+		_isDisabled = [];
 		_isDisabled.Push(false);
 	}
 

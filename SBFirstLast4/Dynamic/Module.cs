@@ -6,19 +6,19 @@ public class Module : IEquatable<Module>
 {
 	public required string Name { get; init; }
 
-	public string[] Requires { get; init; } = Array.Empty<string>();
+	public string[] Requires { get; init; } = [];
 
-	public List<string> Symbols { get; init; } = new();
+	public List<string> Symbols { get; init; } = [];
 
-	public List<Macro> Macros { get; init; } = new();
+	public List<Macro> Macros { get; init; } = [];
 
-	public List<Macro> Ephemerals { get; init; } = new();
+	public List<Macro> Ephemerals { get; init; } = [];
 
-	public List<Procedure> Procedures { get; init; } = new();
+	public List<Procedure> Procedures { get; init; } = [];
 
-	public List<string> InitStatements { get; init; } = new();
+	public List<string> InitStatements { get; init; } = [];
 
-	public List<string> StaticStatements { get; init; } = new();
+	public List<string> StaticStatements { get; init; } = [];
 
 	public string ModuleContent { get; init; } = string.Empty;
 
@@ -52,7 +52,7 @@ public class Module : IEquatable<Module>
 		{
 			Name = name,
 			Requires = string.IsNullOrWhiteSpace(requires)
-						? Array.Empty<string>()
+						? []
 						: requires.Trim().Split(",").Select(s => s.Trim()).ToArray(),
 			Symbols = reader.Symbols,
 			Macros = reader.Macros,

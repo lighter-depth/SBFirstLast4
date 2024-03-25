@@ -10,14 +10,14 @@ public static partial class Preprocessor
 	public static bool IsInitialized { get; private set; } = false;
 
 	private static readonly string[] ValidDirectives =
-	{
+	[
 		"define", "undef", "show", "pragma", "include", "exclude", "ifdef", "ifndef", "delete", "ephemeral", "evaporate", "export"
-	};
+	];
 
 	private static readonly string[] ModulesToLoad =
-	{
+	[
 		"Standard", "Lists", "Killers", "Tools", "Operators", "MinMax", "Filters"
-	};
+	];
 
 	public static async Task Initialize(HttpClient client)
 	{
@@ -71,7 +71,7 @@ public static partial class Preprocessor
 			if (contents[1] == "$ALL")
 			{
 				ModuleManager.UserDefined.Ephemerals.Clear();
-				status = new[] { "Cleared up the USER_DEFINED Ephemeral Dictionary." };
+				status = ["Cleared up the USER_DEFINED Ephemeral Dictionary."];
 				return true;
 			}
 			var count = ModuleManager.UserDefined.Ephemerals.RemoveAll(m => m.Name == contents[1]);
@@ -80,7 +80,7 @@ public static partial class Preprocessor
 				errorMsg = $"Specified ephemeral '{contents[1]}' does not exist in the USER_DEFINED module.";
 				return false;
 			}
-			status = new[] { $"Successfully removed ephemeral '{contents[1]}' from the dictionary." };
+			status = [$"Successfully removed ephemeral '{contents[1]}' from the dictionary."];
 			return true;
 		}
 
@@ -97,7 +97,7 @@ public static partial class Preprocessor
 					ModuleName = moduleName
 				};
 				ModuleManager.UserDefined.Ephemerals.Add(functionLikeMacro);
-				status = new[] { $"Successfully added ephemeral '{match.Groups["name"]}' to the dictionary." };
+				status = [$"Successfully added ephemeral '{match.Groups["name"]}' to the dictionary."];
 				return true;
 			}
 
@@ -116,7 +116,7 @@ public static partial class Preprocessor
 			};
 			ModuleManager.UserDefined.Ephemerals.Add(objectLikeMacro);
 
-			status = new[] { $"Successfully added ephemeral '{contents[1]}' to the dictionary." };
+			status = [$"Successfully added ephemeral '{contents[1]}' to the dictionary."];
 			return true;
 		}
 		errorMsg = $"Invalid directive: {input}";
@@ -187,13 +187,13 @@ public static partial class Preprocessor
 
 			if (selector is "$MODULE" or "$MDL")
 			{
-				status = ModuleManager.ModuleNames.Append("USER_DEFINED").ToArray();
+				status = [.. ModuleManager.ModuleNames, "USER_DEFINED"];
 				return (true, status, null);
 			}
 
 			if (selector is "$EXCLUDED" or "$EXC")
 			{
-				status = ModuleManager.ExcludedModules.ToArray();
+				status = [.. ModuleManager.ExcludedModules];
 				return (true, status, null);
 			}
 
@@ -293,21 +293,21 @@ public static partial class Preprocessor
 				if (contents[2] == "enable")
 				{
 					Interpreter.IsAuto = true;
-					status = new[] { "Auto processing enabled." };
+					status = ["Auto processing enabled."];
 					return (true, status, null);
 				}
 
 				if (contents[2] == "disable")
 				{
 					Interpreter.IsAuto = false;
-					status = new[] { "Auto processing disabled." };
+					status = ["Auto processing disabled."];
 					return (true, status, null);
 				}
 
 				if (contents[2] == "toggle")
 				{
 					Interpreter.IsAuto = !Interpreter.IsAuto;
-					status = new[] { $"Auto processing {(Interpreter.IsAuto ? "enabled" : "disabled")}." };
+					status = [$"Auto processing {(Interpreter.IsAuto ? "enabled" : "disabled")}."];
 					return (true, status, null);
 				}
 
@@ -321,19 +321,19 @@ public static partial class Preprocessor
 				if (contents[2] == "enable")
 				{
 					ManualQuery.IsReflect = true;
-					status = new[] { "Reflector enabled." };
+					status = ["Reflector enabled."];
 					return (true, status, null);
 				}
 				if (contents[2] == "disable")
 				{
 					ManualQuery.IsReflect = false;
-					status = new[] { "Reflector disabled." };
+					status = ["Reflector disabled."];
 					return (true, status, null);
 				}
 				if (contents[2] == "toggle")
 				{
 					ManualQuery.IsReflect = !ManualQuery.IsReflect;
-					status = new[] { $"Reflector {(ManualQuery.IsReflect ? "enabled" : "disabled")}." };
+					status = [$"Reflector {(ManualQuery.IsReflect ? "enabled" : "disabled")}."];
 					return (true, status, null);
 				}
 
@@ -347,19 +347,19 @@ public static partial class Preprocessor
 				if (contents[2] == "enable")
 				{
 					Interpreter.EasyArrayInitializer = true;
-					status = new[] { "Easy array enabled." };
+					status = ["Easy array enabled."];
 					return (true, status, null);
 				}
 				if (contents[2] == "disable")
 				{
 					Interpreter.EasyArrayInitializer = false;
-					status = new[] { "Easy array disabled." };
+					status = ["Easy array disabled."];
 					return (true, status, null);
 				}
 				if (contents[2] == "toggle")
 				{
 					Interpreter.EasyArrayInitializer = !Interpreter.EasyArrayInitializer;
-					status = new[] { $"Easy array {(Interpreter.EasyArrayInitializer ? "enabled" : "disabled")}." };
+					status = [$"Easy array {(Interpreter.EasyArrayInitializer ? "enabled" : "disabled")}."];
 					return (true, status, null);
 				}
 				return (false, null, "Invalid syntax: invalid argument for #pragma easyarray directive.");
@@ -369,24 +369,24 @@ public static partial class Preprocessor
 
 		if (symbol is "ifdef")
 		{
-			status = new[] { ModuleManager.ContentNames.Contains(contents.At(1)) ? "TRUE" : "FALSE" };
+			status = [ModuleManager.ContentNames.Contains(contents.At(1)) ? "TRUE" : "FALSE"];
 			return (true, status, null);
 		}
 
 		if (symbol is "ifndef")
 		{
-			status = new[] { !ModuleManager.ContentNames.Contains(contents.At(1)) ? "TRUE" : "FALSE" };
+			status = [!ModuleManager.ContentNames.Contains(contents.At(1)) ? "TRUE" : "FALSE"];
 			return (true, status, null);
 		}
 
 		var isQuiet = contents.Contains("[quiet]");
-		string[] StatusOrQuiet(string[] status) => isQuiet ? Array.Empty<string>() : status;
+		string[] StatusOrQuiet(string[] status) => isQuiet ? [] : status;
 
 		if (symbol is "include")
 		{
 			if (ModuleManager.Include(contents.At(1) ?? string.Empty))
 			{
-				status = new[] { $"Successfully included {(contents.At(1) == "$ALL" ? "all modules" : $"module {contents.At(1)}")}." };
+				status = [$"Successfully included {(contents.At(1) == "$ALL" ? "all modules" : $"module {contents.At(1)}")}."];
 				return (true, StatusOrQuiet(status), null);
 			}
 			return (false, null, $"No includable module {contents.At(1)} found.");
@@ -397,7 +397,7 @@ public static partial class Preprocessor
 		{
 			if (ModuleManager.Exclude(contents.At(1) ?? string.Empty))
 			{
-				status = new[] { $"Successfully excluded {(contents.At(1) == "$ALL" ? "all modules" : $"module {contents.At(1)}")}." };
+				status = [$"Successfully excluded {(contents.At(1) == "$ALL" ? "all modules" : $"module {contents.At(1)}")}."];
 				return (true, StatusOrQuiet(status), null);
 			}
 			return (false, null, $"No excludable module {contents.At(1)} found.");
@@ -407,7 +407,7 @@ public static partial class Preprocessor
 		{
 			if (ModuleManager.Delete(contents.At(1) ?? string.Empty, out var deleteStatus))
 			{
-				status = new[] { deleteStatus };
+				status = [deleteStatus];
 				return (true, StatusOrQuiet(status), null);
 			}
 			return (false, null, deleteStatus);
@@ -438,7 +438,7 @@ public static partial class Preprocessor
 			if (service is not null)
 				await service.DownloadFileFromText($"{module.Name}.txt", module.ModuleContent, encoding, "text/plain");
 
-			return (true, new[] { $"Successfully exported module {module.Name}" }, null);
+			return (true, [$"Successfully exported module {module.Name}"], null);
 		}
 
 		if (symbol is "undef")
@@ -450,7 +450,7 @@ public static partial class Preprocessor
 			{
 				ModuleManager.UserDefined.Macros.Clear();
 				ModuleManager.UserDefined.Symbols.Clear();
-				status = new[] { "Cleared up the USER_DEFINED Macro Dictionary." };
+				status = ["Cleared up the USER_DEFINED Macro Dictionary."];
 				return (true, StatusOrQuiet(status), null);
 			}
 			var count = ModuleManager.UserDefined.Macros.RemoveAll(m => m.Name == contents[1]);
@@ -458,7 +458,7 @@ public static partial class Preprocessor
 			if (count < 1)
 				return (false, null, $"Specified macro '{contents[1]}' does not exist in the USER_DEFINED module.");
 			
-			status = new[] { $"Successfully removed macro '{contents[1]}' from the dictionary." };
+			status = [$"Successfully removed macro '{contents[1]}' from the dictionary."];
 			return (true, StatusOrQuiet(status), null);
 		}
 
@@ -476,7 +476,7 @@ public static partial class Preprocessor
 					ModuleName = moduleName
 				};
 				ModuleManager.UserDefined.Macros.Add(functionLikeMacro);
-				status = new[] { $"Successfully added macro '{match.Groups["name"]}' to the dictionary." };
+				status = [$"Successfully added macro '{match.Groups["name"]}' to the dictionary."];
 				return (true, StatusOrQuiet(status), null);
 			}
 
@@ -486,7 +486,7 @@ public static partial class Preprocessor
 			if (contents.Length == 2)
 			{
 				ModuleManager.UserDefined.Symbols.Add(contents[1]);
-				status = new[] { $"Successfully added symbol '{contents[1]}' to the dictionary." };
+				status = [$"Successfully added symbol '{contents[1]}' to the dictionary."];
 				return (true, StatusOrQuiet(status), null);
 			}
 
@@ -499,7 +499,7 @@ public static partial class Preprocessor
 			};
 			ModuleManager.UserDefined.Macros.Add(objectLikeMacro);
 
-			status = new[] { $"Successfully added macro '{contents[1]}' to the dictionary." };
+			status = [$"Successfully added macro '{contents[1]}' to the dictionary."];
 			return (true, StatusOrQuiet(status), null);
 		}
 

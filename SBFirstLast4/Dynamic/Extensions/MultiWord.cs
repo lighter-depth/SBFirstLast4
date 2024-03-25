@@ -66,6 +66,6 @@ public readonly record struct MultiWord(string Name, IReadOnlyList<WordType> Typ
 		if (string.IsNullOrWhiteSpace(name))
 			return Default;
 
-		return new(name, types?.Select(s => s?.StringToType() ?? default).ToList() ?? new List<WordType>());
+		return new(name, types?.Select(s => s?.StringToType() ?? default).ToList() ?? []);
 	}
 }

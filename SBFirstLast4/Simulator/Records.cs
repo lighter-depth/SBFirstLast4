@@ -20,7 +20,7 @@ public record BattleData(PlayerData Player1, PlayerData Player2, PlayerData PreA
 	public Word CurrentWord => IsPlayer1sTurn ? Player1.CurrentWord : Player2.CurrentWord;
 
 	public bool IsEdited { get; set; }
-	public static BattleData Default { get; } = new(PlayerData.Default, PlayerData.Default, PlayerData.Default, PlayerData.Default, default, 0, new());
+	public static BattleData Default { get; } = new(PlayerData.Default, PlayerData.Default, PlayerData.Default, PlayerData.Default, default, 0, []);
 
 	public override string ToString() => Serialize();
 

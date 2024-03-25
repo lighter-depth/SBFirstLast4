@@ -32,7 +32,7 @@
 					node.Operator = (e.Value as string).SymbolToOperator();
 					StateHasChanged();
 				}">
-				@foreach(var i in new[] { "&&", "||", "^", "!&&", "!||", "!^", "→", "!→"})
+				@foreach (var i in (ReadOnlySpan<string>)["&&", "||", "^", "!&&", "!||", "!^", "→", "!→"])
 				{
 					<option value="@i">@i</option>
 				}
@@ -47,7 +47,7 @@
 				StateHasChanged();
 			<div class="pipe" style="height: 40px;" />
 		}
-		<NodeDisplay Node="node" Nodes="Nodes" OnHide="OnHide" ShowScreen="ShowScreen"/>
+		<NodeDisplay Node="node" Nodes="Nodes" OnHide="OnHide" ShowScreen="ShowScreen" />
 	}
 	<div class="pipe" style="height: 40px;" />
 	<div class="dropdown" style="margin-top: 0px;">
@@ -55,7 +55,7 @@
 			＋
 		</button>
 		<div style="display: block; margin-left: max(-50vw, -100px);">
-			<NodeMenu ShowMenu="ShowMenu" Nodes="Nodes" IsTyped="IsTyped" OnHide="OnHide" ShowScreen="ShowScreen"/>
+			<NodeMenu ShowMenu="ShowMenu" Nodes="Nodes" IsTyped="IsTyped" OnHide="OnHide" ShowScreen="ShowScreen" />
 		</div>
 	</div>
 
@@ -187,7 +187,7 @@
 
 	private IEnumerable<string?> NodeStrings => Nodes.Select(n => n.ToString());
 
-	private readonly List<Node> Nodes = new();
+	private readonly List<Node> Nodes = [];
 
 	private string SourceName = "有属性辞書";
 

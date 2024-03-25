@@ -37,7 +37,7 @@ public class Order
 
 	public string? TypeParam { get; set; }
 
-	public double[] Param { get; set; } = Array.Empty<double>();
+	public double[] Param { get; set; } = [];
 
 	public string? ErrorMessage { get; internal set; }
 

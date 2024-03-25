@@ -2,7 +2,6 @@
 using System.Linq.Dynamic.Core.CustomTypeProviders;
 using SBFirstLast4.Shared;
 using Progress = System.Func<string, System.Threading.Tasks.Task>;
-using static System.Net.WebRequestMethods;
 
 namespace SBFirstLast4;
 
@@ -40,15 +39,15 @@ public class Words
 	public static bool IsLite => NoTypeWords.Count < 2_000_000;
 	private static bool _loadSkip;
 
-	private static readonly string[] _dummyData = {
+	private static readonly string[] _dummyData = [
 		"のーまる", "どうぶつ", "しょくぶつ", "ちめい", "かんじょう",
 		"げいじゅつ", "たべもの", "ぼうりょく", "いりょう", "じんたい",
 		"きかい", "りか", "さきのばし", "じんぶつ", "こうさく",
 		"ふくしょく", "しゃかい", "あそび", "むし", "すうがく",
 		"ずぼし", "しゅうきょう", "すぽーつ", "てんではなしにならねぇよ", "ものがたり"
-	};
+	];
 
-	private static readonly List<List<Word>> SplitList = new();
+	private static readonly List<List<Word>> SplitList = [];
 	private static readonly HttpClient client = new();
 
 	internal static readonly object TLLock = new();

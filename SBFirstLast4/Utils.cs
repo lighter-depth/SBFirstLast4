@@ -10,8 +10,8 @@ public static class Utils
 {
 	public static Random Random { get; set; } = new();
 
-	public static string[][] KanaList => kanaList ??= new[]
-	{
+	public static string[][] KanaList => kanaList ??=
+	[
 		new[]{ "あ", "い", "う", "え", "お" },
 		new[]{ "か", "き", "く", "け", "こ"},
 		new[]{"さ", "し", "す", "せ", "そ"},
@@ -27,7 +27,7 @@ public static class Utils
 		new[]{"だ", "で", "ど"},
 		new[]{"ば", "び", "ぶ", "べ", "ぼ"},
 		new[]{"ぱ", "ぴ", "ぷ", "ぺ", "ぽ"}
-	};
+	];
 
 	static string[][]? kanaList;
 
@@ -106,9 +106,9 @@ public static class Utils
 	public static Type GetTypeOrDefault<T>(this T? obj) => obj?.GetType() ?? typeof(object);
 }
 
-public class Wrapper<T>
+public class Wrapper<T>(T value)
 {
-	private T _value;
+	private T _value = value;
 
 	public T Value
 	{
@@ -117,8 +117,6 @@ public class Wrapper<T>
 	}
 
 	public ref T RefValue => ref _value;
-
-	public Wrapper(T value) => _value = value;
 }
 
 public static class JSHelper
@@ -175,7 +173,7 @@ public static class CollectionHelper
 
 	public static void Add(this List<AnnotatedString> list, string text, Notice notice, params int[] args) => list.Add(new(text, notice) { Params = args });
 
-	public static void Add(this List<AnnotatedString> list, Notice notice, int player1HP, int player2HP) => list.Add(new(string.Empty, notice) { Params = new[] { player1HP, player2HP } });
+	public static void Add(this List<AnnotatedString> list, Notice notice, int player1HP, int player2HP) => list.Add(new(string.Empty, notice) { Params = [player1HP, player2HP] });
 
 	public static void Add(this List<AnnotatedString> list, Notice notice, BattleData data) => list.Add(new(string.Empty, notice) { Data = data });
 

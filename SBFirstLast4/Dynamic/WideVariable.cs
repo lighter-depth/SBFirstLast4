@@ -6,7 +6,7 @@ namespace SBFirstLast4.Dynamic;
 [DynamicLinqType]
 public static class WideVariable
 {
-	public static readonly Dictionary<string, dynamic?> Variables = new();
+	public static readonly Dictionary<string, dynamic?> Variables = [];
 
 	public static dynamic? GetValue(string name) => Variables.TryGetValue(name, out var value) ? value : null;
 
@@ -51,8 +51,8 @@ public static class WideVariable
 
 internal static partial class WideVariableRegex
 {
-	internal static List<(Regex, AssignmentType)> Assignments => new()
-	{
+	internal static List<(Regex, AssignmentType)> Assignments =>
+	[
 		(AddAssign(), AssignmentType.Add),
 		(SubtractAssign(), AssignmentType.Subtract),
 		(MultiplyAssign(), AssignmentType.Multiply),
@@ -64,7 +64,7 @@ internal static partial class WideVariableRegex
 		(LeftShiftAssign(), AssignmentType.LeftShift),
 		(RightShiftAssign(), AssignmentType.RightShift),
 		(CoarseAssign(), AssignmentType.Coarse)
-	};
+	];
 
 	private const string VariablePattern = "&(?<name>[A-Z_a-z][0-9A-Z_a-z]*)";
 

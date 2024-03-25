@@ -97,5 +97,5 @@ public static class ScriptExecutor
 	/// SO dictionary for query source
 	/// </summary>
 	/// <seealso cref="Extensions.DynamicExtensionHelper.GetSingleton"/>
-	private static readonly int[] _singletonEnumerable = { 0 };
+	private static readonly int[] _singletonEnumerable = [0];
 }

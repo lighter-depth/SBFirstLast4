@@ -1,28 +1,21 @@
 ﻿namespace SBFirstLast4.Dynamic;
 
-public class Return : Exception
+public class Return(object? value) : Exception
 {
-	public object? Value { get; }
-
-	public Return(object? value) => Value = value;
+	public object? Value { get; } = value;
 }
 
-public class Raise : Exception
+public class Raise(string name) : Exception
 {
-	public string Name { get; }
-
-	public Raise(string name) => Name = name;
+	public string Name { get; } = name;
 }
 
-public class Break : Exception { }
+public class Break : Exception;
 
-public class Continue : Exception { }
+public class Continue : Exception;
 
-public class Redo : Exception { }
+public class Redo : Exception;
 
-public class Retry : Exception { }
+public class Retry : Exception;
 
-public class Halt : Exception 
-{
-	public Halt(string? message = "Procedure terminated.") : base(message) { }
-}
+public class Halt(string? message = "Procedure terminated.") : Exception(message);

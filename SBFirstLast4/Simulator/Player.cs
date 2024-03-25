@@ -1,6 +1,6 @@
 ﻿namespace SBFirstLast4.Simulator;
 
-public class Player
+public class Player(Ability ability)
 {
 	#region properties
 
@@ -13,7 +13,7 @@ public class Player
 	private int _hp = MaxHP;
 	public const int MaxHP = 60;
 
-	public Ability Ability { get; private set; }
+	public Ability Ability { get; private set; } = ability;
 
 
 	public double ATK => BufValues[ATKIndex];
@@ -23,7 +23,7 @@ public class Player
 	public double DEF => BufValues[DEFIndex];
 
 	public int DEFIndex { get; private set; } = 6;
-	private static readonly double[] BufValues = { 0.25, 0.28571429, 0.33333333, 0.4, 0.5, 0.66666666, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0 };
+	private static readonly double[] BufValues = [0.25, 0.28571429, 0.33333333, 0.4, 0.5, 0.66666666, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0];
 
 	public Word CurrentWord { get; internal set; } = Word.Default;
 
@@ -41,14 +41,13 @@ public class Player
 	public int SkillChangeRemain { get; private set; } = MaxAbilChange;
 	public Proceeds Proceeds { get; internal set; } = Proceeds.Random;
 
-	public List<BredString> BrdBuf { get; set; } = new();
+	public List<BredString> BrdBuf { get; set; } = [];
 
 	public bool IsPoisoned => State.HasFlag(PlayerState.Poison);
 
 	public bool IsSeeded => State.HasFlag(PlayerState.Seed);
-	#endregion
 
-	public Player(Ability ability) => Ability = ability;
+	#endregion
 
 	public const int MaxAbilChange = 2;
 

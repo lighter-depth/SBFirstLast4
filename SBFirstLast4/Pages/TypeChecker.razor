@@ -136,7 +136,7 @@
 			Date = DateTime.Now
 		});
 	}
-	private async void TextInput_KeyUp()
+	private async Task TextInput_KeyUp()
 	{
 		TokenSource.Cancel();
 		TokenSource = new();

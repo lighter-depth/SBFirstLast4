@@ -292,23 +292,11 @@
 	private string CustomLength = string.Empty;
 	private bool ShowCustomLengthWarning;
 	private string CustomLengthWarning = string.Empty;
-	private List<string> CustomLengthItemList = new()
-	{
-		"なし",
-		"７文字以上",
-		"６文字以上",
-		"カスタム"
-	};
+	private List<string> CustomLengthItemList = ["なし", "７文字以上", "６文字以上", "カスタム"];
 
 
 	private string SelectedSearchOptionItem = "前方後方一致";
-	private List<string> SearchOptionItemList = new()
-	{
-		"前方後方一致",
-		"前方一致",
-		"後方一致",
-		"正規表現"
-	};
+	private List<string> SearchOptionItemList = ["前方後方一致", "前方一致", "後方一致", "正規表現"];
 	protected override void OnInitialized()
 	{
 		if (!AppSettings.IsLoggedIn)

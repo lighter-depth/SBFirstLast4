@@ -33,13 +33,13 @@
 						</label>
 						<div class="dropdown-container">
 							<select class="dropdown" @bind="SelectedOmitTypeItem">
-								@foreach (var item in new[]{
-						"なし", "ノーマル", "動物", "植物", "地名",
-						"感情", "芸術", "食べ物", "暴力", "医療",
-						"人体", "機械", "理科", "時間", "人物",
-						"工作", "服飾", "社会", "遊び", "虫",
-						"数学", "暴言", "宗教", "スポーツ", "天気",
-						"物語"})
+								@foreach (var item in (ReadOnlySpan<string>)[
+									"なし", "ノーマル", "動物", "植物", "地名",
+									"感情", "芸術", "食べ物", "暴力", "医療",
+									"人体", "機械", "理科", "時間", "人物",
+									"工作", "服飾", "社会", "遊び", "虫",
+									"数学", "暴言", "宗教", "スポーツ", "天気",
+									"物語"])
 								{
 									<option value="@item">@item</option>
 								}
@@ -311,30 +311,19 @@ else
 
 	private string SelectedOmitTypeItem = "なし";
 
-	private List<string> SortArgItemList = new()
-	{
-		"指定なし", "７文字以上優先", "７文字以上のみ"
-	};
+	private List<string> SortArgItemList = ["指定なし", "７文字以上優先", "７文字以上のみ"];
 	private string SelectedSortArgItem = "指定なし";
 
-	private List<string> WordCountFormatItemList = new()
-	{
-		"カスタム", "すべて"
-	};
+	private List<string> WordCountFormatItemList = ["カスタム", "すべて"];
+
 	private string SelectedWordCountFormatItem = IsNotype ? "カスタム" : "すべて";
 	private bool ShowWordCountFormatWarning;
 	private string CustomWordCount = string.Empty;
 
-	private List<string> ListFormatItemList = new()
-	{
-		"Wiki形式 (空行省略)", "Wiki形式 (空行表記)", "隅付き括弧・スラッシュ表記", "シミュレーター形式"
-	};
+	private List<string> ListFormatItemList = ["Wiki形式 (空行省略)", "Wiki形式 (空行表記)", "隅付き括弧・スラッシュ表記", "シミュレーター形式"];
 	private string SelectedListFormatItem = "隅付き括弧・スラッシュ表記";
 
-	private List<string> EncodingItemList = new()
-	{
-		"Shift-JIS", "UTF-8", "UTF-16"
-	};
+	private List<string> EncodingItemList = ["Shift-JIS", "UTF-8", "UTF-16"];
 	private string SelectedEncodingItem = "Shift-JIS";
 
 	protected override void OnInitialized()

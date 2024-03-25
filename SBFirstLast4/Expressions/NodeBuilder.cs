@@ -63,7 +63,7 @@ public class SpecializedNodeBuilder : NodeBuilder
 
 public class GroupNodeBuilder : NodeBuilder 
 {
-	public List<Node> Nodes { private get; set; } = new();
+	public List<Node> Nodes { private get; set; } = [];
 
 	public override GroupNode Build() => new(Operator, Nodes);
 }

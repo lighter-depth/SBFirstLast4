@@ -386,9 +386,9 @@
 	private string TypeIndicator = string.Empty;
 	private bool AllowAbility = true;
 	private IEnumerable<string> WordResults => (AllowAbility ? AbilityResults : PureResults).Take(TakeCount);
-	private List<string> PureResults = new();
-	private List<string> AbilityResults = new();
-	private List<WordType> ExceptTypes = new();
+	private List<string> PureResults = [];
+	private List<string> AbilityResults = [];
+	private List<WordType> ExceptTypes = [];
 	private bool ShowExceptableTypes;
 	private IEnumerable<WordType> VisibleTypes => Enum.GetValues<WordType>().Except(ExceptTypes.Append(default));
 	private int TakeCount = 5;

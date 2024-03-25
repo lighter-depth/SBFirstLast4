@@ -9,7 +9,7 @@
 			文&zwj;字
 		</p>
 		<select class="select-menu" @bind=BindComparison>
-			@foreach (var i in new[] { "ちょうど", "でない", "以上", "以下", "より大きい", "より小さい" })
+			@foreach (var i in (ReadOnlySpan<string>)["ちょうど", "でない", "以上", "以下", "より大きい", "より小さい"])
 			{
 				<option value="@i">@i</option>
 			}

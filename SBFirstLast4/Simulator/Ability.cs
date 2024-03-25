@@ -93,7 +93,7 @@ public class AbilityManager
 	{
 		var result = new List<Ability>();
 		var subClasses = Assembly.GetAssembly(typeof(Ability))?.GetTypes()
-			.Where(x => x.IsSubclassOf(typeof(Ability)) && !x.IsAbstract).ToArray() ?? Array.Empty<Type>();
+			.Where(x => x.IsSubclassOf(typeof(Ability)) && !x.IsAbstract).ToArray() ?? [];
 		foreach (var i in subClasses)
 			if (Activator.CreateInstance(i) is Ability ability)
 				result.Add(ability);
@@ -201,7 +201,7 @@ internal interface ISeedable
 internal class Debugger : Ability
 {
 	public override AbilityType Type => AbilityType.BaseDecided;
-	public override List<string> Name => new() { "N", "n", "deb", "デバッガー", "でばっがー", "debugger", "Debugger", "DEBUGGER", "出歯" };
+	public override List<string> Name => ["N", "n", "deb", "デバッガー", "でばっがー", "debugger", "Debugger", "DEBUGGER", "出歯"];
 	public override string Description => "まだタイプのついていない言葉の威力が上がる";
 	public override string ImgFile => "normal.gif";
 	public override void Execute(Contract c)
@@ -218,7 +218,7 @@ internal class Debugger : Ability
 internal class Hanshoku : Ability
 {
 	public override AbilityType Type => AbilityType.BrdDecided | AbilityType.WordUsedChecked;
-	public override List<string> Name => new() { "A", "a", "brd", "はんしょく", "繁殖", "hanshoku", "Hanshoku", "HANSHOKU" };
+	public override List<string> Name => ["A", "a", "brd", "はんしょく", "繁殖", "hanshoku", "Hanshoku", "HANSHOKU"];
 	public override string Description => "動物タイプの言葉なら何度でも繰り返し使え、繰り返すごとに威力が上がる";
 	public override string ImgFile => "animal.gif";
 	public override void Execute(Contract c)
@@ -248,7 +248,7 @@ internal class Hanshoku : Ability
 internal class Yadorigi : Ability, ISeedable
 {
 	public override AbilityType Type => AbilityType.ActionBegin;
-	public override List<string> Name => new() { "Y", "y", "sed", "やどりぎ", "宿り木", "ヤドリギ", "宿木", "宿", "yadorigi", "Yadorigi", "YADORIGI" };
+	public override List<string> Name => ["Y", "y", "sed", "やどりぎ", "宿り木", "ヤドリギ", "宿木", "宿", "yadorigi", "Yadorigi", "YADORIGI"];
 	public override string Description => "植物タイプの言葉を使うとダメージを与える代わりに相手に宿木を植え付ける";
 	public override string ImgFile => "plant.gif";
 	public WordType SeedType => WordType.Plant;
@@ -267,7 +267,7 @@ internal class Yadorigi : Ability, ISeedable
 internal class Global : Ability
 {
 	public override AbilityType Type => AbilityType.AmpDecided;
-	public override List<string> Name => new() { "G", "g", "gbl", "グローバル", "ぐろーばる", "global", "Global", "GLOBAL" };
+	public override List<string> Name => ["G", "g", "gbl", "グローバル", "ぐろーばる", "global", "Global", "GLOBAL"];
 	public override string Description => "地名タイプの言葉の威力が上がる";
 	public override string ImgFile => "place.gif";
 	public override double Amp => 1.5;
@@ -285,7 +285,7 @@ internal class Global : Ability
 internal class Jounetsu : Ability, ISingleTypedBufAbility
 {
 	public override AbilityType Type => AbilityType.ActionBegin;
-	public override List<string> Name => new() { "E", "e", "psn", "じょうねつ", "情熱", "jounetsu", "Jounetsu", "JOUNETSU" };
+	public override List<string> Name => ["E", "e", "psn", "じょうねつ", "情熱", "jounetsu", "Jounetsu", "JOUNETSU"];
 	public override string Description => "感情タイプの言葉を使うとダメージを与える代わりに攻撃力が上がる";
 	public override string ImgFile => "emote.gif";
 	public WordType BufType => WordType.Emote;
@@ -308,7 +308,7 @@ internal class Jounetsu : Ability, ISingleTypedBufAbility
 internal class RocknRoll : Ability, ISingleTypedBufAbility
 {
 	public override AbilityType Type => AbilityType.ActionBegin;
-	public override List<string> Name => new() { "C", "c", "rar", "ロックンロール", "ろっくんろーる", "rocknroll", "RocknRoll", "ROCKNROLL", "ロクロ", "轆轤", "ろくろ" };
+	public override List<string> Name => ["C", "c", "rar", "ロックンロール", "ろっくんろーる", "rocknroll", "RocknRoll", "ROCKNROLL", "ロクロ", "轆轤", "ろくろ"];
 	public override string Description => "芸術タイプの言葉を使うとダメージを与える代わりに攻撃力がぐーんと上がる";
 	public override string ImgFile => "art.gif";
 	public WordType BufType => WordType.Art;
@@ -331,7 +331,7 @@ internal class RocknRoll : Ability, ISingleTypedBufAbility
 internal class Ikasui : Ability
 {
 	public override AbilityType Type => AbilityType.DetermineCanHeal;
-	public override List<string> Name => new() { "F", "f", "glt", "いかすい", "胃下垂", "ikasui", "Ikasui", "IKASUI" };
+	public override List<string> Name => ["F", "f", "glt", "いかすい", "胃下垂", "ikasui", "Ikasui", "IKASUI"];
 	public override string Description => "いくらでも食べることができる";
 	public override string ImgFile => "food.gif";
 	public override void Execute(Contract c)
@@ -352,7 +352,7 @@ internal class Ikasui : Ability
 internal class Mukimuki : Ability
 {
 	public override AbilityType Type => AbilityType.ViolenceUsed;
-	public override List<string> Name => new() { "V", "v", "msl", "むきむき", "mukimuki", "Mukimuki", "MUKIMUKI", "最強の特性", "最強特性" };
+	public override List<string> Name => ["V", "v", "msl", "むきむき", "mukimuki", "Mukimuki", "MUKIMUKI", "最強の特性", "最強特性"];
 	public override string Description => "暴力タイプの言葉を使っても攻撃力がすこししか下がらなくなる";
 	public override string ImgFile => "violence.gif";
 	public override int Buf => -1;
@@ -374,7 +374,7 @@ internal class Mukimuki : Ability
 internal class Ishoku : Ability
 {
 	public override AbilityType Type => AbilityType.HealAmtCalc;
-	public override List<string> Name => new() { "H", "h", "mdc", "いしょくどうげん", "医食同源", "ishoku", "Ishoku", "ISHOKU", "いしょく", "医食" };
+	public override List<string> Name => ["H", "h", "mdc", "いしょくどうげん", "医食同源", "ishoku", "Ishoku", "ISHOKU", "いしょく", "医食"];
 	public override string Description => "食べ物タイプの言葉で医療タイプと同じ効果が得られる";
 	public override string ImgFile => "health.gif";
 	public override void Execute(Contract c)
@@ -390,7 +390,7 @@ internal class Ishoku : Ability
 internal class Karate : Ability
 {
 	public override AbilityType Type => AbilityType.CritDecided;
-	public override List<string> Name => new() { "B", "b", "kar", "からて", "空手", "karate", "Karate", "KARATE" };
+	public override List<string> Name => ["B", "b", "kar", "からて", "空手", "karate", "Karate", "KARATE"];
 	public override string Description => "人体タイプの言葉を使った時に必ず相手の急所に当たる";
 	public override string ImgFile => "body.gif";
 	public override void Execute(Contract c)
@@ -407,7 +407,7 @@ internal class Karate : Ability
 internal class Kachikochi : Ability, ISingleTypedBufAbility
 {
 	public override AbilityType Type => AbilityType.ActionBegin;
-	public override List<string> Name => new() { "M", "m", "clk", "かちこち", "kachikochi", "Kachikochi", "KACHIKOCHI", "sus" };
+	public override List<string> Name => ["M", "m", "clk", "かちこち", "kachikochi", "Kachikochi", "KACHIKOCHI", "sus"];
 	public override string Description => "機械タイプの言葉を使うとダメージを与える代わりに防御力が上がる";
 	public override string ImgFile => "mech.gif";
 	public override int Buf => 1;
@@ -430,7 +430,7 @@ internal class Kachikochi : Ability, ISingleTypedBufAbility
 internal class Jikken : Ability
 {
 	public override AbilityType Type => AbilityType.AmpDecided;
-	public override List<string> Name => new() { "Q", "q", "exp", "じっけん", "実験", "jikken", "Jikken", "JIKKEN" };
+	public override List<string> Name => ["Q", "q", "exp", "じっけん", "実験", "jikken", "Jikken", "JIKKEN"];
 	public override string Description => "理科タイプの言葉の威力が上がる";
 	public override string ImgFile => "science.gif";
 	public override double Amp => 1.5;
@@ -448,7 +448,7 @@ internal class Jikken : Ability
 internal class Sakinobashi : Ability, ISingleTypedBufAbility
 {
 	public override AbilityType Type => AbilityType.ActionBegin;
-	public override List<string> Name => new() { "T", "t", "prc", "さきのばし", "先延ばし", "sakinobashi", "Sakinobashi", "SAKINOBASHI", "めざまし" };
+	public override List<string> Name => ["T", "t", "prc", "さきのばし", "先延ばし", "sakinobashi", "Sakinobashi", "SAKINOBASHI", "めざまし"];
 	public override string Description => "時間タイプの言葉を使うとダメージを与える代わりに防御力が上がる";
 	public override string ImgFile => "time.gif";
 	public override int Buf => 1;
@@ -471,7 +471,7 @@ internal class Sakinobashi : Ability, ISingleTypedBufAbility
 internal class Kyojin : Ability
 {
 	public override AbilityType Type => AbilityType.AmpDecided;
-	public override List<string> Name => new() { "P", "p", "gnt", "きょじん", "巨人", "kyojin", "Kyojin", "KYOJIN", "準最強特性" };
+	public override List<string> Name => ["P", "p", "gnt", "きょじん", "巨人", "kyojin", "Kyojin", "KYOJIN", "準最強特性"];
 	public override string Description => "人物タイプの言葉の威力が上がる";
 	public override string ImgFile => "person.gif";
 	public override double Amp => 1.5;
@@ -489,7 +489,7 @@ internal class Kyojin : Ability
 internal class Busou : Ability, ISingleTypedBufAbility
 {
 	public override AbilityType Type => AbilityType.ActionBegin;
-	public override List<string> Name => new() { "K", "k", "arm", "ぶそう", "武装", "busou", "Busou", "BUSOU", "富士山" };
+	public override List<string> Name => ["K", "k", "arm", "ぶそう", "武装", "busou", "Busou", "BUSOU", "富士山"];
 	public override string Description => "工作タイプの言葉を使うとダメージを与える代わりに攻撃力が上がる";
 	public override string ImgFile => "work.gif";
 	public override int Buf => 1;
@@ -512,7 +512,7 @@ internal class Busou : Ability, ISingleTypedBufAbility
 internal class Kasanegi : Ability, ISingleTypedBufAbility
 {
 	public override AbilityType Type => AbilityType.ActionBegin;
-	public override List<string> Name => new() { "L", "l", "lyr", "かさねぎ", "重ね着", "kasanegi", "Kasanegi", "KASANEGI" };
+	public override List<string> Name => ["L", "l", "lyr", "かさねぎ", "重ね着", "kasanegi", "Kasanegi", "KASANEGI"];
 	public override string Description => "服飾タイプの言葉を使うとダメージを与える代わりに防御力が上がる";
 	public override string ImgFile => "cloth.gif";
 	public override int Buf => 1;
@@ -536,7 +536,7 @@ internal class Kasanegi : Ability, ISingleTypedBufAbility
 internal class Hoken : Ability
 {
 	public override AbilityType Type => AbilityType.Received;
-	public override List<string> Name => new() { "S", "s", "ins", "ほけん", "保険", "hoken", "Hoken", "HOKEN", "じゃくてんほけん", "弱点保険", "じゃくほ", "弱保" };
+	public override List<string> Name => ["S", "s", "ins", "ほけん", "保険", "hoken", "Hoken", "HOKEN", "じゃくてんほけん", "弱点保険", "じゃくほ", "弱保"];
 	public override string Description => "効果抜群のダメージを受けると攻撃力がぐぐーんと上がる";
 	public override string ImgFile => "society.gif";
 	public override int Buf => Player.InsBufQty;
@@ -557,7 +557,7 @@ internal class Hoken : Ability
 internal class Kakumei : Ability
 {
 	public override AbilityType Type => AbilityType.ActionEnd;
-	public override List<string> Name => new() { "J", "j", "rev", "かくめい", "革命", "kakumei", "Kakumei", "KAKUMEI" };
+	public override List<string> Name => ["J", "j", "rev", "かくめい", "革命", "kakumei", "Kakumei", "KAKUMEI"];
 	public override string Description => "遊びタイプの言葉を使うたびに自分と相手の能力変化をひっくり返す";
 	public override string ImgFile => "play.gif";
 	public override void Execute(Contract c)
@@ -577,7 +577,7 @@ internal class Kakumei : Ability
 internal class Dokubari : Ability
 {
 	public override AbilityType Type => AbilityType.ActionExecuted;
-	public override List<string> Name => new() { "D", "d", "ndl", "どくばり", "毒針", "dokubari", "Dokubari", "DOKUBARI" };
+	public override List<string> Name => ["D", "d", "ndl", "どくばり", "毒針", "dokubari", "Dokubari", "DOKUBARI"];
 	public override string Description => "虫タイプの言葉を使うと相手を毒状態にできる";
 	public override string ImgFile => "bug.gif";
 	public override void Execute(Contract c)
@@ -598,7 +598,7 @@ internal class Dokubari : Ability
 internal class Keisan : Ability, ISingleTypedBufAbility
 {
 	public override AbilityType Type => AbilityType.ActionBegin;
-	public override List<string> Name => new() { "X", "x", "clc", "けいさん", "計算", "keisan", "Keisan", "KEISAN" };
+	public override List<string> Name => ["X", "x", "clc", "けいさん", "計算", "keisan", "Keisan", "KEISAN"];
 	public override string Description => "数学タイプの言葉を使うとダメージを与える代わりに攻撃力が上がる";
 	public override string ImgFile => "math.gif";
 	public override int Buf => 1;
@@ -621,7 +621,7 @@ internal class Keisan : Ability, ISingleTypedBufAbility
 internal class Zuboshi : Ability
 {
 	public override AbilityType Type => AbilityType.CritDecided;
-	public override List<string> Name => new() { "Z", "z", "htm", "ずぼし", "図星", "zuboshi", "Zuboshi", "ZUBOSHI" };
+	public override List<string> Name => ["Z", "z", "htm", "ずぼし", "図星", "zuboshi", "Zuboshi", "ZUBOSHI"];
 	public override string Description => "暴言タイプの言葉を使った時に必ず相手の急所に当たる";
 	public override string ImgFile => "insult.gif";
 	public override void Execute(Contract c)
@@ -638,7 +638,7 @@ internal class Zuboshi : Ability
 internal class Shinkoushin : Ability
 {
 	public override AbilityType Type => AbilityType.AmpDecided;
-	public override List<string> Name => new() { "R", "r", "fth", "しんこうしん", "信仰心", "shinkoushin", "Shinkoushin", "SHINKOUSHIN", "ドグマ" };
+	public override List<string> Name => ["R", "r", "fth", "しんこうしん", "信仰心", "shinkoushin", "Shinkoushin", "SHINKOUSHIN", "ドグマ"];
 	public override string Description => "宗教タイプの言葉の威力が上がる";
 	public override string ImgFile => "religion.gif";
 	public override double Amp => 1.5;
@@ -656,7 +656,7 @@ internal class Shinkoushin : Ability
 internal class Training : Ability, ISingleTypedBufAbility
 {
 	public override AbilityType Type => AbilityType.ActionBegin;
-	public override List<string> Name => new() { "U", "u", "trn", "トレーニング", "とれーにんぐ", "training", "Training", "TRAINING", "誰も使わない特性" };
+	public override List<string> Name => ["U", "u", "trn", "トレーニング", "とれーにんぐ", "training", "Training", "TRAINING", "誰も使わない特性"];
 	public override string Description => "スポーツタイプの言葉を使うとダメージを与える代わりに攻撃力が上がる";
 	public override string ImgFile => "sports.gif";
 	public override int Buf => 1;
@@ -679,7 +679,7 @@ internal class Training : Ability, ISingleTypedBufAbility
 internal class WZ : Ability
 {
 	public override AbilityType Type => AbilityType.ActionEnd;
-	public override List<string> Name => new() { "W", "w", "tph", "たいふういっか", "台風一過", "台風一家", "WZ", "wz", "WeathersZero", "天で話にならねぇよ..." };
+	public override List<string> Name => ["W", "w", "tph", "たいふういっか", "台風一過", "台風一家", "WZ", "wz", "WeathersZero", "天で話にならねぇよ..."];
 	public override string Description => "天気タイプの言葉を使うと自分と相手の能力変化をもとに戻す";
 	public override string ImgFile => "weather.gif";
 	public override void Execute(Contract c)
@@ -699,7 +699,7 @@ internal class WZ : Ability
 internal class Oremoji : Ability
 {
 	public override AbilityType Type => AbilityType.AmpDecided;
-	public override List<string> Name => new() { "O", "o", "orm", "おれのことばのもじすうがおおいほどいりょくがおおきくなるけんについて", "俺の言葉の文字数が多いほど威力が大きくなる件について", "おれもじ", "俺文字", "oremoji", "Oremoji", "OREMOJI" };
+	public override List<string> Name => ["O", "o", "orm", "おれのことばのもじすうがおおいほどいりょくがおおきくなるけんについて", "俺の言葉の文字数が多いほど威力が大きくなる件について", "おれもじ", "俺文字", "oremoji", "Oremoji", "OREMOJI"];
 	public override string Description => "言葉の文字数が多いほど威力が大きくなる";
 	public override string ImgFile => "tale.gif";
 	public override void Execute(Contract c)

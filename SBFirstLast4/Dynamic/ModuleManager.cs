@@ -5,7 +5,7 @@ namespace SBFirstLast4.Dynamic;
 
 public static class ModuleManager
 {
-	public static List<Module> Modules { get; private set; } = new();
+	public static List<Module> Modules { get; private set; } = [];
 
 	public static Module UserDefined { get; private set; } = new() { Name = "USER_DEFINED", Symbols = { "USER_DEFINED" } };
 
@@ -21,12 +21,12 @@ public static class ModuleManager
 
 	public static string[] ContentNames => Macros.Select(x => x.Name).Concat(Ephemerals.Select(x => x.Name)).Concat(Symbols).ToArray();
 
-	public static List<string> ExcludedModules { get; private set; } = new();
+	public static List<string> ExcludedModules { get; private set; } = [];
 
 	public static Module[] RuntimeModules => Modules.Where(m => m.IsRuntime).ToArray();
 
 
-	private static readonly List<Module> WaitingQueue = new();
+	private static readonly List<Module> WaitingQueue = [];
 
 	public static Module? GetModule(string? moduleName) => Modules.Where(m => m.Name == moduleName).FirstOrDefault();
 

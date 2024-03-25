@@ -49,77 +49,77 @@ public static class DynamicExtensionHelper
 	/// SO dictionary for query source
 	/// </summary>
 	/// <seealso cref="ScriptExecutor._singletonEnumerable"/>
-	public static int[] GetSingleton() => new[] { 0 };
+	public static int[] GetSingleton() => [0];
 }
 
 [DynamicLinqType]
 public static class ProcHelper
 {
 	public static Func<string> Action(this ProcCall proc)
-		=> () => proc.InvokeVoid(Array.Empty<object?>());
+		=> () => proc.InvokeVoid([]);
 
 	public static Func<T, string> Action<T>(this ProcCall proc)
-		=> arg => proc.InvokeVoid(new object?[] { arg });
+		=> arg => proc.InvokeVoid([arg]);
 
 	public static Func<T1, T2, string> Action<T1, T2>(this ProcCall proc)
-		=> (arg1, arg2) => proc.InvokeVoid(new object?[] { arg1, arg2 });
+		=> (arg1, arg2) => proc.InvokeVoid([arg1, arg2]);
 
 	public static Func<T1, T2, T3, string> Action<T1, T2, T3>(this ProcCall proc)
-		=> (arg1, arg2, arg3) => proc.InvokeVoid(new object?[] { arg1, arg2, arg3 });
+		=> (arg1, arg2, arg3) => proc.InvokeVoid([arg1, arg2, arg3]);
 
 	public static Func<T1, T2, T3, T4, string> Action<T1, T2, T3, T4>(this ProcCall proc)
-		=> (arg1, arg2, arg3, arg4) => proc.InvokeVoid(new object?[] { arg1, arg2, arg3, arg4 });
+		=> (arg1, arg2, arg3, arg4) => proc.InvokeVoid([arg1, arg2, arg3, arg4]);
 
 	public static Func<T1, T2, T3, T4, T5, string> Action<T1, T2, T3, T4, T5>(this ProcCall proc)
-		=> (arg1, arg2, arg3, arg4, arg5) => proc.InvokeVoid(new object?[] { arg1, arg2, arg3, arg4, arg5 });
+		=> (arg1, arg2, arg3, arg4, arg5) => proc.InvokeVoid([arg1, arg2, arg3, arg4, arg5]);
 
 	public static Func<T1, T2, T3, T4, T5, T6, string> Action<T1, T2, T3, T4, T5, T6>(this ProcCall proc)
-		=> (arg1, arg2, arg3, arg4, arg5, arg6) => proc.InvokeVoid(new object?[] { arg1, arg2, arg3, arg4, arg5, arg6 });
+		=> (arg1, arg2, arg3, arg4, arg5, arg6) => proc.InvokeVoid([arg1, arg2, arg3, arg4, arg5, arg6]);
 
 	public static Func<T1, T2, T3, T4, T5, T6, T7, string> Action<T1, T2, T3, T4, T5, T6, T7>(this ProcCall proc)
-		=> (arg1, arg2, arg3, arg4, arg5, arg6, arg7) => proc.InvokeVoid(new object?[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7 });
+		=> (arg1, arg2, arg3, arg4, arg5, arg6, arg7) => proc.InvokeVoid([arg1, arg2, arg3, arg4, arg5, arg6, arg7]);
 
 	public static Func<T1, T2, T3, T4, T5, T6, T7, T8, string> Action<T1, T2, T3, T4, T5, T6, T7, T8>(this ProcCall proc)
-		=> (arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) => proc.InvokeVoid(new object?[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 });
+		=> (arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) => proc.InvokeVoid([arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8]);
 
 	public static Func<bool> Predicate(this ProcCall proc)
-		=> () => (bool)proc.Invoke(Array.Empty<object?>())!;
+		=> () => (bool)proc.Invoke([])!;
 
 	public static Func<T, bool> Predicate<T>(this ProcCall proc)
-		=> arg => (bool)proc.Invoke(new object?[] { arg })!;
+		=> arg => (bool)proc.Invoke([arg])!;
 
 	public static Func<T1, T2, bool> Predicate<T1, T2>(this ProcCall proc)
-		=> (arg1, arg2) => (bool)proc.Invoke(new object?[] { arg1, arg2 })!;
+		=> (arg1, arg2) => (bool)proc.Invoke([arg1, arg2])!;
 
 	public static Func<T1, T2, T3, bool> Predicate<T1, T2, T3>(this ProcCall proc)
-		=> (arg1, arg2, arg3) => (bool)proc.Invoke(new object?[] { arg1, arg2, arg3 })!;
+		=> (arg1, arg2, arg3) => (bool)proc.Invoke([arg1, arg2, arg3])!;
 
 	public static Func<TResult> Func<TResult>(this ProcCall proc)
-		=> () => (TResult)proc.Invoke(Array.Empty<object?>())!;
+		=> () => (TResult)proc.Invoke([])!;
 
 	public static Func<T, TResult> Func<T, TResult>(this ProcCall proc)
-		=> arg => (TResult)proc.Invoke(new object?[] { arg })!;
+		=> arg => (TResult)proc.Invoke([arg])!;
 
 	public static Func<T1, T2, TResult> Func<T1, T2, TResult>(this ProcCall proc)
-		=> (arg1, arg2) => (TResult)proc.Invoke(new object?[] { arg1, arg2 })!;
+		=> (arg1, arg2) => (TResult)proc.Invoke([arg1, arg2])!;
 
 	public static Func<T1, T2, T3, TResult> Func<T1, T2, T3, TResult>(this ProcCall proc)
-		=> (arg1, arg2, arg3) => (TResult)proc.Invoke(new object?[] { arg1, arg2, arg3 })!;
+		=> (arg1, arg2, arg3) => (TResult)proc.Invoke([arg1, arg2, arg3])!;
 
 	public static Func<T1, T2, T3, T4, TResult> Func<T1, T2, T3, T4, TResult>(this ProcCall proc)
-		=> (arg1, arg2, arg3, arg4) => (TResult)proc.Invoke(new object?[] { arg1, arg2, arg3, arg4 })!;
+		=> (arg1, arg2, arg3, arg4) => (TResult)proc.Invoke([arg1, arg2, arg3, arg4])!;
 
 	public static Func<T1, T2, T3, T4, T5, TResult> Func<T1, T2, T3, T4, T5, TResult>(this ProcCall proc)
-		=> (arg1, arg2, arg3, arg4, arg5) => (TResult)proc.Invoke(new object?[] { arg1, arg2, arg3, arg4, arg5 })!;
+		=> (arg1, arg2, arg3, arg4, arg5) => (TResult)proc.Invoke([arg1, arg2, arg3, arg4, arg5])!;
 
 	public static Func<T1, T2, T3, T4, T5, T6, TResult> Func<T1, T2, T3, T4, T5, T6, TResult>(this ProcCall proc)
-		=> (arg1, arg2, arg3, arg4, arg5, arg6) => (TResult)proc.Invoke(new object?[] { arg1, arg2, arg3, arg4, arg5, arg6 })!;
+		=> (arg1, arg2, arg3, arg4, arg5, arg6) => (TResult)proc.Invoke([arg1, arg2, arg3, arg4, arg5, arg6])!;
 
 	public static Func<T1, T2, T3, T4, T5, T6, T7, TResult> Func<T1, T2, T3, T4, T5, T6, T7, TResult>(this ProcCall proc)
-		=> (arg1, arg2, arg3, arg4, arg5, arg6, arg7) => (TResult)proc.Invoke(new object?[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7 })!;
+		=> (arg1, arg2, arg3, arg4, arg5, arg6, arg7) => (TResult)proc.Invoke([arg1, arg2, arg3, arg4, arg5, arg6, arg7])!;
 
 	public static Func<T1, T2, T3, T4, T5, T6, T7, T8, TResult> Func<T1, T2, T3, T4, T5, T6, T7, T8, TResult>(this ProcCall proc)
-		=> (arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) => (TResult)proc.Invoke(new object?[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 })!;
+		=> (arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) => (TResult)proc.Invoke([arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8])!;
 
 }
 

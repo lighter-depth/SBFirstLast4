@@ -58,11 +58,11 @@ public abstract class Contract
 	/// <summary>
 	/// <see cref="Battle.Out"/>に渡すアノテーション付き文字列のリスト
 	/// </summary>
-	public List<AnnotatedString> Message { get; protected set; } = new();
+	public List<AnnotatedString> Message { get; protected set; } = [];
 	/// <summary>
 	/// アクションを実行するハンドラーの情報を保持するリスト
 	/// </summary>
-	protected List<Action> Contents { get; set; } = new();
+	protected List<Action> Contents { get; set; } = [];
 	#endregion
 
 	#region constructors
@@ -76,15 +76,15 @@ public abstract class Contract
 		Word = word;
 		Parent = parent;
 		Args = args;
-		Contents = new()
-		{
+		Contents =
+		[
 			OnContractBegin,
 			OnActionBegin,
 			OnActionExecuted,
 			OnReceive,
 			OnActionEnd,
 			OnContractEnd
-		};
+		];
 	}
 	[SetsRequiredMembers] public Contract() : this(new(Ability.Default), new(Ability.Default), new(), Battle.Default) { }
 	#endregion
@@ -258,31 +258,25 @@ public abstract class Contract
 /// <summary>
 /// <see cref="Contract"/>の補助的な情報を管理するクラスです。
 /// </summary>
-public class ContractArgs
+public class ContractArgs(Player pa, Player pr)
 {
 	/// <summary>
 	/// タイプ推論が成功したかどうかを表すフラグ
 	/// </summary>
-	public bool IsInferSuccessed { get; set; }
+	public bool IsInferSuccessed { get; set; } = false;
 	/// <summary>
 	/// 単語がまだ使われていないかを表すフラグ
 	/// </summary>
-	public bool IsWordNotUsed { get; set; }
+	public bool IsWordNotUsed { get; set; } = false;
 	/// <summary>
 	/// １ターン前の<see cref="Contract.Actor"/>の情報
 	/// </summary>
-	public Player PreActor { get; set; }
+	public Player PreActor { get; set; } = pa;
 	/// <summary>
 	/// １ターン前の<see cref="Contract.Receiver"/>の情報
 	/// </summary>
-	public Player PreReceiver { get; set; }
-	public ContractArgs(Player pa, Player pr)
-	{
-		IsInferSuccessed = false;
-		IsWordNotUsed = false;
-		PreActor = pa;
-		PreReceiver = pr;
-	}
+	public Player PreReceiver { get; set; } = pr;
+
 	public static ContractArgs Empty => _empty;
 	private static readonly ContractArgs _empty = new(new(Ability.Default), new(Ability.Default));
 }
@@ -325,8 +319,8 @@ internal class AttackContract : Contract
 	[SetsRequiredMembers]
 	public AttackContract(Player actor, Player receiver, Word word, Battle parent, ContractArgs args) : base(actor, receiver, word, parent, args)
 	{
-		Contents = new()
-		{
+		Contents =
+		[
 			OnContractBegin,
 			OnBaseCalc,
 			OnPropCalc,
@@ -340,7 +334,7 @@ internal class AttackContract : Contract
 			OnReceive,
 			OnActionEnd,
 			OnContractEnd
-		};
+		];
 	}
 	[SetsRequiredMembers]
 	public AttackContract()
@@ -512,8 +506,8 @@ internal class HealContract : Contract
 	[SetsRequiredMembers]
 	public HealContract(Player actor, Player receiver, Word word, Battle parent, ContractArgs args) : base(actor, receiver, word, parent, args)
 	{
-		Contents = new()
-		{
+		Contents =
+		[
 			OnContractBegin,
 			OnHealAmtCalc,
 			OnDetermineCanHeal,
@@ -522,7 +516,7 @@ internal class HealContract : Contract
 			OnReceive,
 			OnActionEnd,
 			OnContractEnd
-		};
+		];
 	}
 	[SetsRequiredMembers]
 	public HealContract()

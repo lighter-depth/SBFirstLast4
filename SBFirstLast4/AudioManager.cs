@@ -5,27 +5,27 @@ namespace SBFirstLast4;
 
 public static class AudioManager
 {
-	private static readonly Dictionary<string, IJSObjectReference> audioPlayers = new();
+	private static readonly Dictionary<string, IJSObjectReference> audioPlayers = [];
 	public static async Task Initialize(IJSRuntime jsRuntime)
 	{
 		try
 		{
-			foreach (var i in new[]
-			{
-			"animal", "art", "barrier", "body", "bug", "cloth", "concent", "denno", "down", "effective", "emote", "end", "food", "glitch", "heal", "health", "horizon", "insult", "last",
-			"math", "mech", "middmg", "ninja", "noneffective", "normal", "overflow", "pera", "person", "place", "plant", "play", "poison", "poison_heal", "portal", "religion", "rewind",
-			"science", "seed_damage", "seeded", "society", "sports", "start", "tale", "time", "up", "violence", "warn", "weather", "wonderland", "work"
-			})
+			foreach (var i in (string[])
+			[
+				"animal", "art", "barrier", "body", "bug", "cloth", "concent", "denno", "down", "effective", "emote", "end", "food", "glitch", "heal", "health", "horizon", "insult", "last",
+				"math", "mech", "middmg", "ninja", "noneffective", "normal", "overflow", "pera", "person", "place", "plant", "play", "poison", "poison_heal", "portal", "religion", "rewind",
+				"science", "seed_damage", "seeded", "society", "sports", "start", "tale", "time", "up", "violence", "warn", "weather", "wonderland", "work"
+			])
 			{
 				audioPlayers.TryAdd(i, await CreatePlayerAsync(jsRuntime, $"audio/{i}.mp3"));
 			}
 
-			foreach (var i in new[] { "horizon", "overflow", "last", "ninja" })
+			foreach (var i in (string[])["horizon", "overflow", "last", "ninja"])
 			{
 				await audioPlayers[i].SetProperty("volume", 0.28f);
 				await audioPlayers[i].SetProperty("loop", true);
 			}
-			foreach (var i in new[] { "denno", "wonderland" })
+			foreach (var i in (string[])["denno", "wonderland"])
 			{
 				await audioPlayers[i].SetProperty("volume", 0.36f);
 				await audioPlayers[i].SetProperty("loop", true);
@@ -52,7 +52,7 @@ public static class AudioManager
 			return null!;
 		}
 	}
-	public static string[] AudioNames => audioPlayers.Keys.ToArray();
+	public static string[] AudioNames => [.. audioPlayers.Keys];
 	public static async Task PlayAudio(string soundName)
 	{
 		if (audioPlayers.TryGetValue(soundName, out var player)) await player.InvokeVoidAsync("play");

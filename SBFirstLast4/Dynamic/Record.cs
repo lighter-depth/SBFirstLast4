@@ -12,7 +12,7 @@ public static class Record
 
 	internal static readonly ModuleBuilder ModuleBuilder = AssemblyBuilder.DefineDynamicModule("SBFirstLast4Dynamic");
 
-	internal static readonly List<Type> Types = new();
+	internal static readonly List<Type> Types = [];
 
 	private const string Namespace = "SBFirstLast4Dynamic";
 
@@ -43,12 +43,12 @@ public static class Record
 			fields.Add(builder.DefineField(name, type, FieldAttributes.Public));
 		}
 
-		var ctor = builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, paramTypes.ToArray());
+		var ctor = builder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, [.. paramTypes]);
 
 		DefineConstructor(ctor.GetILGenerator(), fields);
 
 
-		var printMembers = builder.DefineMethod("PrintMembers", MethodAttributes.Public | MethodAttributes.Virtual, typeof(bool), new[] { typeof(StringBuilder) });
+		var printMembers = builder.DefineMethod("PrintMembers", MethodAttributes.Public | MethodAttributes.Virtual, typeof(bool), [typeof(StringBuilder)]);
 		DefinePrintMembers(printMembers.GetILGenerator(), fields);
 
 		var toString = builder.DefineMethod("ToString", MethodAttributes.Public | MethodAttributes.Virtual, typeof(string), null);
@@ -64,7 +64,7 @@ public static class Record
 	{
 		var builder = ModuleBuilder.DefineEnum($"{Namespace}.{enumName}", TypeAttributes.Public, typeof(int));
 
-		builder.SetCustomAttribute(new(typeof(FlagsAttribute).GetConstructor(Type.EmptyTypes)!, Array.Empty<object?>()));
+		builder.SetCustomAttribute(new(typeof(FlagsAttribute).GetConstructor(Type.EmptyTypes)!, []));
 
 		var value = 0;
 
@@ -101,8 +101,8 @@ public static class Record
 
 	private static void DefinePrintMembers(ILGenerator il, IList<FieldBuilder> fields)
 	{
-		var appendString = typeof(StringBuilder).GetMethod("Append", new[] { typeof(string) })!;
-		var appendObject = typeof(StringBuilder).GetMethod("Append", new[] { typeof(object) })!;
+		var appendString = typeof(StringBuilder).GetMethod("Append", [typeof(string)])!;
+		var appendObject = typeof(StringBuilder).GetMethod("Append", [typeof(object)])!;
 
 		var sb = il.DeclareLocal(typeof(StringBuilder));
 
@@ -146,7 +146,7 @@ public static class Record
 
 	private static void DefineToString(ILGenerator il, string typeName, MethodInfo printMembers)
 	{
-		var appendString = typeof(StringBuilder).GetMethod("Append", new[] { typeof(string) })!;
+		var appendString = typeof(StringBuilder).GetMethod("Append", [typeof(string)])!;
 		var endif = il.DefineLabel();
 		var sb = il.DeclareLocal(typeof(StringBuilder));
 		il.Emit(OpCodes.Newobj, typeof(StringBuilder).GetConstructor(Type.EmptyTypes)!);

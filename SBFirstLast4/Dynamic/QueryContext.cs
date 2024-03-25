@@ -15,12 +15,12 @@ public enum QueryContext
 public static class QueryContexts 
 {
 	public static readonly string[] ScriptContextSpecifiers =
-	{
+	[
 		".default", ".end", ".proc", ".script", ".module"
-	};
+	];
 
 	public static readonly string[] ModuleContextSpecifiers =
-	{
+	[
 		".default", ".end", ".proc", ".module", ".init", ".static"
-	};
+	];
 }
