@@ -1,0 +1,35 @@
+﻿@page "/rev-simulator"
+@using System.Diagnostics
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>革命シミュレーター</PageTitle>
+
+<input @bind=FirstChar/>
+<button>Run!</button>
+
+@code {
+	private static Word[] PlayWords = [];
+
+	private string FirstChar = string.Empty;
+
+	protected override void OnInitialized()
+	{
+		if (!AppSettings.IsLoggedIn)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+		if (!Words.IsLoadedCorrectly)
+			NavigationManager.NavigateTo("top", false);
+
+		if (PlayWords.Length == 0)
+			PlayWords = Words.TypedWords.Where(w => w.Contains(WordType.Play) && !w.IsHeal).ToArray();
+	}
+
+	private void Run()
+	{
+		var first = new Word(FirstChar, WordType.Play, WordType.Empty);
+		var chain = new List<Word>();
+	}
+}

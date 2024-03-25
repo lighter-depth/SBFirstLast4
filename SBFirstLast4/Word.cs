@@ -1,5 +1,6 @@
 ﻿using SBFirstLast4.Simulator;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
+using System.Runtime.CompilerServices;
 using MultiWord = SBFirstLast4.Dynamic.Extensions.MultiWord;
 
 namespace SBFirstLast4;
@@ -16,9 +17,9 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	{
 		get
 		{
-			if (IsEmpty) return new();
-			if (IsSingleType) return new() { Type1 };
-			return new() { Type1, Type2 };
+			if (IsEmpty) return [];
+			if (IsSingleType) return [Type1];
+			return [Type1, Type2];
 		}
 	}
 	public bool Contains(WordType type) => Type1 == type || Type2 == type;
@@ -42,7 +43,7 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	private static readonly int[,] effList;
 	private static readonly WordType[] typeIndex;
 
-	public Word(MultiWord word) 
+	public Word(MultiWord word)
 		: this(word.Name, word.Types.At(0), word.Types.At(1)) { }
 
 	public override string ToString()
@@ -70,6 +71,7 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 
 	public int CompareTo(Word other) => string.Compare(Name, other.Name, StringComparison.Ordinal);
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public double CalcEffectiveDmg(Word other)
 		=> CalcEffectiveDmg(Type1, other.Type1)
 		   * CalcEffectiveDmg(Type1, other.Type2)
@@ -79,6 +81,7 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	public double CalcEffectiveDmg(MultiWord other)
 		=> new MultiWord(this).CalcEffectiveDmg(other);
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static double CalcEffectiveDmg(WordType t1, WordType t2)
 	{
 		if (t1 == WordType.Empty || t2 == WordType.Empty) return 1;
@@ -90,7 +93,7 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 			1 => 2,
 			2 => 0.5,
 			3 => 0,
-			_ => throw new ArgumentOutOfRangeException($"パラメーター{effList[t1Index, t2Index]} は無効です。")
+			_ => 1
 		};
 	}
 
@@ -175,15 +178,15 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
             { 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0 }, // Sports
             { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 }  // Normal  
         };
-		typeIndex = new[]
-		{
+		typeIndex =
+		[
 			WordType.Violence, WordType.Food, WordType.Place, WordType.Society, WordType.Animal,
 			WordType.Emote, WordType.Plant, WordType.Science, WordType.Play, WordType.Person,
 			WordType.Cloth, WordType.Work, WordType.Art, WordType.Body, WordType.Time,
 			WordType.Mech, WordType.Health, WordType.Tale, WordType.Insult, WordType.Math,
 			WordType.Weather, WordType.Bug, WordType.Religion, WordType.Sports, WordType.Normal,
 			WordType.Empty
-		};
+		];
 	}
 	public static explicit operator Word(string name) => new(name, WordType.Empty, WordType.Empty);
 
@@ -191,12 +194,12 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 
 	public static Word FromString(string? name)
 	{
-		if (string.IsNullOrWhiteSpace(name)) 
+		if (string.IsNullOrWhiteSpace(name))
 			return Default;
 
 		var resultWord = Words.GetSplitList(name[0]).Find(x => x.Name == name);
 
-		if (resultWord != default) 
+		if (resultWord != default)
 			return resultWord;
 
 		return (Word)name;
@@ -204,7 +207,7 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 
 	public static Word FromVerbatim(string? name, string? type1Str, string? type2Str)
 	{
-		if (string.IsNullOrWhiteSpace(name)) 
+		if (string.IsNullOrWhiteSpace(name))
 			return Default;
 
 		var type1 = type1Str?.StringToType() ?? WordType.Empty;

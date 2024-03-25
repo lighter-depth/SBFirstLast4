@@ -106,6 +106,21 @@ public static class Utils
 	public static Type GetTypeOrDefault<T>(this T? obj) => obj?.GetType() ?? typeof(object);
 }
 
+public class Wrapper<T>
+{
+	private T _value;
+
+	public T Value
+	{
+		get => _value;
+		set => _value = value;
+	}
+
+	public ref T RefValue => ref _value;
+
+	public Wrapper(T value) => _value = value;
+}
+
 public static class JSHelper
 {
 	public static ValueTask Alert(this IJSRuntime jsRuntime, params object?[]? args) => jsRuntime.InvokeVoidAsync("alert", args);
