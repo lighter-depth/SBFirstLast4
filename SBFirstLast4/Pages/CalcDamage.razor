@@ -354,6 +354,9 @@
 
 	private async Task UpdateLblDamage()
 	{
+		await UpdateLblDamageMk2();
+		return;
+
 		await Task.Delay(1);
 		if (string.IsNullOrWhiteSpace(Attacker.Name) || string.IsNullOrWhiteSpace(Receiver.Name))
 		{
@@ -382,6 +385,26 @@
 				: 1;
 		var dmgLow = (int)(crit * (int)(amp * (int)(baseDmg * prop * atk / def * randomLow)));
 		var dmgHigh = (int)(crit * (int)(amp * (int)(baseDmg * prop * atk / def * randomHigh)));
+		resultStr += $"{Attacker} → {Receiver}：";
+		resultStr += $" [{dmgLow}-{dmgHigh}]";
+		var ability = Ability is WordType.Empty ? "特性なし " : $"{Ability.AbilityToString()} ";
+		resultStr += $" {{ {ability}({ValueA:0.0#}/{ValueB:0.0#}) }}";
+		LblDamage = resultStr;
+		StateHasChanged();
+	}
+
+	private async Task UpdateLblDamageMk2()
+	{
+		await Task.Delay(1);
+		if (string.IsNullOrWhiteSpace(Attacker.Name) || string.IsNullOrWhiteSpace(Receiver.Name))
+		{
+			LblDamage = string.Empty;
+			StateHasChanged();
+			return;
+		}
+		var resultStr = string.Empty;
+		var dmgLow = Damage.CalculateLow(Attacker, Receiver, ValueA, ValueB, Ability);
+		var dmgHigh = Damage.CalculateHigh(Attacker, Receiver, ValueA, ValueB, Ability);
 		resultStr += $"{Attacker} → {Receiver}：";
 		resultStr += $" [{dmgLow}-{dmgHigh}]";
 		var ability = Ability is WordType.Empty ? "特性なし " : $"{Ability.AbilityToString()} ";

@@ -16,6 +16,15 @@ public static class Damage
 			if (skill == Skills.Debugger)
 				return (int)(13 * (int)(statusEffect * 10) * 0.1);
 
+			// 俺文字
+			if (skill == Skills.Oremoji)
+			{
+				//　俺文字倍率
+				var oremojiEffect = attacker.Length > 6 ? 2 : attacker.Length == 6 ? 1.5 : 1;
+
+				return (int)(7 * (int)(10 * statusEffect) * oremojiEffect * 0.1);
+			}
+
 			return (int)(7 * (int)(10 * statusEffect) * 0.1);
 		}
 
@@ -39,6 +48,12 @@ public static class Damage
 		// 有属性 → 有属性
 		return (int)((int)(10 * random * statusEffect * typeEffect) * skillEffect * critEffect);
 	}
+
+	public static int CalculateLow(Word attacker, Word receiver, double allyATK, double foeDEF, Skill skill)
+		=> Calculate(attacker, receiver, allyATK, foeDEF, skill, 0.85);
+
+	public static int CalculateHigh(Word attacker, Word receiver, double allyATK, double foeDEF, Skill skill)
+		=> Calculate(attacker, receiver, allyATK, foeDEF, skill, 0.99);
 
 	private static double SkillEffect(Word word, Skill skill) => skill switch
 	{
