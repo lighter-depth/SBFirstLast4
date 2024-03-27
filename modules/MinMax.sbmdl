@@ -12,7 +12,7 @@ requires: STD;
 
 #define await( operator..Await(
 
-#define $len( global..len(
+#define $len( global.len(
 
 #define static_cast< cast..static<
 #define dynamic_cast< cast..dynamic<
