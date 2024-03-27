@@ -1446,7 +1446,7 @@
 
 	private static List<AnnotatedString> GetMessages(IEnumerable<AnnotatedString> list)
 	{
-		var filter = (List<Notice>)
+		List<Notice> filter =
 		[
 			Notice.HPUpdated, Notice.NoDmgProp, Notice.NonEffectiveProp, Notice.MidDmgProp, Notice.EffectiveProp, Notice.CritInfo,
 			Notice.PoisonHeal,Notice.Heal, Notice.Buf, Notice.Debuf, Notice.Barrier, Notice.Portal,Notice.Rewind, Notice.Alter, Notice.RevInfo,Notice.Poison, Notice.PoisonDmg, Notice.Seed,

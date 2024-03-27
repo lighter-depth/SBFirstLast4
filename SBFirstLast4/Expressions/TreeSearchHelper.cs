@@ -12,13 +12,25 @@ public static class TreeSearchHelper
 
 	public static char LastChar(this Word word) => word.End;
 
-	public static bool IsKillable(this Word word) => Array.BinarySearch(AuxLists.Killable, word.Name) > -1;
+	public static bool IsKillable(this Word word)
+		=> _killableCache.TryGetValue(word.Name, out var result) ? result : _killableCache[word.Name] = Array.BinarySearch(AuxLists.Killable, word.Name) > -1;
 
-	public static bool IsSemikillable(this Word word) => Array.BinarySearch(AuxLists.SemiKillable, word.Name) > -1;
+	private static readonly Dictionary<string, bool> _killableCache = [];
 
-	public static bool IsDanger4(this Word word) => Array.BinarySearch(AuxLists.Danger4, word.Name) > -1;
+	public static bool IsSemikillable(this Word word)
+		=> _semikillableCache.TryGetValue(word.Name, out var result) ? result : _semikillableCache[word.Name] = Array.BinarySearch(AuxLists.SemiKillable, word.Name) > -1;
 
-	public static bool Is4xable(this Word word) => Array.BinarySearch(AuxLists.CanBe4xed, word.Name) > -1;
+	private static readonly Dictionary<string, bool> _semikillableCache = [];
+
+	public static bool IsDanger4(this Word word) 
+		=> _danger4Cache.TryGetValue(word.Name, out var result) ? result : _danger4Cache[word.Name] = Array.BinarySearch(AuxLists.Danger4, word.Name) > -1;
+
+	private static readonly Dictionary<string, bool> _danger4Cache = [];
+
+	public static bool Is4xable(this Word word) 
+		=> _4xableCache.TryGetValue(word.Name, out var result) ? result : _4xableCache[word.Name] = Array.BinarySearch(AuxLists.CanBe4xed, word.Name) > -1;
+
+	private static readonly Dictionary<string, bool> _4xableCache = [];
 
 	public static bool __Regex_IsMatch__(this string str, string pattern) => Regex.IsMatch(str, pattern);
 

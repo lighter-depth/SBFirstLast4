@@ -80,13 +80,12 @@
 			<div class="divider"></div>
 			<div class="inner-grid">
 				<label class="text-label" style="font-weight:600; font-size: 22px;">自然急所</label>
-				<input type="checkbox" id="switch" class="checkbox"
-					   @onchange="async e =>
+				<input type="checkbox" id="switch" class="checkbox" @onchange="async e =>
 					{
 						CritIfPossible = (bool)(e.Value ?? false);
 						StateHasChanged();
 						await Task.Delay(1);
-						UpdateLblDamage();
+						await UpdateLblDamage();
 					}" />
 				<label for="switch" class="toggle"></label>
 			</div>
@@ -231,7 +230,7 @@
 	private List<string> StatusValueItemList =
 	[
 		"0.25 倍", "0.28 倍", "0.33 倍", "0.4 倍", "0.5 倍", "0.66 倍",
-		"1.0 倍", "1.5 倍", "2.0 倍", "2.5 倍", "3.0 倍", "3.5 倍", "4.0 倍"
+	"1.0 倍", "1.5 倍", "2.0 倍", "2.5 倍", "3.0 倍", "3.5 倍", "4.0 倍"
 	];
 
 	private string SelectedAbilityItem = "なし";
@@ -281,18 +280,18 @@
 		});
 	}
 
-	private async void AttackerInput_KeyUp()
+	private async Task AttackerInput_KeyUp()
 	{
 		var wordText = await JSRuntime.GetElementValueById<string>("attacker-word-input");
 		Attacker = await InferWordTypeOrDefaultAsync(wordText, text => AttackerTypeIndicator = text);
-		UpdateLblDamage();
+		await UpdateLblDamage();
 	}
 
-	private async void ReceiverInput_KeyUp()
+	private async Task ReceiverInput_KeyUp()
 	{
 		var wordText = await JSRuntime.GetElementValueById<string>("receiver-word-input");
 		Receiver = await InferWordTypeOrDefaultAsync(wordText, text => ReceiverTypeIndicator = text);
-		UpdateLblDamage();
+		await UpdateLblDamage();
 	}
 
 	private async Task<Word> InferWordTypeOrDefaultAsync(string wordText, Action<string> update)
@@ -353,7 +352,7 @@
 		return value;
 	}
 
-	private async void UpdateLblDamage()
+	private async Task UpdateLblDamage()
 	{
 		await Task.Delay(1);
 		if (string.IsNullOrWhiteSpace(Attacker.Name) || string.IsNullOrWhiteSpace(Receiver.Name))

@@ -126,6 +126,30 @@ public static class ProcHelper
 #pragma warning disable IDE1006
 
 [DynamicLinqType]
+public static class @global 
+{
+	public static int @len(object obj)
+	{
+		if (obj is Array arr)
+			return arr.Length;
+
+		if (obj is System.Collections.IList list)
+			return list.Count;
+
+		if (obj is string str)
+			return str.Length;
+
+		if(obj is IEnumerable enumerable)
+		{
+			var typedEnumerable = enumerable.OfType<object>();
+			return typedEnumerable.TryGetNonEnumeratedCount(out var count) ? count : typedEnumerable.Count();
+		}
+		return 0;
+	}
+}
+
+
+[DynamicLinqType]
 public static class @cast
 {
 	public static T @static<T>(dynamic obj) => (T)obj;
@@ -405,7 +429,7 @@ public static class Linq
 	public static int Count<TSource>(this IEnumerable<TSource> source)
 		=> Enumerable.Count(source);
 
-	public static bool TryGetNonEnumeratedCound<TSource>(this IEnumerable<TSource> source, out int count)
+	public static bool TryGetNonEnumeratedCount<TSource>(this IEnumerable<TSource> source, out int count)
 		=> Enumerable.TryGetNonEnumeratedCount(source, out count);
 
 	public static long LongCount<TSource>(this IEnumerable<TSource> source)
