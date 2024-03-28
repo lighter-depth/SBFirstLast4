@@ -7,6 +7,12 @@
 @inject ILocalStorageService LocalStorage
 <PageTitle>設定</PageTitle>
 
+@if (IsWorking)
+{
+    <br />
+    <p style="color: gray;">設定を反映中です...画面を閉じないでください...</p>
+    return;
+}
 <div class="form">
     <span class="settingname">ユーザー名の変更</span>
     <p>@($"現在のユーザー名: {AppSettings.UserName}")</p>
@@ -139,6 +145,8 @@
     private static readonly Regex UserNameCharRegex = new("^[0-9A-Za-z_ぁ-ヿ]*$");
     private static readonly Regex UserNameLengthRegex = new("^.{3,17}$");
 
+    private bool IsWorking;
+
     protected override void OnInitialized()
     {
         if (!AppSettings.IsLoggedIn)
@@ -200,8 +208,13 @@
         if (!await JSRuntime.Confirm("辞書のキャッシュを消去します。よろしいですか？"))
             return;
 
-        await LocalStorage.RemoveItemAsync(LSKeys.HasLoaded);
-        await LocalStorage.RemoveItemAsync(LSKeys.TypedWords);
+        IsWorking = true;
+        StateHasChanged();
+        await Task.Delay(1);
+
+        await LocalStorage.DeleteItemAsync(LSKeys.HasLoaded);
+        await LocalStorage.DeleteItemAsync(LSKeys.TypedWords);
+
         await JSRuntime.Alert("辞書のキャッシュを消去しました。");
         NavigationManager.NavigateTo("top");
     }
@@ -210,8 +223,13 @@
         if (!await JSRuntime.Confirm("モジュールのキャッシュを消去します。よろしいですか？"))
             return;
 
-        await LocalStorage.RemoveItemAsync(LSKeys.ModuleFiles);
+        IsWorking = true;
+        StateHasChanged();
+        await Task.Delay(1);
+        await LocalStorage.DeleteItemAsync(LSKeys.ModuleFiles);
         await JSRuntime.Alert("モジュールのキャッシュを消去しました。");
+        IsWorking = false;
+        StateHasChanged();
     }
 
     private async Task ClearAllCache()

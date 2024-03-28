@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using Blazored.LocalStorage;
 using Microsoft.JSInterop;
 using SBFirstLast4.Dynamic;
 using SBFirstLast4.Simulator;
@@ -104,6 +105,12 @@ public static class Utils
 	public static bool IsDefault<T>(this T value) where T : struct => value.Equals(default(T));
 
 	public static Type GetTypeOrDefault<T>(this T? obj) => obj?.GetType() ?? typeof(object);
+
+	public static async Task DeleteItemAsync(this ILocalStorageService localStorage, string key)
+	{
+		await localStorage.SetItemAsync(key, default(object));
+		await localStorage.RemoveItemAsync(key);
+	}
 }
 
 

@@ -3,6 +3,7 @@ using Blazored.LocalStorage;
 using System.Text.Json;
 using System.Security.Cryptography;
 using SBFirstLast4.Logging;
+using System.Data;
 
 namespace SBFirstLast4;
 

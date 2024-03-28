@@ -6,7 +6,7 @@ using Progress = System.Func<string, System.Threading.Tasks.Task>;
 namespace SBFirstLast4;
 
 [DynamicLinqType]
-public class Words
+public static class Words
 {
 	public static List<string> NoTypeWords { get; internal set; } = [];
 	public static List<Word> TypedWords { get; internal set; } = [];
@@ -48,12 +48,6 @@ public class Words
 	];
 
 	private static readonly List<List<Word>> SplitList = [];
-	private static readonly HttpClient client = new();
-
-	internal static readonly object TLLock = new();
-
-	internal const string HAS_LOADED = "hasLoaded";
-	internal const string TYPED_WORDS = "typedWords";
 
 	public static async Task Initialize(Progress progress, HttpClient client, ILocalStorageService localStorage, IWordLoaderService wordLoader, DictionaryInitializationToken token)
 	{
@@ -125,10 +119,10 @@ public class Words
 	{
 
 		await progress("タイプ付き ワードを読み込んでいます...");
-		if (await localStorage.GetItemAsync<bool>(HAS_LOADED))
+		if (await localStorage.GetItemAsync<bool>(LSKeys.HasLoaded))
 		{
 			await progress("キャッシュを読み込んでいます...");
-			TypedWords = await localStorage.GetItemAsync<List<Word>>(TYPED_WORDS);
+			TypedWords = await localStorage.GetItemAsync<List<Word>>(LSKeys.TypedWords);
 			return;
 		}
 
@@ -157,8 +151,8 @@ public class Words
 		await Task.WhenAll(tasks);
 		TypedWords = TypedWords.AsEnumerable().Reverse().DistinctBy(w => w.Name).Reverse().ToList();
 		await progress("キャッシュを保存しています...");
-		await localStorage.SetItemAsync(TYPED_WORDS, TypedWords);
-		await localStorage.SetItemAsync(HAS_LOADED, true);
+		await localStorage.SetItemAsync(LSKeys.TypedWords, TypedWords);
+		await localStorage.SetItemAsync(LSKeys.HasLoaded, true);
 	}
 	private static void InitSplitList()
 	{
