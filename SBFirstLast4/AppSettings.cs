@@ -29,18 +29,18 @@ internal static class AppSettings
 	internal static async Task SetSortResult(ILocalStorageService localStorage, bool value) 
 	{
 		SortResult = value;
-		await localStorage.SetItemAsync("SORT_RESULT", value);
+		await localStorage.SetItemAsync(LSKeys.SortResult, value);
 	}
 	internal static async Task SetUseExists(ILocalStorageService localStorage, bool value)
 	{
 		UseExists = value;
-		await localStorage.SetItemAsync("USE_EXISTS", value);
+		await localStorage.SetItemAsync(LSKeys.UseExists, value);
 	}
 
 	internal static async Task SetBetaMode(ILocalStorageService localStorage, bool value)
 	{
 		BetaMode = value;
-		await localStorage.SetItemAsync("BETA_MODE", value);
+		await localStorage.SetItemAsync(LSKeys.BetaMode, value);
 		Server.Log(new
 		{
 			Type = "TOGGLE_BETA",
@@ -56,12 +56,12 @@ internal static class AppSettings
 	}
 	internal static async Task InitUserInfoAsync(ILocalStorageService localStorage, Func<string, Task> update)
 	{
-		IsLoggedIn = await localStorage.GetItemAsync<bool>("IS_LOGGED_IN");
+		IsLoggedIn = await localStorage.GetItemAsync<bool>(LSKeys.IsLoggedIn);
 		if (!IsLoggedIn) return;
 
-		UserName = await localStorage.GetItemAsync<string?>("USER_NAME") ?? "ILLEGAL_LOGIN";
-		Guid = await localStorage.GetItemAsync<string?>("USER_ID") ?? "ILLEGAL_LOGIN";
-		Hash = await localStorage.GetItemAsync<string?>("HASH_ID") ?? "ILLEGAL_LOGIN";
+		UserName = await localStorage.GetItemAsync<string?>(LSKeys.UserName) ?? "ILLEGAL_LOGIN";
+		Guid = await localStorage.GetItemAsync<string?>(LSKeys.UserId) ?? "ILLEGAL_LOGIN";
+		Hash = await localStorage.GetItemAsync<string?>(LSKeys.HashId) ?? "ILLEGAL_LOGIN";
 
 		await update("ユーザー設定を更新中...");
 		await Task.WhenAny(SetIsAdminAsync(), Task.Delay(3000));
@@ -71,18 +71,18 @@ internal static class AppSettings
 
 	internal static async Task SetupAsync(ILocalStorageService localStorage) 
 	{
-		SortResult = await localStorage.GetItemAsync<bool>("SORT_RESULT");
-		UseExists = await localStorage.GetItemAsync<bool>("USE_EXISTS");
-		BetaMode = await localStorage.GetItemAsync<bool>("BETA_MODE");
+		SortResult = await localStorage.GetItemAsync<bool>(LSKeys.SortResult);
+		UseExists = await localStorage.GetItemAsync<bool>(LSKeys.UseExists);
+		BetaMode = await localStorage.GetItemAsync<bool>(LSKeys.BetaMode);
 	}
 
 	internal static async Task SetUserInfoAsync(ILocalStorageService localStorage, string userName, string guid, string hash)
 	{
-		await localStorage.SetItemAsync("USER_NAME", userName);
-		await localStorage.SetItemAsync("USER_ID", guid);
-		await localStorage.SetItemAsync("HASH_ID", hash);
+		await localStorage.SetItemAsync(LSKeys.UserName, userName);
+		await localStorage.SetItemAsync(LSKeys.UserId, guid);
+		await localStorage.SetItemAsync(LSKeys.HashId, hash);
 		IsLoggedIn = true;
-		await localStorage.SetItemAsync("IS_LOGGED_IN", IsLoggedIn);
+		await localStorage.SetItemAsync(LSKeys.IsLoggedIn, IsLoggedIn);
 		UserName = userName;
 		Guid = guid;
 		Hash = hash;
@@ -90,14 +90,14 @@ internal static class AppSettings
 
 	internal static async Task SetNameAsync(ILocalStorageService localStorage, string userName)
 	{
-		await localStorage.SetItemAsync("USER_NAME", userName);
+		await localStorage.SetItemAsync(LSKeys.UserName, userName);
 		UserName = userName;
 	}
 
 	internal static async Task RefreshHashAsync(HttpClient client, ILocalStorageService localStorage)
 	{
 		var hash = await GetHashAsync(client);
-		await localStorage.SetItemAsync("HASH_ID", hash);
+		await localStorage.SetItemAsync(LSKeys.HashId, hash);
 		Hash = hash;
 	}
 
@@ -184,6 +184,21 @@ internal static class AppSettings
 	false
 #endif
 	;
+}
+
+internal static class LSKeys
+{
+	internal const string
+		UserName = "USER_NAME",
+		UserId = "USER_ID",
+		HashId = "HASH_ID",
+		IsLoggedIn = "IS_LOGGED_IN",
+		SortResult = "SORT_RESULT",
+		UseExists = "USE_EXISTS",
+		BetaMode = "BETA_MODE",
+		HasLoaded = "hasLoaded",
+		TypedWords = "typedWords",
+		ModuleFiles = "MODULE_FILES";
 }
 
 file static class SerializationProvider

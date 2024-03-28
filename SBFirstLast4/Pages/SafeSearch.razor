@@ -582,16 +582,16 @@
 	private static Func<Word, bool> GetCategoryPredicate(string predName) => predName switch
 	{
 		// 8倍弱点持ちかどうか判定
-		"即死" => word => !AuxLists.Killable.Contains(word.Name),
+		"即死" => word => AuxLists.Killable.BinarySearch(word.Name) < 0,
 
 		// 6倍弱点持ちかどうか判定
-		"準即死" => word => !AuxLists.SemiKillable.Contains(word.Name),
+		"準即死" => word => AuxLists.SemiKillable.BinarySearch(word.Name) < 0,
 
 		// ４注語尾: ぬ、わ、ぐ、ご、ぱ、ぺ、ぽ
-		"４注" => word => !AuxLists.Danger4.Contains(word.Name),
+		"４注" => word => AuxLists.Danger4.BinarySearch(word.Name) < 0,
 
 		// 4倍弱点持ちかどうか判定
-		"４倍" => word => !AuxLists.CanBe4xed.Contains(word.Name),
+		"４倍" => word => AuxLists.CanBe4xed.BinarySearch(word.Name) < 0,
 
 		// 暴力タイプが存在するか判定
 		"暴力" => word => word.End is 'べ' or 'ぴ' or 'ぺ',

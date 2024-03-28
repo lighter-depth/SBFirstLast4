@@ -219,7 +219,7 @@
 
 	private async Task ImportStoredModules()
 	{
-		var storedFiles = await LocalStorage.GetItemAsync<List<FileModel>?>("MODULE_FILES");
+		var storedFiles = await LocalStorage.GetItemAsync<List<FileModel>?>(LSKeys.ModuleFiles);
 
 		if (storedFiles?.Count > 0)
 		{
@@ -357,7 +357,7 @@
 					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
 
 		}
-		await LocalStorage.SetItemAsync("MODULE_FILES", _moduleFiles);
+		await LocalStorage.SetItemAsync(LSKeys.ModuleFiles, _moduleFiles);
 		InitProcedures();
 	}
 

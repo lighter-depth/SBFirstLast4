@@ -157,6 +157,8 @@ public static class JSHelper
 public static class CollectionHelper
 {
 	public static int IndexOf<T>(this T[] array, T value) => Array.IndexOf(array, value);
+
+	public static int BinarySearch<T>(this T[] array, T value) => Array.BinarySearch(array, value);
 	
 	public static List<T> RemoveRange<T>(this List<T> list, IEnumerable<T> values) => list.Except(values).ToList();
 

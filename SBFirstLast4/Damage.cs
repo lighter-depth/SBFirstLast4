@@ -55,6 +55,14 @@ public static class Damage
 	public static int CalculateHigh(Word attacker, Word receiver, double allyATK, double foeDEF, Skill skill)
 		=> Calculate(attacker, receiver, allyATK, foeDEF, skill, 0.99);
 
+	public static int Calculate(int baseDamage, double statusEffect, double skillEffect, double typeEffect, double critEffect, double random)
+	{
+		if (baseDamage < 10)
+			return (int)(baseDamage * (int)(10 * statusEffect) * skillEffect * 0.1);
+
+		return (int)((int)(baseDamage * random * statusEffect * typeEffect) * skillEffect * critEffect);
+	}
+
 	private static double SkillEffect(Word word, Skill skill) => skill switch
 	{
 		Skills.Oremoji when word.Length > 6 => 2,
@@ -99,5 +107,4 @@ file static class Skills
 		Training = Skill.Sports,
 		WZ = Skill.Weather,
 		Oremoji = Skill.Tale;
-
 }

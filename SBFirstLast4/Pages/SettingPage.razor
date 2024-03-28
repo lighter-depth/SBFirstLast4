@@ -200,8 +200,10 @@
         if (!await JSRuntime.Confirm("辞書のキャッシュを消去します。よろしいですか？"))
             return;
 
-        await LocalStorage.RemoveItemAsync(Words.HAS_LOADED);
-        await LocalStorage.RemoveItemAsync(Words.TYPED_WORDS);
+        await LocalStorage.SetItemAsync(LSKeys.HasLoaded, default(object));
+        await LocalStorage.SetItemAsync(LSKeys.TypedWords, default(object));
+        await LocalStorage.RemoveItemAsync(LSKeys.HasLoaded);
+        await LocalStorage.RemoveItemAsync(LSKeys.TypedWords);
         await JSRuntime.Alert("辞書のキャッシュを消去しました。");
         NavigationManager.NavigateTo("top");
     }
@@ -210,7 +212,8 @@
         if (!await JSRuntime.Confirm("モジュールのキャッシュを消去します。よろしいですか？"))
             return;
 
-        await LocalStorage.RemoveItemAsync("MODULE_FILES");
+        await LocalStorage.SetItemAsync(LSKeys.ModuleFiles, default(object));
+        await LocalStorage.RemoveItemAsync(LSKeys.ModuleFiles);
         await JSRuntime.Alert("モジュールのキャッシュを消去しました。");
     }
 

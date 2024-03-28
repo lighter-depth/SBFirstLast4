@@ -414,13 +414,22 @@ internal class AttackContract : Contract
 	{
 		State = AbilityType.ActionBegin;
 
-		// かりうむ式のダメージ計算。
+		// 旧かりうむ式。
+		/*
 		// 攻撃1.5倍で4倍弱点をつくと最低乱数で50ダメージ出る。
 		// 4倍弱点 × 急所 でダメージを与えると 51 - 58 ダメージ出る。
 		var critDmg = CritFlag ? Player.CritDmg : 1;
 		var randomFlag = !(Actor.CurrentWord.Type1 == WordType.Empty || Receiver.CurrentWord.Type1 == WordType.Empty);
 		var random = randomFlag ? 0.85 + Utils.Random.Next(15) * 0.01 : 1;
 		var damage = (int)(critDmg * (int)(AmpDmg * BrdDmg * (int)(BaseDmg * PropDmg * MtpDmg * random)));
+		*/
+
+		// 新かりうむ式。
+		var critDmg = CritFlag ? Player.CritDmg : 1;
+		var randomFlag = !(Actor.CurrentWord.Type1 == WordType.Empty || Receiver.CurrentWord.Type1 == WordType.Empty);
+		var random = randomFlag ? 0.85 + Utils.Random.Next(15) * 0.01 : 1;
+		var damage = Damage.Calculate(BaseDmg, MtpDmg, AmpDmg * BrdDmg, PropDmg, critDmg, random);
+
 		Receiver.HP -= damage;
 		if (Receiver.Ability.Type.HasFlag(State))
 			Receiver.Ability.Execute(this);
