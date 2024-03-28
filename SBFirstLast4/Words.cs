@@ -8,8 +8,8 @@ namespace SBFirstLast4;
 [DynamicLinqType]
 public class Words
 {
-	public static List<string> NoTypeWords { get; internal set; } = new(3_000_000);
-	public static List<Word> TypedWords { get; internal set; } = new(20_000);
+	public static List<string> NoTypeWords { get; internal set; } = [];
+	public static List<Word> TypedWords { get; internal set; } = [];
 
 	public static Word[] PerfectDic => _perfectDic ??= GeneratePerfectDic().ToArray();
 	private static Word[]? _perfectDic;
@@ -73,9 +73,12 @@ public class Words
 
 	private static async Task LoadDataFromOnline(Progress progress, HttpClient client, ILocalStorageService localStorage, IWordLoaderService wordLoader, DictionaryInitializationToken token)
 	{
-		if (token is DictionaryInitializationToken.Full)
+        TypedWords = new(20_000);
+
+        if (token is DictionaryInitializationToken.Full)
 		{
-			await progress("完全版辞書を読み込んでいます...");
+            NoTypeWords = new(3_000_000);
+            await progress("完全版辞書を読み込んでいます...");
 
 			await FullLoading(progress, client, localStorage, wordLoader);
 			return;
