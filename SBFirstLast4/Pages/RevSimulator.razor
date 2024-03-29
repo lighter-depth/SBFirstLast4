@@ -219,7 +219,7 @@
 					int depth;
 					if (candidates[0].Value == 0) depth = 0;
 					else do depth = depthGen.Next(candidates.Length);
-						while (oldStrategy.SequenceEqual([.. strategy, depth]));
+						while (oldStrategy.SequenceEqual<int>([.. strategy, depth]));
 
 					var nextWordTmp = candidates[depth].Key;
 
