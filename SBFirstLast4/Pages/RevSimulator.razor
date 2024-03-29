@@ -1,19 +1,30 @@
 ﻿@page "/rev-simulator"
-@using System.Diagnostics
 @using SBFirstLast4.Simulator
+@using ChainElement = (Word Word, int AllyHP, int FoeHP)
+@using StrategyElement = (bool HasWon, List<int> Strategy, List<(Word Word, int AllyHP, int FoeHP)> Chain)
+@using MaxDamageResult = (int MaxDamage, Word Word, WordType Ability)
+@using MaxDamageKey = (Word Word, double AllyATK, double FoeDEF, double Random, bool AllowViolence)
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
 <PageTitle>革命シミュレーター</PageTitle>
+
+@if (IsRunning)
+{
+	<p>Running...</p>
+	return;
+}
 
 @TenCounter
 
 <input @bind=FirstWord />
 <button @onclick="TestButton_OnClick">Run!</button>
 
-@foreach (var i in Result)
+@foreach(var (_, strat, chain) in Strategies.Where(s => s.HasWon))
 {
-	<p>@i</p>
+	<p>選択: [@strat.StringJoin(", ")]</p>
+	<p>チェーン: [@chain.Select(c => $"{{{c.Word} A:({c.AllyHP}/60) F:({c.FoeHP}/60)}}").StringJoin(" → ")]</p>
+	<p>------------------------------------</p>
 }
 
 @code {
@@ -22,10 +33,29 @@
 	private List<string> UsedWords = [];
 
 	private string FirstWord = string.Empty;
-	private double AllyRandom = 0.85;
-	private double FoeRandom = 0.85;
-	private double AllyStatusEffect = 1;
-	private double FoeStatusEffect = 1;
+	private WordType SecondType;
+	private int InitialAllyHP = 60;
+	private int InitialFoeHP = 60;
+	private double AllyRandom = 0.90;
+	private double FoeRandom = 0.90;
+	private int AllyATKIndex = 6;
+	private double AllyATK => Player.BufValues[AllyATKIndex];
+	private int AllyDEFIndex = 6;
+	private double AllyDEF => Player.BufValues[AllyDEFIndex];
+	private int FoeATKIndex = 6;
+	private double FoeATK => Player.BufValues[FoeATKIndex];
+	private int FoeDEFIndex = 6;
+	private double FoeDEF => Player.BufValues[FoeDEFIndex];
+	private double AllyStatusEffect => AllyATK / FoeDEF;
+	private double FoeStatusEffect => FoeATK / AllyDEF;
+
+	private double? AllyDepth;
+	private double? FoeDepth;
+
+	private int MaxChain = 100;
+	private int MaxAttempt = 10;
+
+	List<StrategyElement> Strategies = [];
 
 	private List<string> Result = [];
 
@@ -35,6 +65,8 @@
 	private static Word[] KillerCandidates(char start)
 		=> _killerCandidates.TryGetValue(start, out var words) ? words : _killerCandidates[start] = Words.TypedWords.Where(w => w.Start == start && !w.IsHeal && !w.Contains(WordType.Normal)).ToArray();
 
+
+	private bool IsRunning;
 
 	protected override void OnInitialized()
 	{
@@ -57,41 +89,17 @@
 	private int InValue = 0;
 	private async Task TestButton_OnClick()
 	{
-		await Test();
-		/*
-		var result = await Run(new(FirstWord.GetLastChar().ToString(), WordType.Play, WordType.Bug), 60, 60);
-		var battle = new Battle(new(new Kakumei()) { Name = "じぶん", Proceeds = Proceeds.False }, new(new Kakumei()) { Name = "あいて" })
-					{
-					In = async () =>
-					{
-					await Task.CompletedTask;
-					if (InValue >= result.Count)
-						throw new BattleTerminatedException();
-
-					var word = result[InValue];
-					InValue++;
-					return new(word.Name, $"{word.Type1.TypeToChar()}{word.Type2.TypeToChar()}");
-				},
-				Out = async s =>
-					{
-					s.Where(x => x.Notice is Notice.LogInfo or Notice.LogActionInfo).ToList().ForEach(x => Result.Add(x.ToString()));
-					StateHasChanged();
-					await Task.Delay(1);
-				},
-				OnReset = cts => cts.Cancel()
-		};
-		TenCounter = 0;
-		InValue = 0;
-		Result = [];
-		try { await battle.Run(); }
-		catch (BattleTerminatedException) { }
+		IsRunning = true;
 		StateHasChanged();
-		*/
+		await Task.Delay(1);
+		await Test();
+		IsRunning = false;
+		StateHasChanged();
 	}
 
-	private static readonly Dictionary<(Word, double, double, double, bool), (int, Word, WordType)> MaxDamageDictionary = [];
+	private static readonly Dictionary<MaxDamageKey, MaxDamageResult> MaxDamageDictionary = [];
 
-	private static (int MaxDamage, Word Word, WordType Ability) MaxDamage(Word word, double allyATK, double foeDEF, double random, bool allowViolence)
+	private static MaxDamageResult MaxDamage(Word word, double allyATK, double foeDEF, double random, bool allowViolence)
 	{
 		if (MaxDamageDictionary.TryGetValue((word, allyATK, foeDEF, random, allowViolence), out var result))
 			return result;
@@ -132,7 +140,13 @@
 		return MaxDamageDictionary[(word, allyATK, foeDEF, random, allowViolence)] = (maxDamage, outputWord, changeAbility);
 	}
 
-	private async Task<List<Word>> Run(Word firstWord, int allyHP, int foeHP) => await Task.FromResult<List<Word>>([]);
+	private void Rev()
+	{
+		AllyATKIndex = 12 - AllyATKIndex;
+		AllyDEFIndex = 12 - AllyDEFIndex;
+		FoeATKIndex = 12 - FoeATKIndex;
+		FoeDEFIndex = 12 - FoeDEFIndex;
+	}
 
 	private Word NextWord = Word.Default;
 
@@ -140,193 +154,103 @@
 	{
 		try
 		{
-			NextWord = new Word(FirstWord, WordType.Play, WordType.Bug);
+			NextWord = new(FirstWord, WordType.Play, SecondType);
 
-			List<Word> chain = [NextWord];
+			var originalWord = NextWord;
 
-			var index = 0;
+			var depthGen = new Random();
 
-			var (allyHP, foeHP) = (60, 60);
-			var isPlayer1sTurn = true;
-			while (index < 100)
+			var strategies = new List<StrategyElement>();
+
+			var depthCount = 0;
+
+			var oldStrategy = new List<int>();
+
+			while (depthCount < MaxAttempt)
 			{
-				if (!PlayWords.TryGetValue(NextWord.End, out var playWords) || playWords.Length == 0)
-					break;
-
-				var countMap = new Dictionary<Word, int>();
-
-				foreach (var word in playWords)
+				List<ChainElement> chain = [(originalWord, InitialAllyHP, InitialFoeHP)];
+				NextWord = originalWord;
+				var (allyHP, foeHP) = (InitialAllyHP, InitialFoeHP);
+				var isPlayer1sTurn = true;
+				var strategy = new List<int>();
+				var chainCount = 0;
+				while (chainCount < MaxChain)
 				{
-					StateHasChanged();
-					await Task.Delay(1);
+					if (!PlayWords.TryGetValue(NextWord.End, out var playWords) || playWords.Length == 0)
+						break;
 
-					if (chain.Contains(word))
-						continue;
+					var countMap = new Dictionary<Word, int>();
 
-					if (Expressions.Extensions.TreeSearchHelper.IsSemikillable(word))
-						continue;
+					foreach (var word in playWords)
+					{
+						StateHasChanged();
+						await Task.Delay(1);
 
-					if (!PlayWords.TryGetValue(word.End, out var nextWords))
-						countMap.Add(word, 0);
+						if (chain.Any(c => c.Word.Name == word.Name))
+							continue;
 
+						if (isPlayer1sTurn && allyHP - MaxDamage(word, FoeATK, AllyDEF, FoeRandom, true).MaxDamage <= 0)
+							continue;
+
+						if (!isPlayer1sTurn && foeHP - MaxDamage(word, AllyATK, FoeDEF, AllyRandom, true).MaxDamage <= 0)
+							continue;
+
+						if (!PlayWords.TryGetValue(word.End, out var nextWords))
+							countMap.Add(word, 0);
+
+						else
+							countMap.Add(word, nextWords.Length);
+					}
+
+					if (countMap.Count == 0)
+						break;
+
+					var candidatesBeforeFiltered = countMap.OrderBy(kv => kv.Value);
+
+					KeyValuePair<Word, int>[] candidates;
+
+					if (AllyDepth is not null && isPlayer1sTurn)
+						candidates = candidatesBeforeFiltered.Where(kv => kv.Value < AllyDepth).ToArray();
+					else if(FoeDepth is not null && !isPlayer1sTurn)
+						candidates = candidatesBeforeFiltered.Where(kv => kv.Value < FoeDepth).ToArray();
+					else 
+						candidates = candidatesBeforeFiltered.ToArray();
+
+					int depth;
+					if (candidates[0].Value == 0) depth = 0;
+					else do depth = depthGen.Next(candidates.Length);
+						while (oldStrategy.SequenceEqual([.. strategy, depth]));
+
+					var nextWordTmp = candidates[depth].Key;
+
+					if (isPlayer1sTurn)
+					{
+						var random = NextWord.IsEmpty ? 1 : AllyRandom;
+						foeHP -= (int)(10 * nextWordTmp.CalcEffectiveDmg(NextWord) * AllyStatusEffect * random);
+					}
 					else
-						countMap.Add(word, nextWords.Length);
+					{
+						var random = NextWord.IsEmpty ? 1 : FoeRandom;
+						allyHP -= (int)(10 * nextWordTmp.CalcEffectiveDmg(NextWord) * FoeStatusEffect * random);
+					}
+
+					NextWord = nextWordTmp;
+					strategy.Add(depth);
+					chain.Add((NextWord, allyHP, foeHP));
+					chainCount++;
+					isPlayer1sTurn = !isPlayer1sTurn;
+					Rev();
 				}
-
-				if (countMap.Count == 0)
-					break;
-
-				var nextWordTmp = countMap.MinBy(kv => kv.Value).Key;
-
-				if (isPlayer1sTurn)
-				{
-					
-				}
-
-				NextWord = nextWordTmp;
-				chain.Add(NextWord);
-				index++;
+				strategies.Add((!isPlayer1sTurn, strategy, chain));
+				oldStrategy = strategy;
+				depthCount++;
 			}
-
-			await JSRuntime.Alert(chain.StringJoin(", "));
+			Strategies = strategies;
+			StateHasChanged();
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			await JSRuntime.AlertEx(ex);
 		}
 	}
-
-	/*
-	private async Task<List<Word>> AllyTurn(Word word, List<Word> chain, Wrapper<int> maxLen, int recursion, Wrapper<(int Ally, int Foe)> hp)
-	{
-		TenCounter++;
-		StateHasChanged();
-		await Task.Delay(1);
-
-
-		//chain = chain.ToList();
-		chain.Add(word);
-
-		if (!PlayWords.TryGetValue(word.End, out var playWords))
-			return chain;
-
-		var bestChain = chain;
-		var longestChain = chain;
-		var hpNowOrg = hp.ShallowCopy();
-		var max = maxLen.ShallowCopy();
-		foreach (var @new in playWords)
-		{
-			var hpNow = hpNowOrg.ShallowCopy();
-
-			if (bestChain.Count > max.Value)
-				break;
-
-			if (bestChain.Count - chain.Count == 1)
-				break;
-
-			if (UsedWords.Contains(@new.Name))
-				continue;
-
-			if (chain.Contains(@new))
-				continue;
-
-			if (hpNow.Value.Ally <= MaxDamage(@new, 1, 1, FoeRandom, true).MaxDamage)
-				continue;
-
-			var random = word.IsEmpty ? 1 : AllyRandom;
-			hpNow.RefValue.Foe = hpNowOrg.Value.Foe - (int)(10 * @new.CalcEffectiveDmg(word) * AllyStatusEffect * random);
-
-			var newChain = await FoeTurn(@new, chain, max, recursion + 1, hpNow);
-
-			if (newChain.Count % 2 == 0)
-			{
-				if (bestChain == chain)
-				{
-					bestChain = newChain;
-					if (max.Value > bestChain.Count)
-						max.RefValue = bestChain.Count;
-				}
-				else
-				{
-					if (bestChain.Count > newChain.Count)
-					{
-						bestChain = newChain;
-						if (max.Value > bestChain.Count)
-							max.RefValue = bestChain.Count;
-					}
-				}
-			}
-
-			if (newChain.Count > longestChain.Count)
-				longestChain = newChain;
-		}
-		return bestChain == chain ? longestChain : bestChain;
-	}
-
-	private async Task<List<Word>> FoeTurn(Word word, List<Word> chain, Wrapper<int> maxLen, int recursion, Wrapper<(int Ally, int Foe)> hp)
-	{
-		TenCounter++;
-		StateHasChanged();
-		await Task.Delay(1);
-
-		//chain = chain.ToList();
-		chain.Add(word);
-
-		if (!PlayWords.TryGetValue(word.End, out var playWords))
-			return chain;
-
-		var bestChain = chain;
-		var longestChain = chain;
-		var hpNowOrg = hp.ShallowCopy();
-		var max = maxLen.ShallowCopy();
-		foreach (var @new in playWords)
-		{
-			var hpNow = hpNowOrg.ShallowCopy();
-			if (bestChain.Count > max.Value)
-				break;
-
-			if (bestChain.Count - chain.Count == 1)
-				break;
-
-			if (UsedWords.Contains(@new.Name))
-				continue;
-
-			if (chain.Contains(@new))
-				continue;
-
-			if (hpNow.Value.Foe <= MaxDamage(@new, 1, 1, AllyRandom, true).MaxDamage)
-				continue;
-
-			var random = word.IsEmpty ? 1 : FoeRandom;
-			hpNow.RefValue.Ally = hpNowOrg.Value.Ally - (int)(10 * @new.CalcEffectiveDmg(word) * FoeStatusEffect * random);
-
-			var newChain = await AllyTurn(@new, chain, max, recursion + 1, hpNow);
-
-			if (newChain.Count % 2 == 1)
-			{
-				if (bestChain == chain)
-				{
-					bestChain = newChain;
-					if (max.Value > bestChain.Count)
-						max.RefValue = bestChain.Count;
-				}
-				else
-				{
-					if (bestChain.Count > newChain.Count)
-					{
-						bestChain = newChain;
-						if (max.Value > bestChain.Count)
-							max.RefValue = bestChain.Count;
-					}
-				}
-			}
-
-			if (newChain.Count > longestChain.Count)
-				longestChain = newChain;
-		}
-
-		return bestChain == chain ? longestChain : bestChain;
-	}
-	*/
-	private class BattleTerminatedException : Exception;
 }

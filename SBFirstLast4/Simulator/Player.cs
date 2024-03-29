@@ -23,7 +23,7 @@ public class Player(Ability ability)
 	public double DEF => BufValues[DEFIndex];
 
 	public int DEFIndex { get; private set; } = 6;
-	private static readonly double[] BufValues = [0.25, 0.28571429, 0.33333333, 0.4, 0.5, 0.66666666, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0];
+	internal static readonly double[] BufValues = [0.25, 0.28571429, 0.33333333, 0.4, 0.5, 0.66666666, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0];
 
 	public Word CurrentWord { get; internal set; } = Word.Default;
 
