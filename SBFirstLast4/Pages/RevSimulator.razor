@@ -1,9 +1,6 @@
 ﻿@page "/rev-simulator"
-@using SBFirstLast4.Simulator
-@using ChainElement = (Word Word, int AllyHP, int FoeHP)
-@using StrategyElement = (bool HasWon, List<int> Strategy, List<(Word Word, int AllyHP, int FoeHP)> Chain)
-@using MaxDamageResult = (int MaxDamage, Word Word, WordType Ability)
-@using MaxDamageKey = (Word Word, double AllyATK, double FoeDEF, double Random, bool AllowViolence)
+@using SBFirstLast4.Specialized.RevSimulator
+
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
@@ -11,60 +8,83 @@
 
 @if (IsRunning)
 {
-	<p>Running...</p>
+	<p style="color: gray">Running...</p>
 	return;
 }
 
-@TenCounter
+<br />
+<button @onclick=RunBtn_OnClick>Run!</button>
 
-<input @bind=FirstWord />
-<button @onclick="TestButton_OnClick">Run!</button>
+<br />
 
-@foreach(var (_, strat, chain) in Strategies.Where(s => s.HasWon))
-{
-	<p>選択: [@strat.StringJoin(", ")]</p>
-	<p>チェーン: [@chain.Select(c => $"{{{c.Word} A:({c.AllyHP}/60) F:({c.FoeHP}/60)}}").StringJoin(" → ")]</p>
-	<p>------------------------------------</p>
-}
+@Result
+<br />
+
+FirstWord
+<input maxlength="1" @bind=FirstWordName />
+<br />
+
+SubType
+<select @onchange="e => FirstWordType = (e.Value as string)?.StringToType() ?? default">
+	@foreach (var i in Enum.GetValues<WordType>().Select(t => t == default ? "なし" : t.TypeToString()))
+	{
+		<option value="@i">@i</option>
+	}
+</select>
+
+<br />
+
+My HP
+<input type="number" @bind=AllyHP />
+<br />
+
+Enemy HP
+<input type="number" @bind=FoeHP />
+<br />
+
+My ATK
+<input type="number" @bind=AllyATK />
+<br />
+
+Enemy ATK
+<input type="number" @bind=FoeATK />
+<br />
+
+My DEF
+<input type="number" @bind=AllyDEF />
+<br />
+
+Enemy DEF
+<input type="number" @bind=FoeDEF />
+<br />
+
+My Random
+<input type="number" @bind=AllyRandom />
+<br />
+
+Enemy Random
+<input type="number" @bind=FoeRandom />
+<br />
 
 @code {
-	private static Dictionary<char, Word[]> PlayWords = [];
 
-	private List<string> UsedWords = [];
+	private string FirstWordName = "あ";
 
-	private string FirstWord = string.Empty;
-	private WordType SecondType;
-	private int InitialAllyHP = 60;
-	private int InitialFoeHP = 60;
-	private double AllyRandom = 0.90;
-	private double FoeRandom = 0.90;
-	private int AllyATKIndex = 6;
-	private double AllyATK => Player.BufValues[AllyATKIndex];
-	private int AllyDEFIndex = 6;
-	private double AllyDEF => Player.BufValues[AllyDEFIndex];
-	private int FoeATKIndex = 6;
-	private double FoeATK => Player.BufValues[FoeATKIndex];
-	private int FoeDEFIndex = 6;
-	private double FoeDEF => Player.BufValues[FoeDEFIndex];
-	private double AllyStatusEffect => AllyATK / FoeDEF;
-	private double FoeStatusEffect => FoeATK / AllyDEF;
+	private WordType FirstWordType = default;
 
-	private double? AllyDepth;
-	private double? FoeDepth;
+	private int AllyHP = 60;
+	private int FoeHP = 60;
 
-	private int MaxChain = 100;
-	private int MaxAttempt = 10;
+	private double AllyATK = 1;
+	private double FoeATK = 1;
 
-	List<StrategyElement> Strategies = [];
+	private double AllyDEF = 1;
+	private double FoeDEF = 1;
 
-	private List<string> Result = [];
+	private double AllyRandom = 0.85;
+	private double FoeRandom = 0.85;
 
-	private int TenCounter = 0;
-
-	private static readonly Dictionary<char, Word[]> _killerCandidates = [];
-	private static Word[] KillerCandidates(char start)
-		=> _killerCandidates.TryGetValue(start, out var words) ? words : _killerCandidates[start] = Words.TypedWords.Where(w => w.Start == start && !w.IsHeal && !w.Contains(WordType.Normal)).ToArray();
-
+	private string Result = "結果: なし";
 
 	private bool IsRunning;
 
@@ -77,180 +97,17 @@
 		}
 		if (!Words.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
-
-		if (PlayWords.Count == 0)
-			InitializePlayWords();
 	}
 
-	private void InitializePlayWords()
-		=> PlayWords = Words.TypedWords.Where(w => w.Contains(WordType.Play) && !w.IsHeal).ToLookup(w => w.Start).ToDictionary(g => g.Key, g => g.ToArray());
-
-
-	private int InValue = 0;
-	private async Task TestButton_OnClick()
+	private async Task RunBtn_OnClick()
 	{
 		IsRunning = true;
 		StateHasChanged();
 		await Task.Delay(1);
-		await Test();
+		var result = Main.EntryPoint(new(FirstWordName, WordType.Play, FirstWordType), AllyHP, AllyATK, AllyDEF, AllyRandom, FoeHP, FoeATK, FoeDEF, FoeRandom);
+		Result = $"結果: {result.Count}[{result.StringJoin(", ")}]";
 		IsRunning = false;
 		StateHasChanged();
 	}
 
-	private static readonly Dictionary<MaxDamageKey, MaxDamageResult> MaxDamageDictionary = [];
-
-	private static MaxDamageResult MaxDamage(Word word, double allyATK, double foeDEF, double random, bool allowViolence)
-	{
-		if (MaxDamageDictionary.TryGetValue((word, allyATK, foeDEF, random, allowViolence), out var result))
-			return result;
-
-		var (maxDamage, outputWord, changeAbility) = (0, Word.Default, WordType.Empty);
-		var start = word.End;
-
-		if (word.IsEmpty) random = 1;
-
-		var candidates = KillerCandidates(start);
-
-		foreach (var i in candidates)
-		{
-			var statusEffect = allyATK / foeDEF;
-
-			if (!allowViolence && (i.Contains(WordType.Violence))) continue;
-
-			var doesCrit = i.IsCritable && ((i.Length > 6 && statusEffect < 0.75) || (i.Length == 6 && statusEffect < 1) || i.Length < 6);
-
-			double abilityEffect;
-			WordType ability;
-
-			if (i.Contains(WordType.Body) && doesCrit) (abilityEffect, ability, statusEffect) = (1.5, WordType.Body, Math.Max(statusEffect, 1));
-			else if (i.Contains(WordType.Insult) && doesCrit) (abilityEffect, ability, statusEffect) = (1.5, WordType.Insult, Math.Max(statusEffect, 1));
-			else if (i.Length > 6 && !doesCrit) (abilityEffect, ability) = (2, WordType.Tale);
-			else if (i.Length == 6) (abilityEffect, ability) = (1.5, WordType.Tale);
-			else if (i.Contains(WordType.Science)) (abilityEffect, ability) = (1.5, WordType.Science);
-			else if (i.Contains(WordType.Place)) (abilityEffect, ability) = (1.5, WordType.Place);
-			else if (i.Contains(WordType.Person)) (abilityEffect, ability) = (1.5, WordType.Person);
-			else if (i.Contains(WordType.Religion)) (abilityEffect, ability) = (1.5, WordType.Religion);
-			else (abilityEffect, ability) = (1, WordType.Empty);
-
-			var damage = (int)((int)(10 * i.CalcEffectiveDmg(word) * statusEffect * random) * abilityEffect);
-
-			if (damage > maxDamage) (maxDamage, outputWord, changeAbility) = (damage, i, ability);
-		}
-
-		return MaxDamageDictionary[(word, allyATK, foeDEF, random, allowViolence)] = (maxDamage, outputWord, changeAbility);
-	}
-
-	private void Rev()
-	{
-		AllyATKIndex = 12 - AllyATKIndex;
-		AllyDEFIndex = 12 - AllyDEFIndex;
-		FoeATKIndex = 12 - FoeATKIndex;
-		FoeDEFIndex = 12 - FoeDEFIndex;
-	}
-
-	private Word NextWord = Word.Default;
-
-	private async Task Test()
-	{
-		try
-		{
-			NextWord = new(FirstWord, WordType.Play, SecondType);
-
-			var originalWord = NextWord;
-
-			var depthGen = new Random();
-
-			var strategies = new List<StrategyElement>();
-
-			var depthCount = 0;
-
-			var oldStrategy = new List<int>();
-
-			while (depthCount < MaxAttempt)
-			{
-				List<ChainElement> chain = [(originalWord, InitialAllyHP, InitialFoeHP)];
-				NextWord = originalWord;
-				var (allyHP, foeHP) = (InitialAllyHP, InitialFoeHP);
-				var isPlayer1sTurn = true;
-				var strategy = new List<int>();
-				var chainCount = 0;
-				while (chainCount < MaxChain)
-				{
-					if (!PlayWords.TryGetValue(NextWord.End, out var playWords) || playWords.Length == 0)
-						break;
-
-					var countMap = new Dictionary<Word, int>();
-
-					foreach (var word in playWords)
-					{
-						StateHasChanged();
-						await Task.Delay(1);
-
-						if (chain.Any(c => c.Word.Name == word.Name))
-							continue;
-
-						if (isPlayer1sTurn && allyHP - MaxDamage(word, FoeATK, AllyDEF, FoeRandom, true).MaxDamage <= 0)
-							continue;
-
-						if (!isPlayer1sTurn && foeHP - MaxDamage(word, AllyATK, FoeDEF, AllyRandom, true).MaxDamage <= 0)
-							continue;
-
-						if (!PlayWords.TryGetValue(word.End, out var nextWords))
-							countMap.Add(word, 0);
-
-						else
-							countMap.Add(word, nextWords.Length);
-					}
-
-					if (countMap.Count == 0)
-						break;
-
-					var candidatesBeforeFiltered = countMap.OrderBy(kv => kv.Value);
-
-					KeyValuePair<Word, int>[] candidates;
-
-					if (AllyDepth is not null && isPlayer1sTurn)
-						candidates = candidatesBeforeFiltered.Where(kv => kv.Value < AllyDepth).ToArray();
-					else if(FoeDepth is not null && !isPlayer1sTurn)
-						candidates = candidatesBeforeFiltered.Where(kv => kv.Value < FoeDepth).ToArray();
-					else 
-						candidates = candidatesBeforeFiltered.ToArray();
-
-					int depth;
-					if (candidates[0].Value == 0) depth = 0;
-					else do depth = depthGen.Next(candidates.Length);
-						while (oldStrategy.SequenceEqual<int>([.. strategy, depth]));
-
-					var nextWordTmp = candidates[depth].Key;
-
-					if (isPlayer1sTurn)
-					{
-						var random = NextWord.IsEmpty ? 1 : AllyRandom;
-						foeHP -= (int)(10 * nextWordTmp.CalcEffectiveDmg(NextWord) * AllyStatusEffect * random);
-					}
-					else
-					{
-						var random = NextWord.IsEmpty ? 1 : FoeRandom;
-						allyHP -= (int)(10 * nextWordTmp.CalcEffectiveDmg(NextWord) * FoeStatusEffect * random);
-					}
-
-					NextWord = nextWordTmp;
-					strategy.Add(depth);
-					chain.Add((NextWord, allyHP, foeHP));
-					chainCount++;
-					isPlayer1sTurn = !isPlayer1sTurn;
-					Rev();
-				}
-				strategies.Add((!isPlayer1sTurn, strategy, chain));
-				oldStrategy = strategy;
-				depthCount++;
-			}
-			Strategies = strategies;
-			StateHasChanged();
-		}
-		catch (Exception ex)
-		{
-			await JSRuntime.AlertEx(ex);
-		}
-	}
 }

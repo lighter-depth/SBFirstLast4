@@ -32,8 +32,12 @@ public static class Utils
 
 	static string[][]? kanaList;
 
-	public static string[] KanaListSpread => kanaListSpread ??= KanaList.SelectMany(x => x).ToArray();
-	static string[]? kanaListSpread;
+	public static string[] KanaListSpread => _kanaListSpread ??= KanaList.SelectMany(x => x).ToArray();
+	private static string[]? _kanaListSpread;
+
+	public static char[] KanaListCharSpread => _kanaListCharSpread ??= KanaList.SelectMany(x => x).Select(x => x.At(0)).ToArray();
+	private static char[]? _kanaListCharSpread;
+
 	public static bool IsValidRegex(string pattern)
 	{
 		try

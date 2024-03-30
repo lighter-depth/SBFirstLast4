@@ -55,11 +55,11 @@
 				<span class="oi oi-puzzle-piece" aria-hidden="true"></span> 簡易シミュレーター
 			</NavLink>
 		</div>
-		@if(AppSettings.IsDebug || AppSettings.IsAdmin)
+		@if(AppSettings.BetaMode)
 		{
 			<div class="nav-item px-3">
 				<NavLink class="nav-link" href="rev-simulator">
-					<span class="oi oi-layers" aria-hidden="true"></span> 革命シミュレーター
+					<span class="oi oi-layers" aria-hidden="true"></span> 革命シミュレーター (アルファ版)
 				</NavLink>
 			</div>
 		}
