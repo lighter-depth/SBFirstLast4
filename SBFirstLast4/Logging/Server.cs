@@ -59,12 +59,12 @@ public static class Server
 	}
 }
 
-file class AutoResponse
+file sealed class AutoResponse
 {
     public bool Result { get; set; }
 }
 
-file class TLResponse 
+file sealed class TLResponse 
 {
     public bool Exists { get; set; }
 }

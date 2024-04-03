@@ -1,9 +1,8 @@
 ﻿using SBFirstLast4.Pages;
-using System.Text.RegularExpressions;
 
 namespace SBFirstLast4.Dynamic;
 
-internal class ModuleReader
+internal sealed class ModuleReader
 {
 	private readonly string _moduleName;
 	private readonly Stack<bool> _isDisabled;

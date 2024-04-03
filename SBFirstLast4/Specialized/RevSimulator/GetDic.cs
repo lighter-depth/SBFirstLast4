@@ -1,6 +1,6 @@
 ﻿namespace SBFirstLast4.Specialized.RevSimulator;
 
-internal class GetDic
+internal static class GetDic
 {
 	private static readonly IEnumerable<Word> PlayWordBase = Words.TypedWords
 		.Where(w => w.Contains(WordType.Play) && !w.IsHeal)
@@ -108,7 +108,7 @@ internal class GetDic
 	}
 }
 
-internal record PlayWord(Word Word, int AllyDamage, int FoeDamage)
+internal sealed record PlayWord(Word Word, int AllyDamage, int FoeDamage)
 {
 	// デバッグ用
 	public override string ToString() => $"{Word}[{AllyDamage}/{FoeDamage}]";

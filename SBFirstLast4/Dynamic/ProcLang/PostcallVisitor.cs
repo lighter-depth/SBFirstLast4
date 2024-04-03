@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace SBFirstLast4.Dynamic;
 
-public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
+public sealed class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 {
 	private string _source;
 
@@ -849,11 +849,11 @@ public class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 	}
 }
 
-internal class NoSuchConstructorException(string message) : Exception(message);
+internal sealed class NoSuchConstructorException(string message) : Exception(message);
 
-internal class NoSuchMethodException(string message) : Exception(message);
+internal sealed class NoSuchMethodException(string message) : Exception(message);
 
-internal class TypeEqualityComparer : IEqualityComparer<Type>
+internal sealed class TypeEqualityComparer : IEqualityComparer<Type>
 {
 	public static TypeEqualityComparer Instance { get; } = new();
 

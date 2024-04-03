@@ -2,7 +2,7 @@
 
 namespace SBFirstLast4.Dynamic;
 
-public class ErrorListener<S> : ConsoleErrorListener<S>
+public sealed class ErrorListener<S> : ConsoleErrorListener<S>
 {
 	public bool HadError { get; private set; }
 

@@ -356,7 +356,7 @@
 	{
 		await UpdateLblDamageMk2();
 		return;
-
+		/*
 		await Task.Delay(1);
 		if (string.IsNullOrWhiteSpace(Attacker.Name) || string.IsNullOrWhiteSpace(Receiver.Name))
 		{
@@ -391,6 +391,7 @@
 		resultStr += $" {{ {ability}({ValueA:0.0#}/{ValueB:0.0#}) }}";
 		LblDamage = resultStr;
 		StateHasChanged();
+		*/
 	}
 
 	private async Task UpdateLblDamageMk2()

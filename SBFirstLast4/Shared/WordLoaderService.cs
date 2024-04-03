@@ -6,15 +6,8 @@ public interface IWordLoaderService
     Task LoadTD(string arg, HttpClient client);
 }
 
-internal class WordLoaderService : IWordLoaderService
+internal sealed class WordLoaderService : IWordLoaderService
 {
-    private static HttpClient GetNoCacheClient()
-    {
-        var client = new HttpClient();
-        client.DefaultRequestHeaders.IfModifiedSince = DateTime.Now;
-        return client;
-    }
-
     public async Task LoadTL(int arg, HttpClient client)
     {
         var url = $"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/tl-words/tl-words-{arg}.csv";
@@ -29,9 +22,8 @@ internal class WordLoaderService : IWordLoaderService
 
     public async Task LoadTD(string arg, HttpClient client)
     {
-        //var url = $"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/plain/typed-words-{arg}.csv";
-        var betterUrl = $"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/plain/typed-words-{arg}.csv?nocache={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
-        var request = new HttpRequestMessage(HttpMethod.Get, betterUrl);
+        var url = $"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/plain/typed-words-{arg}.csv";
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Add("Accept", "application/json");
         request.Headers.Add("Accept-Charset", "utf-8");
 

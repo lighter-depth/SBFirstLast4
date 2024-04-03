@@ -60,19 +60,19 @@ public static class Utils
 
 		var lastChar = str[length - 1];
 
-		if (siritoriChar.TryGetValue(lastChar, out var result))
+		if (_siritoriChar.TryGetValue(lastChar, out var result))
 			return result;
 
 		var penultimateChar = length > 1 ? str[length - 2] : default;
 
 		return lastChar switch
 		{
-			'ー' when siritoriChar.TryGetValue(penultimateChar, out var result2) => result2,
+			'ー' when _siritoriChar.TryGetValue(penultimateChar, out var result2) => result2,
 			'ー' => penultimateChar,
 			_ => lastChar
 		};
 	}
-	static readonly Dictionary<char, char> siritoriChar = new()
+	private static readonly Dictionary<char, char> _siritoriChar = new()
 	{
 		['ゃ'] = 'や',
 		['ゅ'] = 'ゆ',
@@ -118,7 +118,7 @@ public static class Utils
 }
 
 
-public class Wrapper<T>(T value)
+public sealed class Wrapper<T>(T value)
 {
 	private T _value = value;
 

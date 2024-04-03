@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace SBFirstLast4.Simulator;
 
-public partial class Battle
+public sealed partial class Battle
 {
 	public Player Player1 { get; private set; } = new(Ability.Default);
 	public Player Player2 { get; private set; } = new(Ability.Default);
@@ -37,8 +37,8 @@ public partial class Battle
 	public void SetDHistoryElement(BattleData value, int index)
 	{
 		_dHistory[index] = value;
-		foreach(var kv in _dHistory)
-			if(kv.Key > index)
+		foreach (var kv in _dHistory)
+			if (kv.Key > index)
 				kv.Value.IsEdited = true;
 	}
 
@@ -55,7 +55,7 @@ public partial class Battle
 
 	public void Dispose()
 	{
-		if(!Cancellation.IsCancellationRequested) OnReset(Cancellation);
+		if (!Cancellation.IsCancellationRequested) OnReset(Cancellation);
 	}
 
 	public async Task Run()
@@ -95,7 +95,7 @@ public partial class Battle
 			[OrderType.Error] = OnErrorOrdered,
 			[OrderType.Change] = OnChangeOrdered
 		};
-		_dHistory[TurnNum] =(BattleData)this with { IsPlayer1sTurn = !IsPlayer1sTurn };
+		_dHistory[TurnNum] = (BattleData)this with { IsPlayer1sTurn = !IsPlayer1sTurn };
 		TurnNum++;
 	}
 
@@ -167,9 +167,8 @@ public partial class Battle
 		if (c.IsBodyExecuted && !cts.IsCancellationRequested) ToggleTurn();
 	}
 	public void OnErrorOrdered(Order order, CancellationTokenSource cts)
-	{
-		Buffer.Add(order?.ErrorMessage ?? "入力が不正です", Notice.Warn);
-	}
+		=> Buffer.Add(order?.ErrorMessage ?? "入力が不正です", Notice.Warn);
+
 
 
 	public void OnChangeOrdered(Order order, CancellationTokenSource cts)
@@ -232,15 +231,13 @@ public partial class Battle
 			Buffer.Add($"{Player1.Name}: {Player1.HP}/{Player.MaxHP},     {Player2.Name}: {Player2.HP}/{Player.MaxHP}", Notice.LogInfo);
 		}
 	}
-	internal Player? PlayerSelectorToPlayerOrDefault(PlayerSelector selector)
+	internal Player? PlayerSelectorToPlayerOrDefault(PlayerSelector selector) => selector switch
 	{
-		return selector switch
-		{
-			PlayerSelector.Player1 => Player1,
-			PlayerSelector.Player2 => Player2,
-			_ => null
-		};
-	}
+		PlayerSelector.Player1 => Player1,
+		PlayerSelector.Player2 => Player2,
+		_ => null
+	};
+
 
 	[GeneratedRegex("^[ぁ-ゔゟヴー]*$")]
 	private static partial Regex KanaRegex();
@@ -264,7 +261,7 @@ public partial class Battle
 		if (!DHistory.TryGetValue(Math.Max(0, TurnNum - 2), out var d))
 			return;
 
-		AlterTo(d with { IsPlayer1sTurn = !d.IsPlayer1sTurn, TurnNum = d.TurnNum + 1});
+		AlterTo(d with { IsPlayer1sTurn = !d.IsPlayer1sTurn, TurnNum = d.TurnNum + 1 });
 	}
 
 	public void AlterForth()
@@ -272,7 +269,7 @@ public partial class Battle
 		if (!DHistory.TryGetValue(TurnNum, out var d))
 			return;
 
-		AlterTo(d with { IsPlayer1sTurn = !d.IsPlayer1sTurn, TurnNum = d.TurnNum + 1});
+		AlterTo(d with { IsPlayer1sTurn = !d.IsPlayer1sTurn, TurnNum = d.TurnNum + 1 });
 	}
 
 	public void AlterLatest()

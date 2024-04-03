@@ -9,6 +9,7 @@ statement: assignment
          | variableDeletion
          | print 
          | if_else_stat 
+         | once_next_stat
          | switch_stat
          | do_while_stat
          | while_stat 
@@ -16,12 +17,14 @@ statement: assignment
          | until_stat 
          | for_stat
          | foreach_stat
+         | repeat_stat
          | raise_stat
          | whenany_stat
          | whenever_stat
          | implicit_throw_stat
          | throw_stat
          | try_catch_stat
+         | with_stat
          | break_stat
          | continue_stat
          | redo_stat
@@ -40,6 +43,8 @@ stat_block: '{' statement* '}' | statement ;
 
 if_else_stat: 'if' '(' expr ')' stat_block ('else' 'if' '(' expr ')' stat_block)* ('else' stat_block)? ;
 
+once_next_stat: 'once' once_stats=stat_block ('next' next_stats=stat_block)? ;
+
 switch_stat: 'switch' '(' expr ')' '{' ( 'case'? factor ':' stat_block )* ( ( 'default' | '_' ) ':' default_stat=stat_block )? '}' ;
 
 do_while_stat: 'do' stat_block 'while' '(' expr ')' ';' ;
@@ -54,6 +59,8 @@ for_stat: 'for' '(' init=expr? ';' cond=expr? ';' update=expr? ')' stat_block ;
 
 foreach_stat: 'foreach' '(' ( WideID | InternalID ) 'in' expr ')' stat_block ;
 
+repeat_stat: 'repeat' '(' count=expr ')' stat_block;
+
 raise_stat: 'raise' ID? ';' ;
 
 whenany_stat: 'whenany' '(' ( ID ( ',' ID )* )? ')' body_stat=stat_block ( 'exits' '{' ( 'case'? ( ID | 'default' ) ':' stat_block )* '}' )? ;
@@ -65,6 +72,8 @@ implicit_throw_stat: 'throw' ';' ;
 throw_stat: 'throw' expr ';' ;
 
 try_catch_stat: 'try' try_stat=stat_block ( 'catch' ( '(' ID WideID? ')' )? stat_block )* ( 'finally' finally_stat=stat_block )? ;
+
+with_stat: 'with' '(' WideID '=' expr ')' stat_block ;
 
 break_stat: 'break' ';' ;
 

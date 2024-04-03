@@ -2,7 +2,7 @@
 
 namespace SBFirstLast4.Dynamic;
 
-public class Module : IEquatable<Module>
+public sealed class Module : IEquatable<Module>
 {
 	public required string Name { get; init; }
 

@@ -27,7 +27,7 @@ public enum PlayerSelector
 	Player2
 }
 
-public class Order
+public sealed class Order
 {
 	public OrderType Type { get; set; }
 

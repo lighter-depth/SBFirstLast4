@@ -7,8 +7,9 @@ using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
 
 namespace SBFirstLast4.Dynamic;
 
-internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
+internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 {
+	private readonly Guid _id;
 	private readonly Buffer _outputBuffer;
 	private readonly Action<string> _setTranslated;
 	private readonly Func<Task> _update;
@@ -18,11 +19,13 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 	private static readonly Action<string> _discardSetTranslated = _ => { };
 	private static readonly Func<Task> _discardUpdate = () => Task.CompletedTask;
 
-	internal SBProcLangVisitor(Buffer outputBuffer, Action<string> setTranslated, Func<Task> update, CancellationToken token)
-		=> (_outputBuffer, _setTranslated, _update, _token) = (outputBuffer, setTranslated, update, token);
+	private static readonly HashSet<(Guid, Range)> OnceSet = [];
+
+	internal SBProcLangVisitor(Guid id, Buffer outputBuffer, Action<string> setTranslated, Func<Task> update, CancellationToken token)
+		=> (_id, _outputBuffer, _setTranslated, _update, _token) = (id, outputBuffer, setTranslated, update, token);
 
 	internal SBProcLangVisitor()
-		: this(_discardBuffer, _discardSetTranslated, _discardUpdate, default) { }
+		: this(default, _discardBuffer, _discardSetTranslated, _discardUpdate, default) { }
 
 	public override async Task<object?> VisitScript([NotNull] SBProcLangParser.ScriptContext context)
 	{
@@ -67,6 +70,19 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		}
 
 		return "ENDIF";
+	}
+
+	public override async Task<object?> VisitOnce_next_stat([NotNull] SBProcLangParser.Once_next_statContext context)
+	{
+		var range = context.SourceInterval.a..context.SourceInterval.b;
+		if (OnceSet.Contains((_id, range)) && context.next_stats is not null)
+		{
+			await Visit(context.next_stats);
+			return "NEXT";
+		}
+		await Visit(context.once_stats);
+		OnceSet.Add((_id, range));
+		return "ONCE";
 	}
 
 	public override async Task<object?> VisitSwitch_stat([NotNull] SBProcLangParser.Switch_statContext context)
@@ -309,6 +325,33 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		return "FOREACH";
 	}
 
+	public override async Task<object?> VisitRepeat_stat([NotNull] SBProcLangParser.Repeat_statContext context)
+	{
+		var count = (int)(await Visit(context.count))!;
+		for (var i = 0; i < count; i++)
+		{
+		Redo:;
+			try
+			{
+				_token.ThrowIfCancellationRequested();
+				await Visit(context.stat_block());
+			}
+			catch (Break)
+			{
+				break;
+			}
+			catch (Continue)
+			{
+				continue;
+			}
+			catch (Redo)
+			{
+				goto Redo;
+			}
+		}
+		return "REPEAT";
+	}
+
 	public override Task<object?> VisitRaise_stat([NotNull] SBProcLangParser.Raise_statContext context)
 		=> throw new Raise(context.ID()?.GetText() ?? "default");
 
@@ -316,12 +359,12 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 	{
 		var signals = new List<string> { "default" };
 
-		foreach(var i in context.children)
+		foreach (var i in context.children)
 		{
 			if (i is SBProcLangParser.Stat_blockContext)
 				break;
 
-			if(i is ITerminalNode terminal)
+			if (i is ITerminalNode terminal)
 			{
 				var text = terminal.GetText();
 				if (text is not ("whenany" or "(" or "," or ")"))
@@ -332,9 +375,9 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		var labels = new List<string>();
 		var blocks = new List<SBProcLangParser.Stat_blockContext>();
 
-		foreach(var i in context.children.SkipWhile(t => t.GetText() != "exits"))
+		foreach (var i in context.children.SkipWhile(t => t.GetText() != "exits"))
 		{
-			if(i is SBProcLangParser.Stat_blockContext block)
+			if (i is SBProcLangParser.Stat_blockContext block)
 			{
 				blocks.Add(block);
 				continue;
@@ -352,7 +395,7 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		{
 			await Visit(context.body_stat);
 		}
-		catch(Raise raise)
+		catch (Raise raise)
 		{
 			if (!signals.Contains(raise.Name))
 				throw;
@@ -478,6 +521,23 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		return "TRY_CATCH";
 	}
 
+	public override async Task<object?> VisitWith_stat([NotNull] SBProcLangParser.With_statContext context)
+	{
+		var varName = context.WideID().GetText()[1..];
+		Wrapper<IDisposable?>? disposable = new(null);
+		try
+		{
+			disposable.Value = (IDisposable?)await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
+			WideVariable.SetValue(varName, disposable?.RefValue);
+			await Visit(context.stat_block());
+		}
+		finally
+		{
+			disposable?.RefValue?.Dispose();
+			WideVariable.Variables.Remove(varName);
+		}
+		return "WITH";
+	}
 	public override async Task<object?> VisitReturn_stat([NotNull] SBProcLangParser.Return_statContext context)
 	{
 		var value = await QueryRunner.EvaluateExpressionAsync(context.expr()?.GetText() ?? "\"\"");
@@ -505,7 +565,6 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			return "STAT_BLOCK";
 		}
 
-		await Visit(context.GetChild(0));
 		return "STAT_BLOCK";
 	}
 
@@ -845,8 +904,8 @@ internal class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 	}
 }
 
-internal class InvalidSyntaxException(string message = "") : Exception(message);
+internal sealed class InvalidSyntaxException(string message = "") : Exception(message);
 
-internal class SBProcLangVisitorException(string message = "") : Exception(message);
+internal sealed class SBProcLangVisitorException(string message = "") : Exception(message);
 
-internal class SBMemberAccessException(string message = "") : Exception(message);
+internal sealed class SBMemberAccessException(string message = "") : Exception(message);

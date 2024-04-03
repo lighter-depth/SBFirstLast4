@@ -7,7 +7,7 @@ public class NodeBuilder
 	public virtual Node Build() => new(Operator);
 }
 
-public class FirstNodeBuilder : NodeBuilder
+public sealed class FirstNodeBuilder : NodeBuilder
 {
 	public EqualityOperator Equality { private get; set; }
 
@@ -16,7 +16,7 @@ public class FirstNodeBuilder : NodeBuilder
 	public override FirstNode Build() => new(Operator, Equality, First);
 }
 
-public class LastNodeBuilder : NodeBuilder 
+public sealed class LastNodeBuilder : NodeBuilder 
 {
 	public EqualityOperator Equality { private get; set; }
 
@@ -25,7 +25,7 @@ public class LastNodeBuilder : NodeBuilder
 	public override LastNode Build() => new(Operator, Equality, Last);
 }
 
-public class LengthNodeBuilder : NodeBuilder
+public sealed class LengthNodeBuilder : NodeBuilder
 {
 	public int Length { private get; set; }
 
@@ -34,7 +34,7 @@ public class LengthNodeBuilder : NodeBuilder
 	public override LengthNode Build() => new(Operator, Length, Comparison);
 }
 
-public class TypeNodeBuilder : NodeBuilder 
+public sealed class TypeNodeBuilder : NodeBuilder 
 {
 	public WordType Type { private get; set; }
 
@@ -43,7 +43,7 @@ public class TypeNodeBuilder : NodeBuilder
 	public override TypeNode Build() => new(Operator, Type, Contains);
 }
 
-public class RegexNodeBuilder : NodeBuilder
+public sealed class RegexNodeBuilder : NodeBuilder
 {
 	public string Pattern { private get; set; } = string.Empty;
 
@@ -52,7 +52,7 @@ public class RegexNodeBuilder : NodeBuilder
 	public override RegexNode Build() => new(Operator, Pattern, Matches);
 }
 
-public class SpecializedNodeBuilder : NodeBuilder
+public sealed class SpecializedNodeBuilder : NodeBuilder
 {
 	public SpecializedCondition Condition { private get; set; }
 
@@ -61,7 +61,7 @@ public class SpecializedNodeBuilder : NodeBuilder
 	public override SpecializedNode Build() => new(Operator, Condition, Fulfills);
 }
 
-public class GroupNodeBuilder : NodeBuilder 
+public sealed class GroupNodeBuilder : NodeBuilder 
 {
 	public List<Node> Nodes { private get; set; } = [];
 

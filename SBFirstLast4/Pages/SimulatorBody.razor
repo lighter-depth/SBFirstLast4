@@ -1900,7 +1900,7 @@
 		AlterUI();
 	}
 
-	private record ShowAnimationInternal(bool Up, bool Down, bool Heal, bool Barrier, bool Portal, bool Rewind)
+	private sealed record ShowAnimationInternal(bool Up, bool Down, bool Heal, bool Barrier, bool Portal, bool Rewind)
 	{
 		internal bool Up { get; set; } = Up;
 		internal bool Down { get; set; } = Down;
@@ -1911,7 +1911,7 @@
 		internal static ShowAnimationInternal Default { get; } = new(false, false, false, false, false, false);
 	}
 
-	private record ShowPlayerAnimation(ShowAnimationInternal Player1, ShowAnimationInternal Player2)
+	private sealed record ShowPlayerAnimation(ShowAnimationInternal Player1, ShowAnimationInternal Player2)
 	{
 		internal ShowAnimationInternal Player1 { get; set; } = Player1;
 		internal ShowAnimationInternal Player2 { get; set; } = Player2;

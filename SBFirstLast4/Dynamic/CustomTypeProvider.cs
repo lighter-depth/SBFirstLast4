@@ -5,7 +5,7 @@ using System.Linq.Dynamic.Core.CustomTypeProviders;
 
 namespace SBFirstLast4.Dynamic;
 
-public class CustomTypeProvider(bool cacheCustomTypes = true) : DefaultDynamicLinqCustomTypeProvider(cacheCustomTypes), IDynamicLinkCustomTypeProvider
+public sealed class CustomTypeProvider(bool cacheCustomTypes = true) : DefaultDynamicLinqCustomTypeProvider(cacheCustomTypes), IDynamicLinkCustomTypeProvider
 {
 	private static readonly Type[] BuiltInTypes =
 	[
@@ -55,11 +55,11 @@ public class CustomTypeProvider(bool cacheCustomTypes = true) : DefaultDynamicLi
 		var types = base.GetCustomTypes();
 		types =
 		[
-			.. types
-,
+			.. types,
 			.. typeof(Random).Assembly.GetTypes(),
 			.. typeof(Regex).Assembly.GetTypes(),
 			.. typeof(Enumerable).Assembly.GetTypes(),
+			.. typeof(Stream).Assembly.GetTypes(),
 			.. typeof(StringBuilder).Assembly.GetTypes(),
 			.. Record.Types,
 		];

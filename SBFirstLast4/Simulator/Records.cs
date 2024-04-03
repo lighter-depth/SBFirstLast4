@@ -3,7 +3,7 @@ using System.Text;
 
 namespace SBFirstLast4.Simulator;
 
-public record BattleData(PlayerData Player1, PlayerData Player2, PlayerData PreActor, PlayerData PreReceiver, bool IsPlayer1sTurn, int TurnNum, List<string> UsedWords)
+public sealed record BattleData(PlayerData Player1, PlayerData Player2, PlayerData PreActor, PlayerData PreReceiver, bool IsPlayer1sTurn, int TurnNum, List<string> UsedWords)
 {
 	public static explicit operator BattleData(Battle b) =>
 		new
@@ -64,7 +64,7 @@ public record BattleData(PlayerData Player1, PlayerData Player2, PlayerData PreA
 	}
 }
 
-public record PlayerData(string Name, int AbilityIndex, int HP, int ATKIndex, int DEFIndex, Word CurrentWord, PlayerState State, PlayerArgs Args) : IEnumerable<string>
+public sealed record PlayerData(string Name, int AbilityIndex, int HP, int ATKIndex, int DEFIndex, Word CurrentWord, PlayerState State, PlayerArgs Args) : IEnumerable<string>
 {
 	public static implicit operator PlayerData(Player p) =>
 		new
@@ -145,7 +145,7 @@ public record PlayerData(string Name, int AbilityIndex, int HP, int ATKIndex, in
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
-public record PlayerArgs(int FoodRem, int CureRem, int PoisonDmg, int SeedRem, int SkillRem) : IEnumerable<int>
+public sealed record PlayerArgs(int FoodRem, int CureRem, int PoisonDmg, int SeedRem, int SkillRem) : IEnumerable<int>
 {
 	public static PlayerArgs Default { get; } = new(0, 0, 0, 0, 0);
 

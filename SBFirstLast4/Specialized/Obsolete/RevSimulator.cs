@@ -1,5 +1,4 @@
-﻿using Microsoft.JSInterop;
-using SBFirstLast4.Simulator;
+﻿using SBFirstLast4.Simulator;
 using ChainElement = (SBFirstLast4.Word Word, int AllyHP, int FoeHP);
 using StrategyElement = (bool HasWon, System.Collections.Generic.List<int> Strategy, System.Collections.Generic.List<(SBFirstLast4.Word Word, int AllyHP, int FoeHP)> Chain);
 using MaxDamageResult = (int MaxDamage, SBFirstLast4.Word Word, SBFirstLast4.WordType Ability);
@@ -8,7 +7,7 @@ using InitialConfig = (int InitialHP, int InitialATK, int InitialDEF, double Ran
 
 namespace SBFirstLast4.Specialized.Obsolete;
 
-public class RevSimulator
+public sealed class RevSimulator
 {
 	private static readonly Dictionary<char, Word[]> PlayWords = Words.TypedWords
 				.Where(w => w.Contains(WordType.Play) && !w.IsHeal)

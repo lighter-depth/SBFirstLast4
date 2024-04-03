@@ -1,6 +1,6 @@
 ﻿@page "/rev-simulator"
+@using SBFirstLast4.Logging
 @using SBFirstLast4.Specialized.RevSimulator
-
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
@@ -8,7 +8,7 @@
 
 @if (IsRunning)
 {
-	<p style="color: gray">Running...</p>
+	<p style="color: gray">計算中...</p>
 	return;
 }
 
@@ -17,15 +17,12 @@
 
 <br />
 
-@Result
-<br />
-
 FirstWord
 <input maxlength="1" @bind=FirstWordName />
 <br />
 
 SubType
-<select @onchange="e => FirstWordType = (e.Value as string)?.StringToType() ?? default">
+<select @bind=FirstWordTypeStr>
 	@foreach (var i in Enum.GetValues<WordType>().Select(t => t == default ? "なし" : t.TypeToString()))
 	{
 		<option value="@i">@i</option>
@@ -66,25 +63,32 @@ Enemy Random
 <input type="number" @bind=FoeRandom />
 <br />
 
+Max Length
+<input type="number" @bind=MaxLength />
+<br />
+
 @code {
 
-	private string FirstWordName = "あ";
+	private static string FirstWordName = "あ";
 
-	private WordType FirstWordType = default;
+	private static string FirstWordTypeStr = "なし";
+	private WordType FirstWordType => FirstWordTypeStr.StringToType();
 
-	private int AllyHP = 60;
-	private int FoeHP = 60;
+	private static int AllyHP = 60;
+	private static int FoeHP = 60;
 
-	private double AllyATK = 1;
-	private double FoeATK = 1;
+	private static double AllyATK = 1;
+	private static double FoeATK = 1;
 
-	private double AllyDEF = 1;
-	private double FoeDEF = 1;
+	private static double AllyDEF = 1;
+	private static double FoeDEF = 1;
 
-	private double AllyRandom = 0.85;
-	private double FoeRandom = 0.85;
+	private static double AllyRandom = 0.85;
+	private static double FoeRandom = 0.85;
 
-	private string Result = "結果: なし";
+	private static int MaxLength = 100;
+
+	private List<string> BannedWords = [];
 
 	private bool IsRunning;
 
@@ -103,11 +107,35 @@ Enemy Random
 	{
 		IsRunning = true;
 		StateHasChanged();
-		await Task.Delay(1);
-		var result = Main.EntryPoint(new(FirstWordName, WordType.Play, FirstWordType), AllyHP, AllyATK, AllyDEF, AllyRandom, FoeHP, FoeATK, FoeDEF, FoeRandom);
-		Result = $"結果: {result.Count}[{result.StringJoin(", ")}]";
-		IsRunning = false;
-		StateHasChanged();
+		await Task.Delay(10);
+		RevSimulatorResult.History = Main.EntryPoint(
+			firstWord: new(FirstWordName, WordType.Play, FirstWordType),
+			ally: (AllyHP, AllyATK, AllyDEF, AllyRandom),
+			foe: (FoeHP, FoeATK, FoeDEF, FoeRandom),
+			maxLength: MaxLength,
+			bannedWords: BannedWords.ToHashSet()
+		);
+		Server.Log(new
+		{
+			Type = "REV_SIMULATOR",
+			Char = FirstWordName,
+			WType = FirstWordTypeStr,
+			HP = $"{AllyHP} {FoeHP}",
+			ATK = $"{AllyATK} {FoeATK}",
+			DEF = $"{AllyDEF} {FoeDEF}",
+			Rand = $"{AllyRandom} {FoeRandom}",
+			MaxLen = MaxLength,
+			Banned = $"{BannedWords.StringJoin(" ")}",
+			UserInfo = new
+			{
+				Name = AppSettings.UserName,
+				Guid = AppSettings.Guid,
+				Hash = AppSettings.Hash,
+			},
+			Date = DateTime.Now
+		});
+
+		NavigationManager.NavigateTo("rev-simulator-result");
 	}
 
 }

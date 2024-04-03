@@ -1,9 +1,9 @@
-﻿namespace SBFirstLast4.Specialized.RevSimulator;
+﻿using MaxDamageKey = (SBFirstLast4.Word Word, double AllyATK, double FoeDEF, double Random, bool AllowViolence);
 
-internal class SBTools
+namespace SBFirstLast4.Specialized.RevSimulator;
+
+internal static class SBTools
 {
-	internal static readonly List<string> UsedWords = [];
-
 	internal static readonly Dictionary<char, Word[]> TypedWords = Words.TypedWords
 		.Select(w => w with { Name = w.Name.Trim() })
 		.Where(w => !string.IsNullOrWhiteSpace(w.Name))
@@ -11,17 +11,17 @@ internal class SBTools
 		.GroupBy(w => w.Name.At(0))
 		.ToDictionary(g => g.Key, g => g.ToArray());
 
-	private static readonly Dictionary<(Word Word, double AllyATK, double FoeDEF, double Random, bool AllowViolence), (int MaxDamage, Word OutputWord, WordType ChangeAbility)> MaxDamageCache = [];
+	private static readonly Dictionary<MaxDamageKey, MaxDamageInfo> MaxDamageCache = [];
 
 	// 最大打点
-	internal static (int MaxDamage, Word OutputWord, WordType ChangeAbility) MaxDamage(Word word, double allyATK, double foeDEF, double random = 0.85, bool allowViolence = true)
+	internal static MaxDamageInfo MaxDamage(Word word, double allyATK, double foeDEF, double random = 0.85, bool allowViolence = true)
 	{
 		if (MaxDamageCache.TryGetValue((word, allyATK, foeDEF, random, allowViolence), out var cachedResult))
 			return cachedResult;
 
 		if (word.IsEmpty)
 		{
-			static void ThrowException() => throw new ArgumentException("word was empty.");
+			static void ThrowException() => throw new ArgumentException("Word was empty.");
 			ThrowException();
 			return (-1, default, default);
 		}
@@ -41,7 +41,7 @@ internal class SBTools
 		{
 			var selected_word = i.Name;
 
-			if (UsedWords.Contains(selected_word))
+			if (Main.BannedWords.Contains(selected_word))
 				continue;
 
 			var atype1 = i.Type1;
@@ -151,4 +151,9 @@ internal class SBTools
 		}
 		return MaxDamageCache[(word, allyATK, foeDEF, random, allowViolence)] = (max_damage, output_word, change_ability);
 	}
+}
+
+internal readonly record struct MaxDamageInfo(int MaxDamage, Word OutputWord, WordType ChangeAbility)
+{
+	public static implicit operator MaxDamageInfo((int, Word, WordType) t) => new(t.Item1, t.Item2, t.Item3);
 }

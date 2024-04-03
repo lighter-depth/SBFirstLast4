@@ -258,7 +258,7 @@ public abstract class Contract
 /// <summary>
 /// <see cref="Contract"/>の補助的な情報を管理するクラスです。
 /// </summary>
-public class ContractArgs(Player pa, Player pr)
+public sealed class ContractArgs(Player pa, Player pr)
 {
 	/// <summary>
 	/// タイプ推論が成功したかどうかを表すフラグ
@@ -283,7 +283,7 @@ public class ContractArgs(Player pa, Player pr)
 /// <summary>
 /// 攻撃のコントラクトを管理するクラスです。
 /// </summary>
-internal class AttackContract : Contract
+internal sealed class AttackContract : Contract
 {
 	public override ContractType Type => ContractType.Attack;
 	/// <summary>
@@ -480,7 +480,7 @@ internal class AttackContract : Contract
 /// <summary>
 /// バフのコントラクトを管理するクラスです。
 /// </summary>
-internal class BufContract : Contract
+internal sealed class BufContract : Contract
 {
 	public override ContractType Type => ContractType.Buf;
 	#region constructors
@@ -500,7 +500,7 @@ internal class BufContract : Contract
 /// <summary>
 /// 回復のコントラクトを管理するクラスです。
 /// </summary>
-internal class HealContract : Contract
+internal sealed class HealContract : Contract
 {
 	public override ContractType Type => ContractType.Heal;
 	/// <summary>
@@ -609,7 +609,7 @@ internal class HealContract : Contract
 /// <summary>
 /// やどりぎのコントラクトを管理するクラスです。
 /// </summary>
-internal class SeedContract : Contract
+internal sealed class SeedContract : Contract
 {
 	public override ContractType Type => ContractType.Seed;
 	/// <summary>

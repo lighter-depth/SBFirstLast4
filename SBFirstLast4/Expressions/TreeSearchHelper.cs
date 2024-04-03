@@ -40,7 +40,7 @@ public static class TreeSearchHelper
 #pragma warning restore
 
 [DynamicLinqType]
-public class BooleanEvaluator
+public sealed class BooleanEvaluator
 {
 	private bool _value;
 

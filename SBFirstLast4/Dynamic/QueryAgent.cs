@@ -6,7 +6,7 @@ using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
 
 namespace SBFirstLast4.Dynamic;
 
-public partial class QueryAgent
+public sealed partial class QueryAgent
 {
 	public QueryContext CurrentContext => ContextStack.Peek();
 

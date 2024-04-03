@@ -130,7 +130,7 @@ public enum Notice
 /// <summary>
 /// アノテーション付き文字列を表すクラスです。
 /// </summary>
-public class AnnotatedString
+public sealed class AnnotatedString
 {
 	/// <summary>
 	/// アノテーションを受ける文字列
@@ -152,9 +152,6 @@ public class AnnotatedString
 	/// </summary>
 	public bool IsInvisible => Notice is Notice.HPUpdated;
 	public AnnotatedString(string text, Notice notice) => (Text, Notice) = (text, notice);
-	public override string ToString()
-	{
-		return Text + " " + Notice;
-	}
+	public override string ToString() => $"{Text} {Notice}";
 	public static implicit operator AnnotatedString((string text, Notice notice) t) => new(t.text, t.notice);
 }

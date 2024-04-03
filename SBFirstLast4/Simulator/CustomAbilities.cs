@@ -16,7 +16,7 @@ internal abstract class CustomAbility : Ability
 /// <summary>
 /// マジックミラー。状態異常を跳ね返す。
 /// </summary>
-internal class MagicMirror : CustomAbility
+internal sealed class MagicMirror : CustomAbility
 {
 	public override AbilityType Type => AbilityType.Received;
 	public override List<string> CustomName => ["mm", "MM", "マジックミラー", "まじっくみらー", "magicmirror", "MagicMirror", "MAGICMIRROR"];
@@ -46,7 +46,7 @@ internal class MagicMirror : CustomAbility
 /// <summary>
 /// てんねん。バフによる能力上昇補正を無視する。
 /// </summary>
-internal class Tennen : CustomAbility
+internal sealed class Tennen : CustomAbility
 {
 	public override AbilityType Type => AbilityType.MtpCalced;
 	public override List<string> CustomName => ["ua", "UA", "てんねん", "天然", "unaware", "Unaware", "UNAWARE"];
@@ -68,7 +68,7 @@ internal class Tennen : CustomAbility
 /// <summary>
 /// ふしぎなまもり。こうかばつぐん以外のダメージを無効化する。
 /// </summary>
-internal class WonderGuard : CustomAbility
+internal sealed class WonderGuard : CustomAbility
 {
 	public override AbilityType Type => AbilityType.PropCalced;
 	public override List<string> CustomName => ["wg", "WG", "ふしぎなまもり", "不思議な守り", "wonderguard", "WonderGuard", "WONDERGUARD"];
@@ -92,7 +92,7 @@ internal class WonderGuard : CustomAbility
 /// <summary>
 /// がんじょう。即死するダメージを受けたときに、体力１を残して耐える。
 /// </summary>
-internal class Ganjou : CustomAbility
+internal sealed class Ganjou : CustomAbility
 {
 	public override AbilityType Type => AbilityType.ActionBegin | AbilityType.Received;
 	public override List<string> CustomName => ["st", "ST", "がんじょう", "頑丈", "sturdy", "Sturdy", "STURDY"];
@@ -118,7 +118,7 @@ internal class Ganjou : CustomAbility
 /// <summary>
 /// 「最強の特性」
 /// </summary>
-internal class God : CustomAbility
+internal sealed class God : CustomAbility
 {
 	public override AbilityType Type => AbilityType.AmpDecided | AbilityType.CritDecided | AbilityType.ViolenceUsed | AbilityType.ActionEnd | AbilityType.Received;
 	public override List<string> CustomName => ["gd", "GD", "神", "かみ", "カミ", "god", "God", "GOD"];
@@ -169,7 +169,7 @@ internal class God : CustomAbility
 /// <summary>
 /// 人体タイプの言葉を使った時、５分の１の確率で「確定」する。
 /// </summary>
-internal class Kakutei : CustomAbility
+internal sealed class Kakutei : CustomAbility
 {
 	public override AbilityType Type => AbilityType.PropCalced | AbilityType.CritDecided | AbilityType.ActionExecuted | AbilityType.ActionEnd;
 	public override List<string> CustomName => ["dc", "DC", "かくてい", "確定", "kakutei", "Kakutei", "KAKUTEI"];
@@ -203,7 +203,7 @@ internal class Kakutei : CustomAbility
 	}
 	public override string ToString() => "かくてい";
 }
-internal class GouyokunaTsubo : CustomAbility, ISingleTypedBufAbility
+internal sealed class GouyokunaTsubo : CustomAbility, ISingleTypedBufAbility
 {
 	public override AbilityType Type => AbilityType.ActionBegin;
 	public override List<string> CustomName => ["pg", "PG", "ごうよくなつぼ", "強欲な壺", "gouyokunatsubo", "GouyokunaTsubo", "GOUYOKUNATSUBO"];
@@ -222,7 +222,7 @@ internal class GouyokunaTsubo : CustomAbility, ISingleTypedBufAbility
 	public override string ToString() => "ごうよくなつぼ";
 }
 
-internal class Rewind : CustomAbility, ISingleTypedBufAbility
+internal sealed class Rewind : CustomAbility, ISingleTypedBufAbility
 {
 	public override AbilityType Type => AbilityType.ContractEnd;
 	public override List<string> CustomName => ["rw", "RW", "りわいんど", "リワインド", "rewind", "Rewind", "REWIND"];

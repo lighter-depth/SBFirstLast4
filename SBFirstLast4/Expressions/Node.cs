@@ -15,7 +15,7 @@ public class Node
 	public Node(NodeOperator op) => (Operator, Id) = (op, IdGenerator++);
 }
 
-public class FirstNode : Node
+public sealed class FirstNode : Node
 {
 	public char First { get; internal set; }
 
@@ -31,7 +31,7 @@ public class FirstNode : Node
 	public override string ToString() => $".{String(Operator)}(FirstChar {String(Equality)} '{First}')";
 }
 
-public class LastNode : Node
+public sealed class LastNode : Node
 {
 	public char Last { get; internal set; }
 
@@ -47,7 +47,7 @@ public class LastNode : Node
 	public override string ToString() => $".{String(Operator)}(LastChar {String(Equality)} '{Last}')";
 }
 
-public class LengthNode : Node
+public sealed class LengthNode : Node
 {
 	public int Length { get; internal set; }
 
@@ -61,7 +61,7 @@ public class LengthNode : Node
 	public override string ToString() => $".{String(Operator)}(Length {String(Comparison)} {Length})";
 }
 
-public class TypeNode : Node
+public sealed class TypeNode : Node
 {
 	public WordType Type { get; internal set; }
 
@@ -78,7 +78,7 @@ public class TypeNode : Node
 		=> $".{String(Operator)}({String(Contains)}Contains(WordType.{Type}))";
 }
 
-public class RegexNode : Node
+public sealed class RegexNode : Node
 {
 	public string Pattern { get; internal set; }
 
@@ -102,7 +102,7 @@ public class RegexNode : Node
 		=> $".{String(Operator)}({String(Matches)}{nameof(Extensions.TreeSearchHelper.__Regex_IsMatch__)}(\"{Pattern}\"))";
 }
 
-public class SpecializedNode : Node
+public sealed class SpecializedNode : Node
 {
 	public SpecializedCondition Condition { get; internal set; }
 
@@ -132,7 +132,7 @@ public class SpecializedNode : Node
 	public override string ToString() => $".{String(Operator)}({String(Fulfills)}{String(Condition)})";
 }
 
-public class GroupNode(NodeOperator op, IReadOnlyList<Node> nodes) : Node(op)
+public sealed class GroupNode(NodeOperator op, IReadOnlyList<Node> nodes) : Node(op)
 {
 	public IReadOnlyList<Node> Nodes { get; internal set; } = nodes;
 

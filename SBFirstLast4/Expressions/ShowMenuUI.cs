@@ -1,6 +1,6 @@
 ﻿namespace SBFirstLast4.Expressions;
 
-public class ShowMenuUI
+public sealed class ShowMenuUI
 {
 	public bool Node { get; set; }
 
@@ -45,7 +45,7 @@ public class ShowMenuUI
 		=> (Node, First, Last, Length, Type, Regex, Specialized, Group) = _tuple;
 }
 
-public class ActionWrapper
+public sealed class ActionWrapper
 {
 	private Action _action = () => { };
 

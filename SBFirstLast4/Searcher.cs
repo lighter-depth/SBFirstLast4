@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace SBFirstLast4;
 
-public partial class Searcher
+public sealed partial class Searcher
 {
     public WordType? Type1 { get; init; } = null;
     public WordType? Type2 { get; init; } = null;

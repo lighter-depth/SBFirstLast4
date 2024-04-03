@@ -1,7 +1,4 @@
-﻿using SBFirstLast4.Pages;
-using System.Text.RegularExpressions;
-
-namespace SBFirstLast4.Dynamic;
+﻿namespace SBFirstLast4.Dynamic;
 
 public static class ModuleManager
 {

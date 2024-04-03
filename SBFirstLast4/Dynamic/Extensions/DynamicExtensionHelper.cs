@@ -917,15 +917,3 @@ public static class LinqExtension
 	public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second, Func<TFirst, TSecond, TResult> resultSelector)
 		=> Enumerable.Zip(first, second, resultSelector);
 }
-
-#if false && DEBUG
-[DynamicLinqType]
-public static class DebugHelper
-{
-	public static string ClearCache()
-	{
-		PostcallVisitor.ClearCache();
-		return string.Empty;
-	}
-}
-#endif

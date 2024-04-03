@@ -204,7 +204,7 @@ public class Player(Ability ability)
 		SkillChangeRemain = d.Args.SkillRem
 	};
 
-	public class BredString
+	public sealed class BredString
 	{
 		public string Name { get; init; } = string.Empty;
 		public int Rep { get; private set; }

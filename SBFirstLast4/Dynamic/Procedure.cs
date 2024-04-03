@@ -181,7 +181,7 @@ public sealed class Procedure
 
 		try
 		{
-			var visitor = new SBProcLangVisitor(_buffer, _setTranslated, _update, _token);
+			var visitor = new SBProcLangVisitor(Id, _buffer, _setTranslated, _update, _token);
 			var result = await visitor.Visit(tree);
 
 			if (ManualQuery.IsReflect)
