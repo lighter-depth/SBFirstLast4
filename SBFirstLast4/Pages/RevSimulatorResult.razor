@@ -1,25 +1,13 @@
 ﻿@page "/rev-simulator-result"
 @layout NoMenuLayout
 @using SBFirstLast4.Specialized.RevSimulator
+@using StatusInfo = (double ATK, double DEF, double Random)
 @inject NavigationManager NavigationManager
 
 <PageTitle>激闘の記録</PageTitle>
 
+<link rel="stylesheet" href="css/fonts.css" />
 <style>
-	@@font-face {
-		font-family: 'mplus-1p-regular';
-		src: url('../font/subset-mplus-1p-regular.ttf') format('truetype');
-	}
-
-	@@font-face {
-		font-family: 'mplus-1p-bold';
-		src: url('../font/subset-mplus-1p-bold.ttf') format('truetype');
-	}
-
-	@@font-face {
-		font-family: 'mplus-1c-black';
-		src: url('../font/subset-mplus-1c-black.ttf') format('truetype');
-	}
 
 	.page {
 		display: block;
@@ -67,7 +55,7 @@
 		text-align: center;
 	}
 
-	#subtitle {
+	.subtitle {
 		margin-top: 0px;
 		margin-bottom: 20px;
 		font-size: 16px;
@@ -162,7 +150,7 @@
 	.info {
 		position: absolute;
 		width: 40%;
-		height: 40px;
+		height: 80px;
 		font-family: mplus-1p-bold;
 	}
 
@@ -181,7 +169,7 @@
 	#history {
 		position: relative;
 		width: 100%;
-		top: 150px;
+		top: 250px;
 	}
 
 	#VS {
@@ -300,10 +288,14 @@
 	<div id="main">
 		<a class="top" @onclick=BackBtn_OnClick>← もどる</a>
 		<div id="title">革命シミュレーター</div>
-		<div id="subtitle">激闘の記録</div>
+		<div class="subtitle">激闘の記録</div>
+		<div class="subtitle" style="margin-top: -20px; font-size: 15px;">長さ: @History.Count　　勝者: @Winner</div>
 		<div id="ally-info" class="info">
 			<div class="name">じぶん</div>
 			<a>後攻</a>
+			<a>攻撃: @Format(Settings.Ally.ATK) 倍</a>
+			<a>防御: @Format(Settings.Ally.DEF) 倍</a>
+			<a>乱数: @($"{Settings.Ally.Random:0.00}")</a>
 			<a>かくめい</a>
 			<p class="small">遊びタイプの言葉を使うたびに自分と相手の能力変化をひっくり返す</p>
 		</div>
@@ -311,6 +303,9 @@
 		<div id="foe-info" class="info">
 			<div class="name">あいて</div>
 			<a>先攻</a>
+			<a>攻撃: @Format(Settings.Foe.ATK) 倍</a>
+			<a>防御: @Format(Settings.Foe.DEF) 倍</a>
+			<a>乱数: @($"{Settings.Foe.Random:0.00}")</a>
 			<a>かくめい</a>
 			<p class="small">遊びタイプの言葉を使うたびに自分と相手の能力変化をひっくり返す</p>
 		</div>
@@ -409,15 +404,19 @@
 					</div>
 				</div>
 			}
-			<div class="last">@(History.Count % 2 == 0 ? "じぶん" : "あいて")の勝利！</div>
+			<div class="last">@(Winner)の勝利！</div>
 		</div>
-		<br><br><br><br>
+		<br><br><br><br><br><br><br><br>
 		<a class="top" @onclick=BackBtn_OnClick>← もどる</a>
 	</div>
 </div>
 
 @code {
 	internal static List<TurnInfo> History = [];
+
+	internal static (StatusInfo Ally, StatusInfo Foe) Settings = default;
+
+	private string Winner => History.Count % 2 == 0 ? "じぶん" : "あいて";
 
 	protected override void OnInitialized()
 	{
@@ -444,4 +443,6 @@
 		> 12 => "#E1B740",
 		_ => "#B84731"
 	};
+
+	private static string Format(double d) => $"{d:0.0#}";
 }

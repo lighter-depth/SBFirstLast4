@@ -1,0 +1,14 @@
+﻿@font-face {
+    font-family: 'mplus-1p-regular';
+    src: url('../font/subset-mplus-1p-regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'mplus-1p-bold';
+    src: url('../font/subset-mplus-1p-bold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'mplus-1c-black';
+    src: url('../font/subset-mplus-1c-black.ttf') format('truetype');
+}

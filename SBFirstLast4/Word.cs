@@ -1,4 +1,5 @@
 ﻿using SBFirstLast4.Simulator;
+using System.Diagnostics;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
 using System.Runtime.CompilerServices;
 using MultiWord = SBFirstLast4.Dynamic.Extensions.MultiWord;
@@ -6,22 +7,17 @@ using MultiWord = SBFirstLast4.Dynamic.Extensions.MultiWord;
 namespace SBFirstLast4;
 
 [DynamicLinqType]
+[DebuggerDisplay($"{nameof(Name)} ({nameof(Type1)}/{nameof(Type2)})")]
 public readonly record struct Word(string Name, WordType Type1, WordType Type2) : IComparable<Word>
 {
 	public char Start => Name.At(0);
+
 	public char End => Name.GetLastChar();
 
 	public int Length => Name.Length;
 
-	public List<WordType> Types
-	{
-		get
-		{
-			if (IsEmpty) return [];
-			if (IsSingleType) return [Type1];
-			return [Type1, Type2];
-		}
-	}
+	public List<WordType> Types => IsEmpty ? [] : IsSingleType ? [Type1] : [Type1, Type2];
+
 	public bool Contains(WordType type) => Type1 == type || Type2 == type;
 
 	public bool Contains(WordType type1, WordType type2) => Type1 == type1 || Type2 == type1 || Type1 == type2 || Type2 == type2;
@@ -29,14 +25,19 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	public bool Contains(IEnumerable<WordType> types) => this is var word && types.Any(word.Contains);
 
 	public bool IsEmpty => Type1 == WordType.Empty;
+
 	public bool IsSingleType => Type1 != WordType.Empty && Type2 == WordType.Empty;
+
 	public bool IsDoubleType => Type1 != WordType.Empty && Type2 != WordType.Empty;
 
 	public bool IsHeal => Contains(WordType.Food) || Contains(WordType.Health);
 
 	public bool IsViolence => !IsHeal && Contains(WordType.Violence);
+
 	public bool IsCritable => Contains(WordType.Body) || Contains(WordType.Insult);
+
 	public bool IsDefault => this == Default;
+	
 	public static Word Default => _default;
 	private static readonly Word _default = new(string.Empty, WordType.Empty, WordType.Empty);
 

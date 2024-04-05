@@ -2,106 +2,17 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
-<head>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-	<style>
-		.dropdown {
-			position: relative;
-			display: inline-block;
-		}
-
-		.dropdown-content {
-			display: none;
-			position: absolute;
-			background-color: #f9f9f9;
-			min-width: 160px;
-			box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-			z-index: 1;
-		}
-
-			.dropdown-content a {
-				color: black;
-				padding: 12px 16px;
-				text-decoration: none;
-				display: block;
-			}
-
-				.dropdown-content a:hover {
-					background-color: #f1f1f1
-				}
-	</style>
-
-	<script type="text/javascript">
-		const onBgClick = function () {
-			document.getElementById("genderMenu").style.display = "none";
-			document.getElementById("ageMenu").style.display = "none";
-			document.getElementById("myDropdown").style.display = "none";
-		};
-
-		const clearDropdown = function () {
-			document.getElementById("ageMenu").style.display = "none";
-			document.getElementById("genderMenu").style.display = "none";
-			document.getElementById("myDropdown").style.display = "none";
-		};
-
-		const onAfterRender = function () {
-			const dropdown = document.getElementById("myDropdown");
-			const genderButtons = document.getElementById("genderMenu").querySelectorAll("a");
-
-			document.getElementById("dropbtn").addEventListener("click", function () {
-				document.getElementById("myDropdown").style.display = "block";
-			});
-
-			genderButtons.forEach(function (button) {
-				button.addEventListener("click", function () {
-					const gender = button.getAttribute("data-gender");
-					alert(gender);
-					clearDropdown();
-				});
-			});
-
-			document.getElementById("setGender").addEventListener("click", function () {
-				document.getElementById("genderMenu").style.display = "block";
-				document.getElementById("ageMenu").style.display = "none";
-			});
-
-			document.getElementById("setAge").addEventListener("click", function () {
-				document.getElementById("ageMenu").style.display = "block";
-				document.getElementById("genderMenu").style.display = "none";
-			});
-
-			document.getElementById("ageMenu").addEventListener("click", function () {
-				document.getElementById("ageMenu").style.display = "none";
-				document.getElementById("myDropdown").style.display = "none";
-			});
-		}
-	</script>
-</head>
-
-<div class="dropdown">
-	<button id="dropbtn">Click Me!! <i class="fa fa-caret-down"></i></button>
-	<div id="myDropdown" class="dropdown-content">
-		<a id="setAge">Set Age</a>
-		<a id="setGender">Set Gender</a>
-	</div>
-</div>
-
-<div id="ageMenu" class="dropdown-content" style="display:none;">
-	<a>18 or under</a>
-	<a>Over 18</a>
-</div>
-
-<div id="genderMenu" class="dropdown-content" style="display: none;">
-	<a data-gender="Man">Man</a>
-	<a data-gender="Woman">Woman</a>
-	<a data-gender="Another gender identity">Another gender identity</a>
-	<a data-gender="Prefer not to say">Prefer not to say</a>
-</div>
+<PageTitle>About</PageTitle>
 
 @code {
-	protected override async Task OnAfterRenderAsync(bool firstRender)
+	protected override void OnInitialized()
 	{
-		if (firstRender)
-			await JSRuntime.InvokeVoidAsync("eval", "onAfterRender();");
+		if (!AppSettings.IsLoggedIn)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+		if (!Words.IsLoadedCorrectly)
+			NavigationManager.NavigateTo("top", false);
 	}
 }

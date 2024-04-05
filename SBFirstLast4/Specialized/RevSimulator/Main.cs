@@ -39,7 +39,7 @@ internal static class Main
 
 	private static List<TurnInfo> PlayerTurn(PlayWord word, bool isPlayer1Turn, (int Ally, int Foe) hp, List<TurnInfo> chain, int maxLen, int saiki = 1, CancellationToken token = default)
 	{
-		token.ThrowIfCancellationRequested();
+		//token.ThrowIfCancellationRequested();
 		chain = [.. chain, (word.Word, hp.Ally, hp.Foe)];
 
 		// 「ざ」など続く単語がなかったら終了
