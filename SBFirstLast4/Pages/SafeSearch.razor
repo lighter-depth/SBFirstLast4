@@ -496,7 +496,7 @@
 	}
 
 
-	private async void EndCharInput_KeyDown(KeyboardEventArgs e)
+	private async Task EndCharInput_KeyDown(KeyboardEventArgs e)
 	{
 		if (e.Key is "Process" or not "Enter") return;
 		var wordText = await JSRuntime.GetElementValueById<string>("endchar-input");
@@ -514,7 +514,6 @@
 		await Task.Delay(1);
 		await JSRuntime.ClearElementValueById("endchar-input");
 		StateHasChanged();
-		await Task.Delay(1);
 	}
 
 

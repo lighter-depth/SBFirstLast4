@@ -16,7 +16,7 @@
 		<p class="pane-title" style="font-size: 30px;">革命シミュレーター</p>
 		<p class="text-content">
 			革命合戦の勝敗を完全に予測し、自分が勝利する場合は最短のパターンを、
-			敗北する場合は最長のパターンを出力します。<br />
+			敗北する場合は最長のパターンを出力します。<br><br>
 			（HPが多すぎる場合、攻撃力や防御力が低すぎる場合などでは、最悪の場合計算に数時間かかります）
 		</p>
 	</div>
@@ -33,7 +33,7 @@
 			</div>
 			<img class="btn-edit" src="images/pen.png" style="grid-column: 2; grid-row: 2; justify-self: start; top: -15px; left: 105px;" />
 			<select id="transparent-select" style="grid-column: 2; grid-row: 1;" @bind=FirstWordTypeStr>
-				@foreach (var i in Enum.GetValues<WordType>().Select(t => t == default ? "単タイプ" : t.TypeToString()))
+				@foreach (var i in TypeNames)
 				{
 					<option value="@i">@i</option>
 				}
@@ -121,7 +121,30 @@
 		<p class="pane-title">最長チェーン</p>
 		<input class="input-menu" type="number" @bind=MaxLength />
 	</div>
-	<button id="btn-execute" @onclick=RunBtn_OnClick>実行！</button>
+	<div class="text-pane">
+		<p class="pane-title">禁止単語</p>
+		@if (BannedWords.Count > 0)
+		{
+			<div class="filters-textarea" style="box-shadow: none;">
+				<ul class="filters-sortable">
+					@foreach (var i in BannedWords)
+					{
+						<li class="filters-frame" @onclick="() =>
+						{
+							BannedWords.Remove(i);
+							StateHasChanged();
+						}">
+							@i
+							<span class="filters-delete" role="button" tabindex="0" />
+						</li>
+					}
+				</ul>
+			</div>
+		}
+		<input class="text-input" id="bannedwords-input" type="text" placeholder="単語を入力..." @onkeydown=EndCharInput_KeyDown />
+		<br />
+	</div>
+	<button id="btn-execute" @onclick=RunBtn_OnClick>じっこう！</button>
 </div>
 @if (ShowTransparentScreen)
 {
@@ -289,18 +312,91 @@
 			display: none;
 		}
 
+	.filters-textarea {
+		background: #fff;
+		border: 1px solid #ddd;
+		box-sizing: border-box;
+		margin: 2px 0;
+		padding: 4px;
+		width: 100%;
+	}
+
+	.filters-sortable {
+		-webkit-padding-start: 0;
+		align-items: center;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: left;
+		list-style: none;
+		margin: 0;
+		padding-inline-start: 0;
+		padding: 0;
+		gap: 10px;
+		min-height: 19px;
+	}
+
+	.filters-frame {
+		background: #fff;
+		border: 1px solid #d9d9d9;
+		border-radius: 5px;
+		box-shadow: none;
+		color: #404040;
+		cursor: pointer;
+		font-size: 17px;
+		margin: 0;
+		max-height: 100%;
+		max-width: 100%;
+		padding: 1px 23px 1px 6px;
+		resize: none;
+		word-break: break-all;
+		z-index: 10;
+	}
+
+	.filters-delete {
+		background: #fff;
+		border-radius: 50%;
+		box-shadow: 0 0 1px 1px #999;
+		cursor: pointer;
+		display: inline-block;
+		height: 15px;
+		line-height: 5px;
+		margin-left: 3px;
+		margin-top: 4px;
+		position: absolute;
+		vertical-align: middle;
+		width: 15px;
+	}
+
+		.filters-delete::before, .filters-delete::after {
+			background-color: #666;
+			content: "";
+			height: 1px;
+			left: 2px;
+			position: absolute;
+			top: 7px;
+			-webkit-transform: rotate(45deg);
+			transform: rotate(45deg);
+			width: 11px;
+		}
+
+		.filters-delete::after {
+			-webkit-transform: rotate(-45deg);
+			transform: rotate(-45deg);
+		}
+
 	#btn-execute {
 		align-self: center;
 		text-align: center;
-		width: 95%;
+		width: 75%;
+		font-family: mplus-1p-bold;
 		line-height: 60px;
 		font-weight: bold;
-		height: 60px;
-		border: none;
+		height: 80px;
+		background-color: #9A5252;
+		border: 5px solid #C44041;
 		border-radius: 30px;
 		font-size: 24px;
 		cursor: pointer;
-		background: linear-gradient(to right, #95EF24, #259024);
 		color: white;
 		transition: background-color 0.3s, color 0.3s;
 		text-decoration: none;
@@ -325,8 +421,8 @@
 	private static string FirstWordTypeStr = "なし";
 	private WordType FirstWordType => FirstWordTypeStr.StringToType();
 
-	private static int AllyHP = 60;
-	private static int FoeHP = 60;
+	private static string AllyHP = "60";
+	private static string FoeHP = "60";
 
 	private static string AllyATK = "1.0 倍";
 	private static string FoeATK = "1.0 倍";
@@ -337,9 +433,11 @@
 	private static string AllyRandom = "0.85";
 	private static string FoeRandom = "0.85";
 
-	private static int MaxLength = 100;
+	private static string MaxLength = "100";
 
 	private List<string> BannedWords = [];
+
+	private static readonly IEnumerable<string> TypeNames = Enum.GetValues<WordType>().Select(t => t == default ? "単タイプ" : t.TypeToString());
 
 	private static readonly string[] StatusValues = ["0.25 倍", "0.28 倍", "0.33 倍", "0.4 倍", "0.5 倍", "0.66 倍", "1.0 倍", "1.5 倍", "2.0 倍", "2.5 倍", "3.0 倍", "3.5 倍", "4.0 倍"];
 
@@ -356,23 +454,66 @@
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
+
 		if (!Words.IsLoadedCorrectly)
+		{
 			NavigationManager.NavigateTo("top", false);
+			return;
+		}
+
+		Server.Log(new
+		{
+			Type = "REV_SIMULATOR_OPEN",
+			UserInfo = new
+			{
+				Name = AppSettings.UserName,
+				Guid = AppSettings.Guid,
+				Hash = AppSettings.Hash,
+			},
+			Date = DateTime.Now
+		});
+	}
+
+	private async Task EndCharInput_KeyDown(KeyboardEventArgs e)
+	{
+		if (e.Key is "Process" or not "Enter") return;
+		var wordText = await JSRuntime.GetElementValueById<string>("bannedwords-input");
+		await Task.Delay(1);
+		if (string.IsNullOrWhiteSpace(wordText))
+		{
+			await JSRuntime.ClearElementValueById("bannedwords-input");
+			StateHasChanged();
+			await Task.Delay(1);
+			return;
+		}
+		BannedWords.AddRange(wordText.Split([' ', ',', '、']).Select(x => x.Trim()).Where(s => s.Length > 0));
+		BannedWords = BannedWords.Distinct().ToList();
+		StateHasChanged();
+		await Task.Delay(1);
+		await JSRuntime.ClearElementValueById("bannedwords-input");
+		StateHasChanged();
 	}
 
 	private async Task RunBtn_OnClick()
 	{
+		var (allyHP, foeHP, maxLength) = (await IntParse(AllyHP), await IntParse(FoeHP), await IntParse(MaxLength));
+
+		if (allyHP is null || foeHP is null || maxLength is null)
+			return;
+
+		var (allyATK, allyDEF, allyRandom) = (DoubleParse(AllyATK), DoubleParse(AllyDEF), double.Parse(AllyRandom));
+		var (foeATK, foeDEF, foeRandom) = (DoubleParse(FoeATK), DoubleParse(FoeDEF), double.Parse(FoeRandom));
+
 		IsRunning = true;
 		StateHasChanged();
 		await Task.Delay(10);
-		var (allyATK, allyDEF, allyRandom) = (Parse(AllyATK), Parse(AllyDEF), double.Parse(AllyRandom));
-		var (foeATK, foeDEF, foeRandom) = (Parse(FoeATK), Parse(FoeDEF), double.Parse(FoeRandom));
+
 		RevSimulatorResult.Settings = ((allyATK, allyDEF, allyRandom), (foeATK, foeDEF, foeRandom));
 		RevSimulatorResult.History = Main.EntryPoint(
 			firstWord: new(FirstWordName, WordType.Play, FirstWordType),
-			ally: (AllyHP, allyATK, allyDEF, allyRandom),
-			foe: (FoeHP, foeATK, foeDEF, foeRandom),
-			maxLength: MaxLength,
+			ally: (allyHP.Value, allyATK, allyDEF, allyRandom),
+			foe: (foeHP.Value, foeATK, foeDEF, foeRandom),
+			maxLength: maxLength.Value,
 			bannedWords: BannedWords.ToHashSet()
 		);
 		Server.Log(new
@@ -403,8 +544,17 @@
 		StateHasChanged();
 	}
 
+	private async Task<int?> IntParse(string str)
+	{
+		if (int.TryParse(str.Trim(), out var result))
+			return result;
+
+		await JSRuntime.Alert($"無効な値です: {str}");
+		return null;
+	}
+
 	// "〇〇 倍" の「〇〇」部分だけ取り出して変換
-	private double Parse(string str) => double.Parse(str.AsSpan()[..^2]);
+	private double DoubleParse(string str) => double.Parse(str.AsSpan()[..^2]);
 
 	private string Image(WordType type) => type == default ? "images/transparent.png" : type.TypeToImg();
 }

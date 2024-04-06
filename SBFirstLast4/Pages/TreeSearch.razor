@@ -209,7 +209,22 @@
 			return;
 		}
 		if (!Words.IsLoadedCorrectly)
+		{
 			NavigationManager.NavigateTo("top", false);
+			return;
+		}
+
+		Server.Log(new
+		{
+			Type = "GROUP_SEARCH_OPEN",
+			UserInfo = new
+			{
+				Name = AppSettings.UserName,
+				Guid = AppSettings.Guid,
+				Hash = AppSettings.Hash,
+			},
+			Date = DateTime.Now
+		});
 
 		StateHasChanged();
 	}

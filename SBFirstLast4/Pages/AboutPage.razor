@@ -4,7 +4,31 @@
 
 <PageTitle>About</PageTitle>
 
+<div id="flex-main">
+	<div id="title">SBFirstLast4</div>
+	<div id="subtitle">Powered by Blazor</div>
+</div>
+<link rel="stylesheet" href="css/fonts.css" />
+<style>
+	body {
+		background-color: #F5F6F1;
+	}
+
+	#flex-main{
+		display: flex;
+		flex-flow: column;
+		gap: 20px;
+		text-align: center;
+		align-content: center;
+	}
+</style>
+
 @code {
+
+	private bool ShowCredit;
+
+	private bool ShowVersionHistory;
+
 	protected override void OnInitialized()
 	{
 		if (!AppSettings.IsLoggedIn)
