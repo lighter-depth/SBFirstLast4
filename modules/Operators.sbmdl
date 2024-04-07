@@ -18,9 +18,13 @@ requires: STD;
 #define $checked( operator..Checked(
 #define $unchecked( operator..Unchecked(
 
+#define $new< operator..New<
+
 #define $default< operator..Default<
 #define $typeof< operator..TypeOf<
 #define $sizeof< operator..SizeOf<
+
+#define $len( operator..ArrayLength(
 
 #define $*( operator..Multiply(
 #define $/( operator..Divide(
@@ -38,7 +42,7 @@ requires: STD;
 #define $>( operator..GreaterThan(
 #define $>=( operator..GreaterThanOrEqual(
 
-#define $<=>( operator..Spaceship(
+#define $<=>( operator.Spaceship(
 
 #define $&( operator..And(
 #define $|( operator..Or(
@@ -55,9 +59,11 @@ requires: STD;
 #define $..( operator..Range(
 #define $..^( operator..RangeEnd(
 
-#define $in( operator..In(
+#define $in( operator.In(
 
-#define $=~( operator..Match(
+#define $=~( operator.Match(
 #define $!~( operator.NotMatch(
 
 #define $?:( operator..Condition(
+
+#define $args( operator.Args(
