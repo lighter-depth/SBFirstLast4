@@ -842,12 +842,7 @@ public sealed class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 		{
 			var shortTupleType = valueTupleTypes[count - 1].MakeGenericType(typeArgs);
 
-			var shortCtor = shortTupleType.GetConstructors()
-				.Where(c => c.GetParameters().Length == typeArgs.Length)
-				.FirstOrDefault()
-				?? throw new NoSuchConstructorException($"Could not find a matching tuple constructor");
-
-			return shortCtor.Invoke(args);
+			return Activator.CreateInstance(shortTupleType, args: args);
 		}
 
 		var restType = MakeTuple(args.Skip(7).ToArray()).GetTypeOrDefault();
