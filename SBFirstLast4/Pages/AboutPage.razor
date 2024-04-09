@@ -1,12 +1,200 @@
 ﻿@page "/about"
+@using SBFirstLast4.Logging
+@using SBFirstLast4.Versioning
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
 <PageTitle>About</PageTitle>
 
 <div id="flex-main">
-	<div id="title">SBFirstLast4</div>
-	<div id="subtitle">Powered by Blazor</div>
+	@if (!ShowDeveloperInfo && !ShowCredit && !ShowVersionHistory)
+	{
+		<div class="title">SBFirstLast4</div>
+		<div id="subtitle">Powered by Blazor</div>
+		<div class="text-grid" style="margin-top: 40px;">
+			<p style="grid-column: 1">バージョン</p>
+			<p style="grid-column: 2">@VersionHistory.Latest</p>
+		</div>
+		<div class="btn-show-element" style="margin-top: 60px;" @onclick="() => Set(ref ShowDeveloperInfo, true)">制作者情報</div>
+		<div class="btn-show-element" @onclick="() => Set(ref ShowCredit, true)">クレジット</div>
+		<div class="btn-show-element" @onclick="() => Set(ref ShowVersionHistory, true)">更新履歴</div>
+	}
+	else if (ShowDeveloperInfo)
+	{
+		<div class="btn-back" @onclick="() => Set(ref ShowDeveloperInfo, false)">← もどる</div>
+		<div class="title" style="font-size: 35px;">制作者情報</div>
+	}
+	else if (ShowCredit)
+	{
+		<div class="btn-back" @onclick="() => Set(ref ShowCredit, false)">← もどる</div>
+		<div class="title" style="font-size: 35px;">クレジット</div>
+
+		<div class="credit-title">制作</div>
+		<div class="credit-content">ゟいたー</div>
+
+		<div class="credit-title">原作</div>
+		<div class="credit-content">ささみjp</div>
+
+		<div class="divider" />
+
+		<div class="credit-title">フレームワーク</div>
+		<div class="credit-content">Blazor</div>
+
+		<div class="divider" />
+
+		<div class="credit-title">イラスト素材</div>
+		<a class="credit-content" href="https://www.irasutoya.com/" target="_blank" rel="noopener noreferrer">
+			いらすとや
+			<span class="oi oi-external-link" />
+		</a>
+
+		<div class="credit-title">VFX</div>
+		<a class="credit-content" href="https://pipoya.net/sozai/" target="_blank" rel="noopener noreferrer">
+			ぴぽや
+			<span class="oi oi-external-link" />
+		</a>
+
+		<div class="credit-title">BGM</div>
+		<a class="credit-content" href="https://noiselessworld.net/" target="_blank" rel="noopener noreferrer">
+			騒音のない世界
+			<span class="oi oi-external-link" />
+		</a>
+
+		<div class="credit-title">SE</div>
+		<a class="credit-content" href="https://soundeffect-lab.info/" target="_blank" rel="noopener noreferrer">
+			効果音ラボ
+			<span class="oi oi-external-link" />
+		</a>
+
+		<div class="divider" />
+
+		<div class="credit-title">辞書</div>
+		<a class="credit-content" href="https://github.com/neologd/mecab-ipadic-neologd/" target="_blank" rel="noopener noreferrer">
+			NEologd
+			<span class="oi oi-external-link" />
+		</a>
+
+		<div class="divider" />
+
+		<div id="license-title">使用しているライブラリ</div>
+		<p class="credit-text-content">当Webサイトでは、以下のライブラリを使用しています。</p>
+
+		<div class="divider narrow-divider" />
+
+		<div class="credit-title fw-bold narrow-margin-top wide-margin-bottom">MIT License</div>
+		@foreach (var i in Libraries.MIT)
+		{
+			<a class="credit-content license-content" href="@i.Url" target="_blank" rel="noopener noreferrer">
+				@i.Name　@i.Version
+				<span class="oi oi-external-link" />
+			</a>
+		}
+		<p class="credit-text-content">
+			MITライセンスの全文は
+			<a class="inline-link" href="https://opensource.org/license/MIT" target="_blank" rel="noopener noreferrer">
+				こちら
+				<span class="oi oi-external-link" />
+			</a>
+			で確認できます。
+		</p>
+
+		<div class="divider narrow-divider" />
+
+		<div class="credit-title fw-bold wide-margin-bottom">Apache 2.0 License</div>
+		@foreach (var i in Libraries.Apache)
+		{
+			<a class="credit-content license-content" href="@i.Url" target="_blank" rel="noopener noreferrer">
+				@i.Name　@i.Version
+				<span class="oi oi-external-link" />
+			</a>
+		}
+		<p class="credit-text-content">
+			Apache 2.0ライセンスの全文は
+			<a class="inline-link" href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">
+				こちら
+				<span class="oi oi-external-link" />
+			</a>
+			で確認できます。
+		</p>
+
+		<div class="divider narrow-divider" />
+
+		<div class="credit-title fw-bold wide-margin-bottom">BSD-3-Clause</div>
+		@foreach (var i in Libraries.BSD3)
+		{
+			<a class="credit-content license-content" href="@i.Url" target="_blank" rel="noopener noreferrer">
+				@i.Name　@i.Version
+				<span class="oi oi-external-link" />
+			</a>
+		}
+		<p class="credit-text-content">
+			BSD-3-Clauseライセンスの全文は
+			<a class="inline-link" href="https://opensource.org/license/BSD-3-clause" target="_blank" rel="noopener noreferrer">
+				こちら
+				<span class="oi oi-external-link" />
+			</a>
+			で確認できます。
+		</p>
+
+		<div class="divider narrow-divider" />
+
+		<div class="credit-title fw-bold wide-margin-bottom">その他のライブラリ</div>
+
+		<a class="credit-content license-content" href="https://github.com/Shiritori-Taro/kakumei_algorithm" target="_blank" rel="noopener noreferrer" style="margin-top: -20px;">
+			kakumei_algorithm
+			<span class="oi oi-external-link" />
+		</a>
+		<div class="credit-title smaller-title">作成者</div>
+		<a class="credit-text-content inline-link" href="https://github.com/Shiritori-Taro" target="_blank" rel="noopener noreferrer" style="font-size: 18px;">
+			Shiritori-Taro
+			<span class="oi oi-external-link" />
+		</a>
+		<div class="credit-title smaller-title">元のライセンス</div>
+		<p class="credit-text-content narrow-text-content">
+			本アプリケーションの二次配布・商用利用を固く禁止します。
+		</p>
+		<div class="credit-title smaller-title">特別な許可</div>
+		<p class="credit-text-content narrow-text-content">
+			このアプリケーションは、特定の使用事例に限り、Shiritori-Taro氏からDLLの統合に関する特別な許可を受けています。
+			元のライセンス条項による他の使用または配布は許可されていません。
+		</p>
+
+		<div class="divider narrow-divider" />
+
+		<div class="credit-title fw-bold">著作権表示</div>
+		<p class="credit-text-content">各ライブラリの著作権は、それぞれの著作権者に帰属します。</p>
+
+		<div class="divider" />
+		<div class="btn-back" @onclick="() => Set(ref ShowCredit, false)">← もどる</div>
+	}
+	else if (ShowVersionHistory)
+	{
+		<div class="btn-back" @onclick="() => Set(ref ShowVersionHistory, false)">← もどる</div>
+
+		<div class="title" style="font-size: 35px;">更新履歴</div>
+
+		<div class="text-grid">
+			<p style="grid-column: 1">バージョン</p>
+			<p style="grid-column: 2">@VersionHistory.Latest</p>
+		</div>
+
+		<div class="divider" />
+		@foreach (var i in VersionHistory.Versions)
+		{
+			<div class="version-grid">
+				<div style="grid-row: 1; grid-column: 1;">@i.Version</div>
+				<ul style="grid-column: 2; text-align: start; margin-left: 10px;">
+					@foreach (var j in i.Changes)
+					{
+						<li style="padding-left: 10px;">@j</li>
+					}
+				</ul>
+			</div>
+			<div class="divider" />
+		}
+		<div class="btn-back" @onclick="() => Set(ref ShowVersionHistory, false)">← もどる</div>
+	}
+	<br><br>
 </div>
 <link rel="stylesheet" href="css/fonts.css" />
 <style>
@@ -14,29 +202,179 @@
 		background-color: #F5F6F1;
 	}
 
-	#flex-main{
+	.title {
+		font-size: 40px;
+		font-family: M PLUS 1;
+		font-weight: bold;
+	}
+
+	#subtitle {
+		font-size: 17px;
+		margin-top: -15px;
+	}
+
+	#flex-main {
 		display: flex;
 		flex-flow: column;
 		gap: 20px;
 		text-align: center;
 		align-content: center;
 	}
+
+	.btn-show-element {
+		font-size: 25px;
+		font-family: mplus-1p-bold;
+		align-self: start;
+		margin-left: 30px;
+		margin-top: 20px;
+		font-weight: bold;
+		cursor: pointer;
+	}
+
+	.btn-back {
+		font-size: 24px;
+		font-family: mplus-1p-bold;
+		letter-spacing: -3px;
+		color: black;
+		align-self: start;
+		cursor: pointer;
+	}
+
+	.text-content {
+		font-family: mplus-1p-regular;
+		font-size: 22px;
+		align-self: center;
+	}
+
+	.text-grid {
+		display: grid;
+		grid-template-columns: auto auto;
+		margin-left: max(20%, 50px);
+		margin-right: max(20%, 50px);
+	}
+
+		.text-grid p {
+			text-align: center;
+			justify-self: center;
+			font-family: mplus-1p-regular;
+			font-size: 22px;
+		}
+
+	.credit-title {
+		font-family: mplus-1p-regular;
+		font-size: 24px;
+		margin-top: 50px;
+	}
+
+	.narrow-margin-top {
+		margin-top: 20px;
+	}
+
+	.wide-margin-bottom {
+		margin-bottom: 40px;
+	}
+
+	.credit-content {
+		font-family: mplus-1p-regular;
+		font-weight: 600;
+		font-size: 28.08px;
+		color: black;
+		text-decoration: none;
+	}
+
+		.credit-content:hover .credit-content:active {
+			color: blue;
+			text-decoration: underline;
+		}
+
+		.credit-content span {
+			font-size: 24px;
+		}
+
+	#license-title {
+		font-family: mplus-1p-bold;
+		font-weight: bold;
+		font-size: 25.08px;
+		margin-top: 50px;
+	}
+
+	.license-content {
+		font-size: 20px;
+		font-weight: normal;
+		margin-top: 5px;
+		margin-bottom: 5px;
+	}
+
+	.credit-text-content {
+		font-family: 'mplus-1p-regular';
+		margin-top: 30px;
+		margin-left: 20px;
+		margin-right: 20px;
+		margin-bottom: -10px;
+	}
+
+	.narrow-text-content{
+		max-width: 66%;
+		align-self: center;
+	}
+
+	.smaller-title {
+		font-size: 22px;
+		font-family: 'mplus-1p-regular';
+		margin-top: 25px;
+		margin-bottom: -30px;
+	}
+
+	.inline-link span {
+		font-size: 16px;
+	}
+
+	.version-grid {
+		display: grid;
+		grid-template-columns: 80px auto;
+	}
+
+	.divider {
+		height: 2px;
+		background-color: darkgray;
+		margin: 50px 0px 10px 0px;
+	}
+
+	.narrow-divider {
+		width: 70%;
+		align-self: center;
+	}
 </style>
 
 @code {
+	private bool ShowDeveloperInfo;
 
 	private bool ShowCredit;
 
 	private bool ShowVersionHistory;
 
+
 	protected override void OnInitialized()
 	{
 		if (!AppSettings.IsLoggedIn)
-		{
-			NavigationManager.NavigateTo("", false);
 			return;
-		}
-		if (!Words.IsLoadedCorrectly)
-			NavigationManager.NavigateTo("top", false);
+
+		Server.Log(new
+		{
+			Type = "ABOUT",
+			UserInfo = new
+			{
+				Name = AppSettings.UserName,
+				Guid = AppSettings.Guid,
+				Hash = AppSettings.Hash,
+			},
+			Date = DateTime.Now
+		});
+	}
+
+	private void Set(ref bool loc, bool val)
+	{
+		loc = val;
+		StateHasChanged();
 	}
 }

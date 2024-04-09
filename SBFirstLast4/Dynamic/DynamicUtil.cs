@@ -44,13 +44,16 @@ internal static class To
 {
 	internal static string String(object? result)
 	{
+		if (result is null)
+			return "null";
+
 		if (result is System.Collections.IDictionary dictionary)
 			return $"%{{ {dictionary.Keys.OfType<object?>().Select(String).Zip(dictionary.Values.OfType<object?>().Select(String)).Select(t => $"{t.First} = {t.Second}").StringJoin(", ")} }}";
 
 		if (result is System.Collections.IEnumerable enumerable and not string)
 			return $"{{ {enumerable.OfType<object?>().Select(String).StringJoin(", ")} }}";
 
-		return result?.ToString() ?? "null";
+		return result.ToString() ?? "null";
 	}
 }
 

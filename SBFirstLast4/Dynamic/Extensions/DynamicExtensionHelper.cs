@@ -1,7 +1,7 @@
-﻿using System.Collections.Immutable;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using IEnumerable = System.Collections.IEnumerable;
 
@@ -126,30 +126,6 @@ public static class ProcHelper
 #pragma warning disable IDE1006
 
 [DynamicLinqType]
-public static class @global 
-{
-	public static int @len(object obj)
-	{
-		if (obj is Array arr)
-			return arr.Length;
-
-		if (obj is System.Collections.IList list)
-			return list.Count;
-
-		if (obj is string str)
-			return str.Length;
-
-		if(obj is IEnumerable enumerable)
-		{
-			var typedEnumerable = enumerable.OfType<object>();
-			return typedEnumerable.TryGetNonEnumeratedCount(out var count) ? count : typedEnumerable.Count();
-		}
-		return 0;
-	}
-}
-
-
-[DynamicLinqType]
 public static class @cast
 {
 	public static T @static<T>(dynamic obj) => (T)obj;
@@ -157,6 +133,16 @@ public static class @cast
 	public static T? @dynamic<T>(object? obj) where T : class => obj as T;
 
 	public static T? @convert<T>(object? obj) => (T?)((IConvertible?)obj)?.ToType(typeof(T), CultureInfo.InvariantCulture);
+}
+
+[DynamicLinqType]
+public sealed class Box<T>(T value)
+{
+	private T _value = value;
+
+	public T Value => _value;
+
+	public ref T RefValue => ref _value;
 }
 
 [DynamicLinqType]
@@ -311,11 +297,34 @@ public static class @operator
 
 	public static object? Condition(dynamic x, dynamic y, dynamic z) => x ? y : z;
 
+	public static bool Is<T>(object? obj) => obj is T;
+
+	public static object? New<T>(params object?[] args) => Activator.CreateInstance(typeof(T), args: args);
+
 	public static T? Default<T>() => default;
 
 	public static Type TypeOf<T>() => typeof(T);
 
-	public static int SizeOf<T>() => System.Runtime.InteropServices.Marshal.SizeOf<T>();
+	public static int SizeOf<T>() => Marshal.SizeOf<T>();
+
+	public static int ArrayLength(dynamic obj) 
+	{
+		if (obj is Array arr)
+			return arr.Length;
+
+		if (obj is System.Collections.IList list)
+			return list.Count;
+
+		if (obj is string str)
+			return str.Length;
+
+		if (obj is IEnumerable enumerable)
+		{
+			var typedEnumerable = enumerable.OfType<object>();
+			return typedEnumerable.TryGetNonEnumeratedCount(out var count) ? count : typedEnumerable.Count();
+		}
+		return default;
+	}
 
 	public static Index Index(int x) => ^x;
 
@@ -336,9 +345,9 @@ public static class @operator
 	public static Range RangeEnd(int end) => ..end;
 
 	public static Range RangeEnd(Index end) => ..end;
-}
 
-#pragma warning restore
+	public static object?[] Args(params object?[] args) => args;
+}
 
 [DynamicLinqType]
 public static class Linq

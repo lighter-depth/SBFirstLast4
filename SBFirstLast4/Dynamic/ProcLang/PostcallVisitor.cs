@@ -611,15 +611,25 @@ public sealed class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 			var method = type.GetMethod(methodName, argTypes);
 
+
+			if (method is not null && !method.IsGenericMethod)
+				return await InvokeMethod(method, null, args, signature, false);
+
 			if (method is null)
 			{
-				var methodSignature = $"{type.Name}.{methodName}({argTypes.Select(t => t.Name).StringJoin(", ")})";
-				@throw = new NoSuchMethodException($"Could not find a matching static method '{methodSignature}'");
-				return InvalidPostcall.Value;
-			}
+				var candidate = type.GetMethods()
+					.Where(m => m.Name == methodName && m.GetParameterTypes().SequenceEqual(argTypes, TypeEqualityComparer.Instance))
+					.FirstOrDefault();
 
-			if (!method.IsGenericMethod)
-				return await InvokeMethod(method, null, args, signature, false);
+				if (candidate is null)
+				{
+					var methodSignature = $"{type.Name}.{methodName}({argTypes.Select(t => t.Name).StringJoin(", ")})";
+					@throw = new NoSuchMethodException($"Could not find a matching static method '{methodSignature}'");
+					return InvalidPostcall.Value;
+				}
+
+				method = candidate;
+			}
 
 
 			if (typeParameters?.Length > 0)
@@ -633,7 +643,7 @@ public sealed class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 			var castedParameters = argTypes
 				.Zip(method.GetParameterTypes())
-				.Select(t => t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name) ?? t.First : t.Second)
+				.Select(t => t.Second.IsGenericParameter ? t.First : t.Second.IsGenericType ? t.First.GetInterface(t.Second.Name) ?? t.First : t.Second)
 				.ToArray();
 
 			var genericTypeArgs = locations.Select(l => l.Access(castedParameters)).ToArray();
@@ -832,8 +842,10 @@ public sealed class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 		{
 			var shortTupleType = valueTupleTypes[count - 1].MakeGenericType(typeArgs);
 
-			var shortCtor = shortTupleType.GetConstructor(typeArgs)
-				?? throw new NoSuchConstructorException($"Could not find a matching constructor");
+			var shortCtor = shortTupleType.GetConstructors()
+				.Where(c => c.GetParameters().Length == typeArgs.Length)
+				.FirstOrDefault()
+				?? throw new NoSuchConstructorException($"Could not find a matching tuple constructor");
 
 			return shortCtor.Invoke(args);
 		}
