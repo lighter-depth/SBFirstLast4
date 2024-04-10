@@ -24,7 +24,9 @@ requires: STD;
 #define $typeof< operator..TypeOf<
 #define $sizeof< operator..SizeOf<
 
-#define $len( operator..ArrayLength(
+#define $is< operator..Is<
+
+#define $len( operator.ArrayLength(
 
 #define $*( operator..Multiply(
 #define $/( operator..Divide(
