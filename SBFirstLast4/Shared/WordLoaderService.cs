@@ -22,7 +22,7 @@ internal sealed class WordLoaderService : IWordLoaderService
 
     public async Task LoadTD(string arg, HttpClient client)
     {
-        var url = $"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/plain/typed-words-{arg}.csv";
+        var url = $"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/plain/typed-words-{arg}.csv?token={DateTime.Now:yyyyMMddHHmmss}";
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Add("Accept", "application/json");
         request.Headers.Add("Accept-Charset", "utf-8");
