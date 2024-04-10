@@ -822,6 +822,10 @@ public sealed class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 		if (args.Length == 0)
 			return default(ValueTuple);
 
+		if(args.Length == 1)
+			return ValueTuple.Create((dynamic?)args[0]);
+		
+
 		var typeArgs = args.Select(a => a.GetTypeOrDefault()).ToArray();
 
 		var valueTupleTypes = new[] 

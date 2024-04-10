@@ -6,6 +6,7 @@ internal static class VersionHistory
 
 	internal static readonly (Version Version, string[] Changes)[] Versions =
 	[
+		(new(13, 1, 0), ["「当サイトについて」ページの追加", "ページ「グループ検索」「革命シミュレーター」のベータ版指定を解除"]),
 		(new(13, 0, 2), ["ポストコールにおいて、一部の型のコンストラクターを正常に呼び出せない不具合の修正"]),
 		(new(13, 0, 1), ["operatorポストコール オブジェクトに演算子を追加"]),
 		(new(13, 0, 0), ["新機能「革命シミュレーター」を追加"]),
