@@ -823,7 +823,7 @@ public sealed class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 			return default(ValueTuple);
 
 		if(args.Length == 1)
-			return ValueTuple.Create((dynamic?)args[0]);
+			return TupleHelper((dynamic?)args[0]);
 		
 
 		var typeArgs = args.Select(a => a.GetTypeOrDefault()).ToArray();
@@ -858,6 +858,8 @@ public sealed class PostcallVisitor : SBProcLangBaseVisitor<Task<string?>?>
 
 		return ctor.Invoke(count < 8 ? args : [.. args[..7], MakeTuple(args[7..])]);
 	}
+
+	private static ValueTuple<T> TupleHelper<T>(T item) => ValueTuple.Create(item);
 }
 
 internal sealed class NoSuchConstructorException(string message) : Exception(message);
