@@ -6,6 +6,7 @@ internal static class VersionHistory
 
 	internal static readonly (Version Version, string[] Changes)[] Versions =
 	[
+		(new(13, 2, 0), ["新機能「ワイルドカード」をページ「しりとり単語検索」「しりバト単語検索」「グループ検索」に追加", "手動クエリにマクロ「WILDCARD」を追加"]),
 		(new(13, 1, 3), ["辞書のキャッシュが正常にクリアされない不具合の修正"]),
 		(new(13, 1, 2), ["ポストコールの改善"]),
 		(new(13, 1, 1), ["「当サイトについて」ページにおいて、一部フォントが正常に表示されない不具合の修正"]),

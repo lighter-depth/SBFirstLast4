@@ -44,6 +44,16 @@
 			</div>
 		}
 
+		else if (Node is WildcardNode wildcard)
+		{
+			<div class="node-pane" style="background-color: steelblue" @onclick="() => OpenMenu(nameof(ShowMenuUI.Wildcard))">
+				@wildcard.Description
+				<div class="node-title">
+					Wildcard
+				</div>
+			</div>
+		}
+
 		else if (Node is RegexNode regex)
 		{
 			<div class="node-pane" style="background-color: #E76C5C" @onclick="() => OpenMenu(nameof(ShowMenuUI.Regex))">
@@ -116,6 +126,10 @@
 	else if (ShowMenu.Type)
 	{
 		<TypeMenu ShowMenu="ShowMenu" EditNode="Node as TypeNode" OnHide="OnHide" />
+	}
+	else if (ShowMenu.Wildcard)
+	{
+		<WildcardMenu ShowMenu="ShowMenu" EditNode="Node as WildcardNode" OnHide="OnHide"/>
 	}
 	else if (ShowMenu.Regex)
 	{

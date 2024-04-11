@@ -17,6 +17,10 @@
 	{
 		@type.ShortDescription
 	}
+	else if(Node is WildcardNode wildcard)
+	{
+		@("?*")
+	}
 	else if (Node is RegexNode regex)
 	{
 		@("/r/")
@@ -83,6 +87,7 @@
 		LastNode => "#6CD95C",
 		LengthNode => "#4CE7E7",
 		TypeNode => "#E75C9C",
+		WildcardNode => "steelblue",
 		RegexNode => "#E76C5C",
 		SpecializedNode => "goldenrod",
 		GroupNode => "#F5F6F1",

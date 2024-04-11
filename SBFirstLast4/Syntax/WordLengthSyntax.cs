@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
-namespace SBFirstLast4;
+namespace SBFirstLast4.Syntax;
 
 public static partial class WordLengthSyntax
 {

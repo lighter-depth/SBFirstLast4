@@ -43,6 +43,15 @@ public sealed class TypeNodeBuilder : NodeBuilder
 	public override TypeNode Build() => new(Operator, Type, Contains);
 }
 
+public sealed class WildcardNodeBuilder : NodeBuilder
+{
+	public string Pattern { private get; set; } = string.Empty;
+
+	public bool Matches { private get; set; }
+
+	public override WildcardNode Build() => new(Operator, Pattern, Matches);
+}
+
 public sealed class RegexNodeBuilder : NodeBuilder
 {
 	public string Pattern { private get; set; } = string.Empty;

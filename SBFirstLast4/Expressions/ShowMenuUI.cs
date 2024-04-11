@@ -12,6 +12,8 @@ public sealed class ShowMenuUI
 
 	public bool Type { get; set; }
 
+	public bool Wildcard { get; set; }
+
 	public bool Regex { get; set; }
 
 	public bool Specialized { get; set; }
@@ -19,12 +21,12 @@ public sealed class ShowMenuUI
 	public bool Group { get; set; }
 
 	public bool IsDefault
-		=> (Node, First, Last, Length, Type, Regex, Specialized, Group) == _tuple;
+		=> (Node, First, Last, Length, Type, Wildcard, Regex, Specialized, Group) == _tuple;
 
 	public ShowMenuUI()
 		=> AlterDefault();
 
-	private static readonly (bool, bool, bool, bool, bool, bool, bool, bool) _tuple = default;
+	private static readonly (bool, bool, bool, bool, bool, bool, bool, bool, bool) _tuple = default;
 
 	public void Alter(bool to, string target)
 	{
@@ -35,6 +37,7 @@ public sealed class ShowMenuUI
 			case nameof(Last): Last = to; return;
 			case nameof(Length): Length = to; return;
 			case nameof(Type): Type = to; return;
+			case nameof(Wildcard): Wildcard = to; return;
 			case nameof(Regex): Regex = to; return;
 			case nameof(Specialized): Specialized = to; return;
 			case nameof(Group): Group = to; return;
@@ -42,7 +45,7 @@ public sealed class ShowMenuUI
 	}
 
 	public void AlterDefault()
-		=> (Node, First, Last, Length, Type, Regex, Specialized, Group) = _tuple;
+		=> (Node, First, Last, Length, Type, Wildcard, Regex, Specialized, Group) = _tuple;
 }
 
 public sealed class ActionWrapper

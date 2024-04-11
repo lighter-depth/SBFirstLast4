@@ -1,6 +1,7 @@
 ﻿@page "/typed"
 @using System.Text.RegularExpressions
 @using SBFirstLast4.Logging
+@using SBFirstLast4.Syntax
 @inject NavigationManager NavigationManager
 <PageTitle>しりバト単語検索</PageTitle>
 
@@ -183,7 +184,16 @@
 				</div>
 				<div class="divider"></div>
 			}
-			@if (SelectedSearchOptionItem is "正規表現")
+			@if (SelectedSearchOptionItem is "ワイルドカード")
+			{
+				<div class="inner-grid">
+					<label class="label">ワイルドカード</label>
+					<label class="sub-label" style="@(ShowWildcardWarning ? "display:;" : "display: none;")">@WildcardWarning</label>
+					<input class="text-input" type="text" @bind="WildcardPattern" />
+				</div>
+				<div class="divider"></div>
+			}
+			else if (SelectedSearchOptionItem is "正規表現")
 			{
 				<div class="inner-grid">
 					<label class="label">正規表現</label>
@@ -411,6 +421,10 @@
 	private bool ShowLastCharWarning;
 	private string LastCharWarning = string.Empty;
 
+	private string WildcardPattern = string.Empty;
+	private bool ShowWildcardWarning;
+	private string WildcardWarning = string.Empty;
+
 	private string RegexPattern = string.Empty;
 	private bool ShowRegexWarning;
 	private string RegexWarning = string.Empty;
@@ -425,7 +439,7 @@
 	private List<string> TypeOptionItemList = ["単純指定", "単タイプ", "複合タイプ"];
 
 	private string SelectedSearchOptionItem = "すべて表示";
-	private List<string> SearchOptionItemList = ["すべて表示", "前方後方一致", "前方一致", "後方一致", "正規表現"];
+	private List<string> SearchOptionItemList = ["すべて表示", "前方後方一致", "前方一致", "後方一致", "ワイルドカード", "正規表現"];
 
 	private string SelectedType1Item = "指定なし";
 	private string SelectedType2Item = "指定なし";
@@ -443,10 +457,12 @@
 	private void SearchButton_Click()
 	{
 		var returnFlag = false;
+
+		var isWildcard = SelectedSearchOptionItem == "ワイルドカード";
 		var isRegex = SelectedSearchOptionItem == "正規表現";
 		if (SelectedSearchOptionItem is not ("後方一致" or "前方後方一致")) LastChar = "*";
 		if (SelectedSearchOptionItem is not ("前方一致" or "前方後方一致")) FirstChar = "*";
-		if (!KanaRegex.IsMatch(FirstChar) && !isRegex)
+		if (!KanaRegex.IsMatch(FirstChar) && !isWildcard && !isRegex)
 		{
 			FirstCharWarning = "ひらがなを入力してください";
 			ShowFirstCharWarning = true;
@@ -459,7 +475,7 @@
 			ShowFirstCharWarning = false;
 			StateHasChanged();
 		}
-		if (!KanaRegex.IsMatch(LastChar) && !isRegex)
+		if (!KanaRegex.IsMatch(LastChar) && !isWildcard && !isRegex)
 		{
 			LastCharWarning = "ひらがなを入力してください";
 			ShowLastCharWarning = true;
@@ -472,21 +488,41 @@
 			ShowLastCharWarning = false;
 			StateHasChanged();
 		}
-		if (isRegex && !Utils.IsValidRegex(RegexPattern))
+		var regexPattern = string.Empty;
+		if (isWildcard)
 		{
-			RegexWarning = "無効な構文です";
-			ShowRegexWarning = true;
-			StateHasChanged();
-			returnFlag = true;
+			if (!WildcardSyntax.IsValid(WildcardPattern))
+			{
+				WildcardWarning = "無効な構文です";
+				ShowWildcardWarning = true;
+				returnFlag = true;
+			}
+			else
+			{
+				regexPattern = WildcardSyntax.Parse(WildcardPattern);
+				WildcardWarning = string.Empty;
+				ShowWildcardWarning = false;
+			}
 		}
-		else
+		if (isRegex)
 		{
-			RegexWarning = string.Empty;
-			ShowRegexWarning = false;
-			StateHasChanged();
+			if (!Utils.IsValidRegex(RegexPattern))
+			{
+				RegexWarning = "無効な構文です";
+				ShowRegexWarning = true;
+				StateHasChanged();
+				returnFlag = true;
+			}
+			else
+			{
+				regexPattern = RegexPattern;
+				RegexWarning = string.Empty;
+				ShowRegexWarning = false;
+				StateHasChanged();
+			}
 		}
 		Func<Word, bool>? pred = null;
-		if (!isRegex && SelectedCustomLengthItem == "カスタム"
+		if (!isWildcard && !isRegex && SelectedCustomLengthItem == "カスタム"
 		&& !WordLengthSyntax.TryParseInputToPredicate(CustomLength, out pred, out var errorMsg))
 		{
 			CustomLengthWarning = errorMsg;
@@ -510,26 +546,25 @@
 			"前方一致" => $@"^{first}.*[^ん]*$",
 			"後方一致" => $@"^.*{last}ー*$",
 			"すべて表示" => @".*",
-			_ => $"{RegexPattern}"
+			_ => $"{regexPattern}"
 		});
 
 		SearchOptions.SetTD(new()
-			{
-				Type1 = type1,
-				Type2 = type2,
-				Body = body,
-				IsTypedOnly = true,
-				IsSingleTypedOnly = SelectedTypeOptionItem is "単タイプ",
-				IsDoubleTypedOnly = SelectedTypeOptionItem is "複合タイプ"
-			},
+		{
+			Type1 = type1,
+			Type2 = type2,
+			Body = body,
+			IsTypedOnly = true,
+			IsSingleTypedOnly = SelectedTypeOptionItem is "単タイプ",
+			IsDoubleTypedOnly = SelectedTypeOptionItem is "複合タイプ"
+		},
 		SelectedCustomLengthItem switch
 		{
 			"なし" => null,
 			"７文字以上" => word => word.Name.Length >= 7,
 			"６文字以上" => word => word.Name.Length >= 6,
 			_ => pred
-		}
-		);
+		});
 
 		Server.Log(new
 		{
@@ -545,7 +580,7 @@
 					"６文字以上" => "6",
 					_ => CustomLength
 				},
-				Regex = RegexPattern,
+				Regex = regexPattern,
 				TypeOption = SelectedTypeOptionItem
 			},
 			UserInfo = new
@@ -562,9 +597,9 @@
 	}
 
 	private (WordType? Type1, WordType? Type2) GetTypes()
-	=> (SelectedType1Item is "指定なし" ? null : SelectedType1Item.StringToType(),
-	SelectedType2Item is "指定なし" ? null : SelectedType2Item.StringToType());
+		=> (SelectedType1Item is "指定なし" ? null : SelectedType1Item.StringToType(),
+			SelectedType2Item is "指定なし" ? null : SelectedType2Item.StringToType());
 
 	private char GetChar(string str)
-	=> str.At(0) is var tmp && tmp is '*' or '＊' ? '.' : tmp;
+		=> str.At(0) is var tmp && tmp is '*' or '＊' ? '.' : tmp;
 }

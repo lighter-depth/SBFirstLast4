@@ -1,4 +1,5 @@
-﻿using static SBFirstLast4.Expressions.OperatorExtension;
+﻿using SBFirstLast4.Syntax;
+using static SBFirstLast4.Expressions.OperatorExtension;
 
 namespace SBFirstLast4.Expressions;
 
@@ -76,6 +77,32 @@ public sealed class TypeNode : Node
 
 	public override string ToString()
 		=> $".{String(Operator)}({String(Contains)}Contains(WordType.{Type}))";
+}
+
+public sealed class WildcardNode : Node
+{
+	public string Pattern { get; internal set; }
+
+	public bool Matches { get; internal set; }
+
+	public string Description
+	{
+		get
+		{
+			var matches = String(Matches);
+			var space = Space(Matches);
+			var pattern = Pattern.Length < 12 ? Pattern : $"{Pattern.AsSpan()[..12]}...";
+			return $"{matches}{space}'{pattern}'";
+		}
+	}
+
+	private string RegexPattern => WildcardSyntax.Parse(Pattern);
+
+	public WildcardNode(NodeOperator op, string pattern, bool matches)
+		: base(op) => (Pattern, Matches) = (pattern, matches);
+
+	public override string ToString()
+		=> $".{String(Operator)}({String(Matches)}{nameof(Extensions.TreeSearchHelper.__Regex_IsMatch__)}(\"{RegexPattern}\"))";
 }
 
 public sealed class RegexNode : Node
