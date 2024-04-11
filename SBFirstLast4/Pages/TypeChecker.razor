@@ -20,7 +20,7 @@
 	<div class="border">
 		<div class="stack-panel">
 			<div class="inner-grid">
-				<input class="text-input" id="word-input" type="text" placeholder="単語名を入力..." @bind=WordText @onkeyup=TextInput_KeyUp/>
+				<input class="text-input" id="word-input" type="text" placeholder="単語名を入力..." @bind=WordText @onkeyup=TextInput_KeyUp />
 			</div>
 			<div class="divider"></div>
 			<div class="inner-grid">
@@ -142,12 +142,11 @@
 		TokenSource = new();
 
 		var wordText = await JSRuntime.GetElementValueById<string>("word-input");
-		await Task.Delay(1);
+
 		if (string.IsNullOrWhiteSpace(wordText))
 		{
 			WordResult = string.Empty;
 			StateHasChanged();
-			await Task.Delay(1);
 			return;
 		}
 
@@ -156,7 +155,6 @@
 		{
 			WordResult = "無効な開始文字です。";
 			StateHasChanged();
-			await Task.Delay(1);
 			return;
 		}
 		var result = $"単語「{wordText}」は\n";
@@ -165,48 +163,53 @@
 			result += "んで終わっています。";
 			WordResult = result;
 			StateHasChanged();
-			await Task.Delay(1);
 			return;
 		}
+		/*
 		if (!Words.IsLite && !AppSettings.UseExists)
+			{
+			WordResult = "Loading...";
+			StateHasChanged();
+
+			if (Words.PerfectNameDic.IndexOf(wordText) < 0)
+				{
+				result += "辞書にない単語です。";
+				WordResult = result;
+				StateHasChanged();
+				return;
+		}
+		}
+		*/
+
+		var resultWord = Words.GetSplitList(keyChar).Find(x => x.Name == wordText);
+
+		/*
+		if (!AppSettings.UseExists && Words.IsLite && resultWord == default)
+			{
+			result += "辞書にないか、無属性です。";
+			WordResult = result;
+			StateHasChanged();
+			return;
+		}
+		*/
+
+		var exists = true;
+		if (/*AppSettings.UseExists && */resultWord == default)
 		{
 			WordResult = "Loading...";
 			StateHasChanged();
 			await Task.Delay(1);
-
-			if (!Words.PerfectNameDic.Contains(wordText))
-			{
-				result += "辞書にない単語です。";
-				WordResult = result;
-				StateHasChanged();
-				await Task.Delay(1);
-				return;
-			}
-		}
-
-		var resultWord = Words.GetSplitList(keyChar).Find(x => x.Name == wordText);
-		if (!AppSettings.UseExists && Words.IsLite && resultWord == default)
-		{
-			result += "辞書にないか、無属性です。";
-			WordResult = result;
-			StateHasChanged();
-			await Task.Delay(1);
-			return;
-		}
-
-		var exists = false;
-		if (AppSettings.UseExists)
 			exists = await Server.ExistsAsync(wordText, TokenSource.Token);
+		}
 
 		if (TokenSource.IsCancellationRequested)
 			return;
 
-		if(AppSettings.UseExists && !exists)
+		if (/*AppSettings.UseExists && */!exists)
 		{
 			result += "辞書にない単語です。";
 			WordResult = result;
 			StateHasChanged();
-			await Task.Delay(1);
 			return;
 		}
 
@@ -220,6 +223,5 @@
 		};
 		WordResult = result;
 		StateHasChanged();
-		await Task.Delay(1);
 	}
 }
