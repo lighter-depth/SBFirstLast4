@@ -56,19 +56,23 @@ public static partial class QueryRunner
 		if (inputTrim.StartsWith("print"))
 		{
 			var lParen = inputTrim.IndexOf('(');
-			var rParen = inputTrim.LastIndexOf(')');
-			var expr = inputTrim[(lParen + 1)..rParen];
-			var comma = expr.LastIndexOf(',');
-			var color = TextType.General;
-			if (comma >= 0 && !Is.InsideStringLiteral(comma, 1, expr) && !Is.InsideBrace(comma, 1, expr, '{', '}') && !Is.InsideBrace(comma, 1, expr, '(', ')'))
-				(expr, color) = (expr[..comma], expr[(comma + 1)..]);
 
-			var printValue = await EvaluateExpressionAsync(expr);
-			output.Add(To.String(printValue), color);
-			return;
+			if (lParen > 4 && inputTrim[..lParen].Trim() == "print")
+			{
+				var rParen = inputTrim.LastIndexOf(')');
+				var expr = inputTrim[(lParen + 1)..rParen];
+				var comma = expr.LastIndexOf(',');
+				var color = TextType.General;
+				if (comma >= 0 && !Is.InsideStringLiteral(comma, 1, expr) && !Is.InsideBrace(comma, 1, expr, '{', '}') && !Is.InsideBrace(comma, 1, expr, '(', ')'))
+					(expr, color) = (expr[..comma], expr[(comma + 1)..]);
+
+				var printValue = await EvaluateExpressionAsync(expr);
+				output.Add(To.String(printValue), color);
+				return;
+			}
 		}
 
-		if (inputTrim.StartsWith("throw"))
+		if (inputTrim.Split().At(0)?.StartsWith("throw") is true)
 		{
 			var expr = inputTrim.Take(5..).StringJoin();
 			var exception = await EvaluateExpressionAsync(expr);
@@ -81,31 +85,37 @@ public static partial class QueryRunner
 			return;
 		}
 
-		if(RecordRegex.Enum().Match(inputTrim) is var enumMatch && enumMatch.Success)
+		if (RecordRegex.Enum().Match(inputTrim) is { Success: true } enumMatch)
 		{
 			DefineEnum(inputTrim, enumMatch);
 			return;
 		}
 
-		if (WideVariableRegex.Hash().Match(inputTrim) is var hashMatch && hashMatch.Success)
+		if (WideVariableRegex.Hash().Match(inputTrim) is { Success: true } hashMatch)
 		{
 			await DefineHashAsync(hashMatch);
 			return;
 		}
 
-		if (WideVariableRegex.Declaration().Match(inputTrim) is var varMatch && varMatch.Success)
+		if (WideVariableRegex.Declaration().Match(inputTrim) is { Success: true } varMatch)
 		{
 			await DefineVariableAsync(varMatch);
 			return;
 		}
 
-		if(ProcedureDeletionRegex().Match(inputTrim) is var procDeleteMatch && procDeleteMatch.Success)
+		if (WideVariableRegex.Definition().Match(inputTrim) is { Success: true } varMatchAttr)
+		{
+			await DefineAttributedVariableAsync(varMatchAttr);
+			return;
+		}
+
+		if (ProcedureDeletionRegex().Match(inputTrim) is { Success: true } procDeleteMatch)
 		{
 			DeleteProcedure(procDeleteMatch, output);
 			return;
 		}
 
-		if (WideVariableRegex.Deletion().Match(inputTrim) is var deleteMatch && deleteMatch.Success)
+		if (WideVariableRegex.Deletion().Match(inputTrim) is { Success: true } deleteMatch)
 		{
 			DeleteVariable(deleteMatch, output);
 			return;
@@ -117,20 +127,20 @@ public static partial class QueryRunner
 			return;
 		}
 
-		if (WideVariableRegex.IncrementStatement().Match(inputTrim) is var increment && increment.Success)
+		if (WideVariableRegex.IncrementStatement().Match(inputTrim) is { Success: true } increment)
 		{
 			WideVariable.Increment(increment.Groups["name"].Value);
 			return;
 		}
 
-		if (WideVariableRegex.DecrementStatement().Match(inputTrim) is var decrement && decrement.Success)
+		if (WideVariableRegex.DecrementStatement().Match(inputTrim) is { Success: true } decrement)
 		{
 			WideVariable.Decrement(decrement.Groups["name"].Value);
 			return;
 		}
 
 		foreach (var (regex, type) in WideVariableRegex.Assignments)
-			if (regex.Match(inputTrim) is var assignMatch && assignMatch.Success)
+			if (regex.Match(inputTrim) is { Success: true } assignMatch)
 			{
 				await AssignVariable(assignMatch, output, setTranslated, type);
 				return;
@@ -175,7 +185,7 @@ public static partial class QueryRunner
 		if (matches.Length == 0)
 		{
 			var objHash = typeof(Dictionary<,>).MakeGenericType(typeof(object), typeof(object));
-			WideVariable.Variables[name] = Activator.CreateInstance(objHash);
+			WideVariable.SetValue(name, Activator.CreateInstance(objHash));
 			return;
 		}
 		var sample = matches[0];
@@ -199,7 +209,7 @@ public static partial class QueryRunner
 			add?.Invoke(hashBase, [key, value]);
 		}
 
-		WideVariable.Variables[name] = hashBase;
+		WideVariable.SetValue(name, hashBase);
 	}
 
 	private static async Task DefineVariableAsync(Match match)
@@ -207,7 +217,20 @@ public static partial class QueryRunner
 		var name = match.Groups["name"].Value;
 		var expr = match.Groups["expr"].Value;
 
-		WideVariable.Variables[name] = await EvaluateExpressionAsync(expr);
+		WideVariable.SetValue(name, await EvaluateExpressionAsync(expr));
+	}
+
+	private static async Task DefineAttributedVariableAsync(Match match)
+	{
+		var name = match.Groups["name"].Value;
+		var expr = match.Groups["expr"].Value;
+
+		var attribute = match.Groups["attributes"].Value;
+
+		var isReadonly = attribute is not "var";
+		var isAssignable = attribute is not "const";
+
+		WideVariable.DefineValue(name, await EvaluateExpressionAsync(expr), isReadonly, isAssignable);
 	}
 
 	private static void DeleteProcedure(Match match, Buffer output)
@@ -216,7 +239,7 @@ public static partial class QueryRunner
 
 		var deleteIndex = ModuleManager.UserDefined.Procedures.FindIndex(p => p.Name == name);
 
-		if(deleteIndex == -1)
+		if (deleteIndex == -1)
 		{
 			output.Add($"Specified procedure '{name}!' does not exist in USER_DEFINED module.", TextType.Error);
 			return;
@@ -229,7 +252,7 @@ public static partial class QueryRunner
 	{
 		var name = match.Groups["name"].Value;
 
-		if (!WideVariable.Variables.Remove(name))
+		if (!WideVariable.RemoveValue(name))
 		{
 			output.Add($"Specified variable '{name}' does not exist.", TextType.Error);
 			return;
@@ -289,47 +312,47 @@ public static partial class QueryRunner
 		switch (assignmentType)
 		{
 			case AssignmentType.Add:
-				WideVariable.Variables[name] += result;
+				WideVariable.SetValue(name, WideVariable.GetValue(name) + result);
 				break;
 
 			case AssignmentType.Subtract:
-				WideVariable.Variables[name] -= result;
+				WideVariable.SetValue(name, WideVariable.GetValue(name) - result);
 				break;
 
 			case AssignmentType.Multiply:
-				WideVariable.Variables[name] *= result;
+				WideVariable.SetValue(name, WideVariable.GetValue(name) * result);
 				break;
 
 			case AssignmentType.Divide:
-				WideVariable.Variables[name] /= result;
+				WideVariable.SetValue(name, WideVariable.GetValue(name) / result);
 				break;
 
 			case AssignmentType.Modulus:
-				WideVariable.Variables[name] %= result;
+				WideVariable.SetValue(name, WideVariable.GetValue(name) % result);
 				break;
 
 			case AssignmentType.And:
-				WideVariable.Variables[name] &= result;
+				WideVariable.SetValue(name, WideVariable.GetValue(name) & result);
 				break;
 
 			case AssignmentType.Or:
-				WideVariable.Variables[name] |= result;
+				WideVariable.SetValue(name, WideVariable.GetValue(name) | result);
 				break;
 
 			case AssignmentType.Xor:
-				WideVariable.Variables[name] ^= result;
+				WideVariable.SetValue(name, WideVariable.GetValue(name) ^ result);
 				break;
 
 			case AssignmentType.LeftShift:
-				WideVariable.Variables[name] <<= result;
+				WideVariable.SetValue(name, WideVariable.GetValue(name) << result);
 				break;
 
 			case AssignmentType.RightShift:
-				WideVariable.Variables[name] >>= result;
+				WideVariable.SetValue(name, WideVariable.GetValue(name) >> result);
 				break;
 
 			case AssignmentType.Coarse:
-				WideVariable.Variables[name] ??= result;
+				WideVariable.SetValue(name, WideVariable.GetValue(name) ?? result);
 				break;
 
 			default:

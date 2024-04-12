@@ -1,22 +1,43 @@
 ﻿using System.Linq.Dynamic.Core.CustomTypeProviders;
 using System.Text.RegularExpressions;
+using VariableElement = System.Collections.Generic.KeyValuePair<string, SBFirstLast4.Dynamic.Variable<dynamic?>>;
 
 namespace SBFirstLast4.Dynamic;
 
 [DynamicLinqType]
 public static class WideVariable
 {
-	public static readonly Dictionary<string, dynamic?> Variables = [];
+	private static readonly Dictionary<string, Variable<dynamic?>> Variables = [];
 
-	public static dynamic? GetValue(string name) => Variables.TryGetValue(name, out var value) ? value : null;
-
-	public static string SetValue(string name, object? value)
+	public static string DefineValue(string name, dynamic? value, bool isReadOnly, bool isAssignable)
 	{
-		Variables[name] = value;
+		if (Variables.TryGetValue(name, out var defined) && !defined.IsAssignable)
+			throw new ConstViolationException($"Variable '{name}' is constant");
+
+		Variables[name] = new(name, value, isReadOnly, isAssignable);
+
 		return string.Empty;
 	}
 
-	public static void Increment(string name) => Variables[name]++;
+	public static dynamic? GetValue(string name) => Variables.TryGetValue(name, out var value) ? value.Value : null;
+
+	public static string SetValue(string name, object? value)
+	{
+		if(Variables.TryGetValue(name, out var variable))
+		{
+			variable.Value = value;
+			return string.Empty;
+		}
+		Variables[name] = new(name, value, false, true);
+		return string.Empty;
+	}
+
+	public static bool RemoveValue(string name) => Variables.Remove(name);
+
+	public static IEnumerable<VariableElement> Where(Func<VariableElement, bool> predicate)
+		=> Variables.Where(predicate);
+
+	public static void Increment(string name) => Variables[name].Value = Variables[name].Value + 1;
 
 	public static object? IncrementAndGetValue(string name)
 	{
@@ -24,7 +45,7 @@ public static class WideVariable
 		return GetValue(name);
 	}
 
-	public static void Decrement(string name) => Variables[name]--;
+	public static void Decrement(string name) => Variables[name].Value = Variables[name].Value - 1;
 
 	public static object? DecrementAndGetValue(string name)
 	{
@@ -79,6 +100,9 @@ internal static partial class WideVariableRegex
 
 	[GeneratedRegex($@"^\s*{VariablePattern}\s*=(?<expr>[^=].*)$")]
 	internal static partial Regex Declaration();
+
+	[GeneratedRegex($@"^\s*(?<attributes>(?:var|let|const))\s*{VariablePattern}\s*=(?<expr>[^=].*)$")]
+	internal static partial Regex Definition();
 
 	[GeneratedRegex($@"^\s*{VariablePattern}\s*(?:\.|\[).*=(?<expr>[^=].*)$")]
 	internal static partial Regex MemberAssign();

@@ -1,5 +1,5 @@
-﻿using Antlr4.Runtime.Misc;
-using Antlr4.Runtime.Tree;
+﻿using Antlr4.Runtime.Tree;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
@@ -74,14 +74,18 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 	public override async Task<object?> VisitOnce_next_stat([NotNull] SBProcLangParser.Once_next_statContext context)
 	{
-		var range = context.SourceInterval.a..context.SourceInterval.b;
-		if (OnceSet.Contains((_id, range)) && context.next_stats is not null)
+		var start = context.SourceInterval.a;
+		var end = context.SourceInterval.b;
+		var blockCache = (_id, start..end);
+		if (OnceSet.Contains(blockCache))
 		{
-			await Visit(context.next_stats);
+			if (context.next_stats is not null)
+				await Visit(context.next_stats);
+
 			return "NEXT";
 		}
 		await Visit(context.once_stats);
-		OnceSet.Add((_id, range));
+		OnceSet.Add(blockCache);
 		return "ONCE";
 	}
 
@@ -301,7 +305,7 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 		foreach (var i in enumerable)
 		{
-			WideVariable.Variables[variableName] = i;
+			WideVariable.SetValue(variableName, i);
 		Redo:;
 			try
 			{
@@ -327,7 +331,12 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 	public override async Task<object?> VisitRepeat_stat([NotNull] SBProcLangParser.Repeat_statContext context)
 	{
-		var count = (int)(await Visit(context.count))!;
+		var countObj = await QueryRunner.EvaluateExpressionAsync(context.count.GetText());
+		var count = (int)countObj!;
+
+		// ↓ なぜかこの書き方だとInvalidCastExceptionが出る
+		// var count = (int)(await Visit(context.count))!;
+
 		for (var i = 0; i < count; i++)
 		{
 		Redo:;
@@ -443,7 +452,7 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			await Visit(context.try_stat);
 		}
 		catch (Exception ex)
-		when (ex is not (Break or Continue or Redo or Return or Retry or Raise or Halt or OperationCanceledException or TaskCanceledException or SBProcLangVisitorException))
+		when (ex is not (Break or Continue or Redo or Return or Retry or Raise or Halt or ReadOnlyViolationException or ConstViolationException or OperationCanceledException or TaskCanceledException or SBProcLangVisitorException))
 		{
 			var handled = false;
 			var catchStatements = new List<(SBProcLangParser.Stat_blockContext Block, string? TypeName, string? VarName)>();
@@ -488,7 +497,7 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 				if (typeName is null || Is.SubclassOf(ex.GetType(), typeName))
 				{
 					if (varName is not null)
-						WideVariable.Variables[varName[1..]] = ex;
+						WideVariable.SetValue(varName[1..], ex);
 
 					try
 					{
@@ -534,10 +543,11 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		finally
 		{
 			disposable?.RefValue?.Dispose();
-			WideVariable.Variables.Remove(varName);
+			WideVariable.RemoveValue(varName);
 		}
 		return "WITH";
 	}
+
 	public override async Task<object?> VisitReturn_stat([NotNull] SBProcLangParser.Return_statContext context)
 	{
 		var value = await QueryRunner.EvaluateExpressionAsync(context.expr()?.GetText() ?? "\"\"");
@@ -645,7 +655,6 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		throw new Halt((string?)msg);
 	}
 
-
 	public override async Task<object?> VisitExpr_stat([NotNull] SBProcLangParser.Expr_statContext context)
 	{
 		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
@@ -740,7 +749,16 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 	public override async Task<object?> VisitFactor([NotNull] SBProcLangParser.FactorContext context)
 	{
 		if (context.Number() != null)
-			return double.Parse(context.Number().GetText());
+		{
+			var number = context.Number().GetText();
+			if (int.TryParse(number, out var @int))
+				return @int;
+
+			if (double.TryParse(number, out var @double))
+				return @double;
+
+			return 0;
+		}
 
 		if (context.WideID() != null)
 		{
@@ -787,7 +805,6 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		throw new SBProcLangVisitorException("Invalid factor: " + context.GetText());
 	}
 
-
 	public override async Task<object?> VisitTerm([NotNull] SBProcLangParser.TermContext context)
 	{
 		if (context.factor().Length > 0)
@@ -830,7 +847,7 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 					throw new SBProcLangVisitorException("Invalid operator");
 			}
 
-			WideVariable.Variables[varName] = value;
+			WideVariable.SetValue(varName, value);
 
 			return value;
 		}

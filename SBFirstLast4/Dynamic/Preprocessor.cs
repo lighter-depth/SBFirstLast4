@@ -205,9 +205,9 @@ public static partial class Preprocessor
 
 			if (selector is "$VARIABLE" or "$VAR")
 			{
-				status = WideVariable.Variables
+				status = WideVariable
 						.Where(kv => contents.At(2)?.ToUpper().At(0) is 'A' || !kv.Key.StartsWith('_'))
-						.Select(kv => $"Name: {kv.Key}, Value: {To.String(kv.Value)}")
+						.Select(kv => $"Name: {kv.Key}, Value: {To.String(kv.Value.Value)}")
 						.ToArray();
 				return (true, status, null);
 			}

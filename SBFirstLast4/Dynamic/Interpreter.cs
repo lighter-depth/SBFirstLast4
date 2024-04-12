@@ -252,7 +252,7 @@ public static partial class Interpreter
 				var result = await procedure.RunAsync([.. evaluated]);
 				var varName = $"__proc_result_{_procedureID}_generated";
 				++_procedureID;
-				WideVariable.Variables[varName] = result;
+				WideVariable.SetValue(varName, result);
 				var sb = new StringBuilder(input);
 				sb.Remove(match.Index, match.Length + paramEnd - paramStart + 1);
 				sb.Insert(match.Index, $"&{varName}");

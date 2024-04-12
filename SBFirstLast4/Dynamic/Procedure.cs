@@ -137,11 +137,11 @@ public sealed class Procedure
 				if (name.StartsWith('&'))
 				{
 					var wideName = name[1..];
-					WideVariable.Variables[wideName] = arg;
+					WideVariable.SetValue(wideName, arg);
 					continue;
 				}
 				var internalName = $"__proc_internal_{name[1..]}_{Name}_{Id:N}_generated";
-				WideVariable.Variables[internalName] = arg;
+				WideVariable.SetValue(internalName, arg);
 			}
 
 		var source = await GetSourceTextAsync();

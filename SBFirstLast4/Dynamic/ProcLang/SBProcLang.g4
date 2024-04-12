@@ -97,7 +97,7 @@ halt_stat: 'halt' '(' expr? ')' ';' ;
 
 assignment: ID '=' expr ';' ;
 
-wideAssignment: wide_assign_expr ';' ;
+wideAssignment: ( 'var' | 'let' | 'const' )? wide_assign_expr ';' ;
 
 wide_assign_expr: WideID ('+' | '-' | '*' | '/' | '%' | '&' | '|' | '^' | '??' )? '=' expr ;
 
