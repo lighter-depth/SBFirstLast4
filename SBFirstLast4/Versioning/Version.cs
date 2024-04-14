@@ -6,6 +6,7 @@ internal static class VersionHistory
 
 	internal static readonly (Version Version, string[] Changes)[] Versions =
 	[
+		(new(13, 4, 1), ["cast..marshal ポストコールが正常に動作しない不具合の修正"]),
 		(new(13, 4, 0), ["手動クエリに新機能「mutable変数宣言」を追加", "castポストコール オブジェクトにオペランドを追加"]),
 		(new(13, 3, 0), ["手動クエリに新機能「var変数宣言」「let変数宣言」「const変数宣言」を追加"]),
 		(new(13, 2, 2), ["プロシージャにおいて、once-next文が正常に実行されない不具合の修正", "手動クエリにおいて、一部の数値リテラルが誤ってdouble型と判定されてしまう不具合の修正", "手動クエリにおいて、関数名が不正確でもprint関数を呼び出せてしまう不具合の修正"]),

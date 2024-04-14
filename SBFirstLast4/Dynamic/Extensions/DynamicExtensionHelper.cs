@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using IEnumerable = System.Collections.IEnumerable;
@@ -137,9 +138,9 @@ public static class @cast
 
 	public static TTo? @reinterpret<TFrom, TTo>(TFrom obj) => ReinterpretImpl<TFrom, TTo>(obj);
 
-	public static Span<TTo> @marshal<TFrom, TTo>(TFrom[] arr)
+	public static TTo[] @marshal<TFrom, TTo>(TFrom[] arr)
 		where TFrom: struct where TTo: struct
-		=> MemoryMarshal.Cast<TFrom, TTo>(arr.AsSpan());
+		=> MemoryMarshal.Cast<TFrom, TTo>(arr.AsSpan()).ToArray();
 
 	private static unsafe TTo? ReinterpretImpl<TFrom, TTo>(TFrom obj)
 	{
@@ -148,16 +149,6 @@ public static class @cast
 		var result = cast(ref obj);
 		return result;
 	}
-}
-
-[DynamicLinqType]
-public sealed class Box<T>(T value)
-{
-	private T _value = value;
-
-	public T Value => _value;
-
-	public ref T RefValue => ref _value;
 }
 
 [DynamicLinqType]
