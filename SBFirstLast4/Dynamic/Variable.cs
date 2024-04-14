@@ -19,4 +19,4 @@ public sealed class Variable<T>(string name, T value, bool isReadOnly, bool isAs
 
 public sealed class ReadOnlyViolationException(string? message) : Exception(message);
 
-public sealed class ConstViolationException(string? message) : Exception(message);
+public sealed class DefinitionStaticViolationException(string? message) : Exception(message);

@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using Antlr4.Runtime.Tree.Pattern;
+using System.Globalization;
 using System.Linq.Dynamic.Core.CustomTypeProviders;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -133,6 +134,20 @@ public static class @cast
 	public static T? @dynamic<T>(object? obj) where T : class => obj as T;
 
 	public static T? @convert<T>(object? obj) => (T?)((IConvertible?)obj)?.ToType(typeof(T), CultureInfo.InvariantCulture);
+
+	public static TTo? @reinterpret<TFrom, TTo>(TFrom obj) => ReinterpretImpl<TFrom, TTo>(obj);
+
+	public static Span<TTo> @marshal<TFrom, TTo>(TFrom[] arr)
+		where TFrom: struct where TTo: struct
+		=> MemoryMarshal.Cast<TFrom, TTo>(arr.AsSpan());
+
+	private static unsafe TTo? ReinterpretImpl<TFrom, TTo>(TFrom obj)
+	{
+		static nint id(nint n) => n;
+		var cast = (delegate*<ref TFrom, ref TTo>)(delegate*<nint, nint>)&id;
+		var result = cast(ref obj);
+		return result;
+	}
 }
 
 [DynamicLinqType]
@@ -307,7 +322,7 @@ public static class @operator
 
 	public static int SizeOf<T>() => Marshal.SizeOf<T>();
 
-	public static int ArrayLength(dynamic obj) 
+	public static int ArrayLength(dynamic obj)
 	{
 		if (obj is Array arr)
 			return arr.Length;

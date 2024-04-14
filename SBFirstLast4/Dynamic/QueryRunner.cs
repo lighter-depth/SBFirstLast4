@@ -227,8 +227,8 @@ public static partial class QueryRunner
 
 		var attribute = match.Groups["attributes"].Value;
 
-		var isReadonly = attribute is not "var";
-		var isAssignable = attribute is not "const";
+		var isReadonly = attribute is "let" or "const";
+		var isAssignable = attribute is "var" or "let";
 
 		WideVariable.DefineValue(name, await EvaluateExpressionAsync(expr), isReadonly, isAssignable);
 	}

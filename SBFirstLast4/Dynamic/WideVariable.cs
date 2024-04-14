@@ -12,7 +12,7 @@ public static class WideVariable
 	public static string DefineValue(string name, dynamic? value, bool isReadOnly, bool isAssignable)
 	{
 		if (Variables.TryGetValue(name, out var defined) && !defined.IsAssignable)
-			throw new ConstViolationException($"Variable '{name}' is constant");
+			throw new DefinitionStaticViolationException($"Variable '{name}' is definition static.");
 
 		Variables[name] = new(name, value, isReadOnly, isAssignable);
 
@@ -101,7 +101,7 @@ internal static partial class WideVariableRegex
 	[GeneratedRegex($@"^\s*{VariablePattern}\s*=(?<expr>[^=].*)$")]
 	internal static partial Regex Declaration();
 
-	[GeneratedRegex($@"^\s*(?<attributes>(?:var|let|const))\s*{VariablePattern}\s*=(?<expr>[^=].*)$")]
+	[GeneratedRegex($@"^\s*(?<attributes>(?:var|let|mutable|const))\s*{VariablePattern}\s*=(?<expr>[^=].*)$")]
 	internal static partial Regex Definition();
 
 	[GeneratedRegex($@"^\s*{VariablePattern}\s*(?:\.|\[).*=(?<expr>[^=].*)$")]

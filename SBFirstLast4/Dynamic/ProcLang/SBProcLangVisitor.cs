@@ -452,7 +452,7 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			await Visit(context.try_stat);
 		}
 		catch (Exception ex)
-		when (ex is not (Break or Continue or Redo or Return or Retry or Raise or Halt or ReadOnlyViolationException or ConstViolationException or OperationCanceledException or TaskCanceledException or SBProcLangVisitorException))
+		when (ex is not (Break or Continue or Redo or Return or Retry or Raise or Halt or ReadOnlyViolationException or DefinitionStaticViolationException or OperationCanceledException or TaskCanceledException or SBProcLangVisitorException))
 		{
 			var handled = false;
 			var catchStatements = new List<(SBProcLangParser.Stat_blockContext Block, string? TypeName, string? VarName)>();
