@@ -15,3 +15,4 @@ requires: STD;
 #define static_cast< cast..static<
 #define dynamic_cast< cast..dynamic<
 #define convert_cast< cast..convert<
+#define reinterpret_cast< cast..reinterpret<
