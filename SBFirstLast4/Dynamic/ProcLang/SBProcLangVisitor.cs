@@ -21,25 +21,39 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 	private static readonly HashSet<(Guid, Range)> OnceSet = [];
 
+	private readonly Scope _scope;
+	private readonly List<ScopedVariable> _scopedVariables = [];
+
 	internal SBProcLangVisitor(Guid id, Buffer outputBuffer, Action<string> setTranslated, Func<Task> update, CancellationToken token)
-		=> (_id, _outputBuffer, _setTranslated, _update, _token) = (id, outputBuffer, setTranslated, update, token);
+		=> (_id, _outputBuffer, _setTranslated, _update, _token, _scope) = (id, outputBuffer, setTranslated, update, token, new(OnScopeExit));
 
 	internal SBProcLangVisitor()
 		: this(default, _discardBuffer, _discardSetTranslated, _discardUpdate, default) { }
 
 	public override async Task<object?> VisitScript([NotNull] SBProcLangParser.ScriptContext context)
 	{
+		object? result;
 		try
 		{
 			foreach (var statement in context.statement())
 				await Visit(statement);
-
-			return string.Empty;
+			result = string.Empty;
 		}
 		catch (Return @return)
 		{
-			return @return.Value;
+			result = @return.Value;
 		}
+		finally
+		{
+			_scope.Exit();
+		}
+		return result;
+	}
+
+	public override async Task<object?> VisitScoping_stat([Antlr4.Runtime.Misc.NotNull] SBProcLangParser.Scoping_statContext context)
+	{
+		await Visit(context.stat_block());
+		return "SCOPING";
 	}
 
 	public override async Task<object?> VisitIf_else_stat([NotNull] SBProcLangParser.If_else_statContext context)
@@ -533,16 +547,28 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 	public override async Task<object?> VisitWith_stat([NotNull] SBProcLangParser.With_statContext context)
 	{
 		var varName = context.WideID().GetText()[1..];
-		Wrapper<IDisposable?>? disposable = new(null);
+		var disposable = new Wrapper<IDisposable?>(null);
+		var asyncDisposable = new Wrapper<IAsyncDisposable?>(null);
 		try
 		{
-			disposable.Value = (IDisposable?)await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
+			var value = await QueryRunner.EvaluateExpressionAsync(context.expr().GetText());
+
+			if (value is IDisposable disposableValue)
+				disposable.Value = disposableValue;
+
+			else if(value is IAsyncDisposable asyncDisposableValue)
+				asyncDisposable.Value = asyncDisposableValue;
+
 			WideVariable.SetValue(varName, disposable?.RefValue);
 			await Visit(context.stat_block());
 		}
 		finally
 		{
-			disposable?.RefValue?.Dispose();
+			disposable.RefValue?.Dispose();
+
+			if (asyncDisposable.RefValue is not null)
+				await asyncDisposable.RefValue.DisposeAsync();
+
 			WideVariable.RemoveValue(varName);
 		}
 		return "WITH";
@@ -570,9 +596,16 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 	{
 		if (context.statement()?.Length > 0)
 		{
-			foreach (var statement in context.statement())
-				await Visit(statement);
-			return "STAT_BLOCK";
+			_scope.Enter();
+			try
+			{
+				foreach (var statement in context.statement())
+					await Visit(statement);
+			}
+			finally
+			{
+				_scope.Exit();
+			}
 		}
 
 		return "STAT_BLOCK";
@@ -580,7 +613,24 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 	public override async Task<object?> VisitWideAssignment([NotNull] SBProcLangParser.WideAssignmentContext context)
 	{
-		await QueryRunner.RunStatementAsync(context.GetText(), _outputBuffer, _setTranslated);
+		var text = context.children.Select(t => t.GetText()).StringJoin(' ');
+
+		if (context.ChildCount > 2)
+		{
+			var attributes = context.children.Take(context.ChildCount - 2).Select(t => t.GetText()).ToArray();
+
+			if (attributes.Contains("local"))
+			{
+				var variableName = context.wide_assign_expr().WideID().GetText()[1..];
+				_scopedVariables.Add(_scope.Register(variableName));
+			}
+
+			var readonlySpecifier = attributes.Where(s => s is "var" or "let" or "mutable" or "const").LastOrDefault("var");
+
+			text = $"{readonlySpecifier} {context.wide_assign_expr().GetText()}";
+		}
+
+		await QueryRunner.RunStatementAsync(text, _outputBuffer, _setTranslated);
 		return "ASSIGNMENT_WIDE";
 	}
 
@@ -918,6 +968,12 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 		throw new SBProcLangVisitorException("Invalid expression");
 
+	}
+
+	private void OnScopeExit()
+	{
+		foreach (var variable in _scopedVariables.Where(_scope.Predicate))
+			WideVariable.RemoveValue(variable.Name);
 	}
 }
 

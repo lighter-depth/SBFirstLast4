@@ -250,6 +250,8 @@ public static class CollectionHelper
 
 	public static char At(this string source, Index index) => index.Value < 0 || index.Value >= source.Length ? default : source[index];
 
+	public static string StringJoin<T>(this IEnumerable<T> values, char separator) => string.Join(separator, values);
+
 	public static string StringJoin<T>(this IEnumerable<T> values, string separator) => string.Join(separator, values);
 
 	public static string StringJoin<T>(this IEnumerable<T> values) => string.Join(string.Empty, values);

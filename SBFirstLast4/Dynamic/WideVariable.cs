@@ -23,7 +23,7 @@ public static class WideVariable
 
 	public static string SetValue(string name, object? value)
 	{
-		if(Variables.TryGetValue(name, out var variable))
+		if (Variables.TryGetValue(name, out var variable))
 		{
 			variable.Value = value;
 			return string.Empty;

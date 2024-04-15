@@ -15,7 +15,7 @@ public sealed class RevSimulator
 				.ToDictionary(g => g.Key, g => g.ToArray());
 
 	private readonly string FirstWord = string.Empty;
-	private readonly WordType SecondType;
+	private const WordType SecondType = default;
 
 	private InitialConfig Ally = (60, 6, 6, 0.90, null);
 	private InitialConfig Foe = (60, 6, 6, 0.90, null);

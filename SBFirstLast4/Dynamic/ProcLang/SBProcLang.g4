@@ -8,6 +8,7 @@ statement: assignment
          | memberAssignment
          | variableDeletion
          | print 
+         | scoping_stat
          | if_else_stat 
          | once_next_stat
          | switch_stat
@@ -40,6 +41,8 @@ statement: assignment
          ;
 
 stat_block: '{' statement* '}' | statement ;
+
+scoping_stat: 'scoping' stat_block;
 
 if_else_stat: 'if' '(' expr ')' stat_block ('else' 'if' '(' expr ')' stat_block)* ('else' stat_block)? ;
 
@@ -97,7 +100,7 @@ halt_stat: 'halt' '(' expr? ')' ';' ;
 
 assignment: ID '=' expr ';' ;
 
-wideAssignment: ( 'var' | 'let' | 'mutable' | 'const' )? wide_assign_expr ';' ;
+wideAssignment: ( 'var' | 'let' | 'mutable' | 'const' | 'local' )* wide_assign_expr ';' ;
 
 wide_assign_expr: WideID ('+' | '-' | '*' | '/' | '%' | '&' | '|' | '^' | '??' )? '=' expr ;
 
