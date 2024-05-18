@@ -16,3 +16,4 @@ requires: STD;
 #define dynamic_cast< cast..dynamic<
 #define convert_cast< cast..convert<
 #define reinterpret_cast< cast..reinterpret<
+#define marshal_cast< cast..marshal<
