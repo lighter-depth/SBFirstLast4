@@ -36,7 +36,7 @@ requires: STD;
 #define 2XEDBY(_X) XEDBY(_X, ==2)
 
 #transient __WR__(_T) "_T".\s2t()
-#transient __WT__(_T) \c(__WR__(_T))
+#transient __WT__(_T) \c("_T".\s2t())
 
 #define KILLABLET(_T) @TW.Where(__WT__(_T)).Select(Name).Intersect(@8X)
 #define SEMIKILLABLET(_T) @TW.Where(__WT__(_T)).Select(Name).Intersect(@6X)
