@@ -35,13 +35,15 @@ requires: STD;
 #define 2XEROF(_X) XEROF(_X, ==2)
 #define 2XEDBY(_X) XEDBY(_X, ==2)
 
-#define KILLST(_T) @TW.Where(\c($_T)).Select(Name).Intersect(@8X)
-#define SEMIKILLST(_T) @TW.Where(\c($_T)).Select(Name).Intersect(@6X)
-#define 4XST(_T) @TW.Where(\c($_T)).Select(Name).Intersect(@4X)
+#transient __WT__(_T) \c("_T".\s2t())
 
-#define KILLST2(_T1, _T2) @TW.Where(\c($_T1) && \c($_T2)).Select(Name).Intersect(@8X)
-#define SEMIKILLST2(_T1, _T2) @TW.Where(\c($_T1) && \c($_T2)).Select(Name).Intersect(@6X)
-#define 4XST2(_T1, _T2) @TW.Where(\c($_T1) && \c($_T2)).Select(Name).Intersect(@4X)
+#define KILLABLET(_T) @TW.Where(__WT__(_T)).Select(Name).Intersect(@8X)
+#define SEMIKILLABLET(_T) @TW.Where(__WT__(_T)).Select(Name).Intersect(@6X)
+#define 4XABLET(_T) @TW.Where(__WT__(_T)).Select(Name).Intersect(@4X)
+
+#define KILLABLET2(_T1, _T2) @TW.Where(__WT__(_T1) && __WT__(_T2)).Select(Name).Intersect(@8X)
+#define SEMIKILLABLET2(_T1, _T2) @TW.Where(__WT__(_T1) && __WT__(_T2)).Select(Name).Intersect(@6X)
+#define 4XABLET2(_T1, _T2) @TW.Where(__WT__(_T1) && __WT__(_T2)).Select(Name).Intersect(@4X)
 
 #define KILLEROFR(_X) @TW.Where(Start == /_X/m.End && \cl(/_X/m) * (Length > 6 ? 2 : 1) > 7)
 #define KILLEDBYR(_X) @TW.Where(End == /_X/m.Start && /_X/m.\cl(it) * (/_X/m.Length > 6 ? 2 : 1) > 7)
