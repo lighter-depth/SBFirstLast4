@@ -49,8 +49,12 @@ requires: STD;
 
 
 #transient __KN__(_T) @KN.Select(Word(it, "_T".\s2t(), $I))
-#define KILLST(_T) __KN__(_T).Select(x => @TW.Where(y => y.Start == x.End && y.\cl(x) * (Length > 6 ? 2 : 1) > 7)).SelectMany(it).Distinct()
-#define SEMIKILLST(_T) __KN__(_T).Select(x => @TW.Where(y => y.Start == x.End && y.\cl(x) * (y.Length > 6 ? 2 : (y.Length == 6 || y.\c($G) || y.\c($B) || y.\c($Q) || y.\c($P) || y.\c($Z) || y.\c($R)) ? 1.5 : 1) > 5))
+#transient __ST__ y => y.Start == x.End && y.\cl(x) * (y.Length > 6 ? 2 : (y.Length == 6 || y.\c($G) || y.\c($B) || y.\c($Q) || y.\c($P) || y.\c($Z) || y.\c($R)) ? 1.5 : 1)
+#transient __FLATTEN__ SelectMany(it).Distinct()
+
+#define KILLST(_T) __KN__(_T).Select(x => @TW.Where(y => y.Start == x.End && y.\cl(x) * (Length > 6 ? 2 : 1) > 7)).__FLATTEN__
+#define SEMIKILLST(_T) __KN__(_T).Select(x => @TW.Where(__ST__ > 5)).__FLATTEN__
+#define 4XST(_T) __KN__(_T).Select(x => @TW.Where(__ST__ > 3)).__FLATTEN__
 
 #define KILLEROFR(_X) @TW.Where(Start == /_X/m.End && \cl(/_X/m) * (Length > 6 ? 2 : 1) > 7)
 #define KILLEDBYR(_X) @TW.Where(End == /_X/m.Start && /_X/m.\cl(it) * (/_X/m.Length > 6 ? 2 : 1) > 7)
