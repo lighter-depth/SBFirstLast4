@@ -35,7 +35,6 @@ requires: STD;
 #define 2XEROF(_X) XEROF(_X, ==2)
 #define 2XEDBY(_X) XEDBY(_X, ==2)
 
-#transient __WR__(_T) "_T".\s2t()
 #transient __WT__(_T) \c("_T".\s2t())
 
 #define KILLABLET(_T) @TW.Where(__WT__(_T)).Select(Name).Intersect(@8X)
@@ -49,7 +48,7 @@ requires: STD;
 #define @KN { "あ", "い", "う", "え", "お", "か", "き", "く", "け", "こ", "さ", "し", "す", "せ", "そ", "た", "ち", "つ", "て", "と", "な", "に", "ぬ", "ね", "の", "は", "ひ", "ふ", "へ", "ほ", "ま", "み", "む", "め", "も", "や", "ゆ", "よ", "ら", "り", "る", "れ", "ろ", "わ", "が", "ぎ", "ぐ", "げ", "ご", "ざ", "じ", "ず", "ぜ", "ぞ", "だ", "で", "ど", "ば", "び", "ぶ", "べ", "ぼ", "ぱ", "ぴ", "ぷ", "ぺ", "ぽ" }
 
 
-#transient __KN__(_T) @KN.Select(Word(it, __WR__(_T), $I))
+#transient __KN__(_T) @KN.Select(Word(it, "_T".\s2t(), $I))
 #define KILLST(_T) __KN__(_T).Select(x => @TW.Where(y => y.Start == x.End && y.\cl(x) * (Length > 6 ? 2 : 1) > 7)).SelectMany(it).Distinct()
 #define SEMIKILLST(_T) __KN__(_T).Select(x => @TW.Where(y => y.Start == x.End && y.\cl(x) * (y.Length > 6 ? 2 : (y.Length == 6 || y.\c($G) || y.\c($B) || y.\c($Q) || y.\c($P) || y.\c($Z) || y.\c($R)) ? 1.5 : 1) > 5))
 
