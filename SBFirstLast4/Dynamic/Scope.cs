@@ -1,6 +1,6 @@
 ﻿namespace SBFirstLast4.Dynamic;
 
-internal class Scope(Action onExit)
+internal sealed class Scope(Action onExit)
 {
 	private int _depth;
 

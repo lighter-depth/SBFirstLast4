@@ -5,12 +5,18 @@ namespace SBFirstLast4;
 
 public sealed partial class Searcher
 {
-    public WordType? Type1 { get; init; } = null;
-    public WordType? Type2 { get; init; } = null;
-    public Regex Body { get; init; } = DefaultRegex();
-    public bool IsTypedOnly { get; init; } = false;
-    public bool IsSingleTypedOnly { get; init; } = false;
-    public bool IsDoubleTypedOnly { get; init; } = false;
+    public WordType? Type1 { get; init; }
+
+    public WordType? Type2 { get; init; }
+
+    public Regex? Body { get; init; }
+
+    public bool IsTypedOnly { get; init; }
+
+    public bool IsSingleTypedOnly { get; init; }
+
+    public bool IsDoubleTypedOnly { get; init; }
+
     private Func<Word, bool> Predicate => (Type1, Type2) switch
     {
         (WordType.Empty, WordType.Empty) => x => x.IsEmpty,
@@ -22,25 +28,53 @@ public sealed partial class Searcher
 		(null, null) when IsTypedOnly => x => !x.IsEmpty,
         _ => _ => true
     };
-    public Word[] Search(Func<Word, bool>? predicate = null) => Words.PerfectDic.AsParallel().Where(predicate ?? Predicate).Where(x => Body.IsMatch(x.Name)).ToArray();
-    public static Word[] SearchTyped(char startChar, Func<Word, bool> predicate) => Words.GetSplitList(startChar).Where(predicate).ToArray();
 
-    public  Word[] SearchTyped(Func<Word, bool>? predicate = null, Func<Word, bool>? customLength = null) => Words.TypedWords.AsParallel().Where(predicate ?? Predicate).Where(customLength ?? (_ => true)).Where(x => Body.IsMatch(x.Name)).ToArray();
+    public Word[] Search(Func<Word, bool>? predicate = null) 
+        => Words.PerfectDic
+        .Where(x => (predicate ?? Predicate)(x) && (Body?.IsMatch(x.Name) ?? true))
+        .ToArray();
+
+    public static Word[] SearchTyped(char startChar, Func<Word, bool> predicate) 
+        => Words.GetSplitList(startChar).Where(predicate).ToArray();
+
+    public  Word[] SearchTyped(Func<Word, bool>? predicate = null, Func<Word, bool>? customLength = null) 
+        => Words.TypedWords
+        .AsParallel()
+        .Where(predicate ?? Predicate)
+        .Where(customLength ?? (_ => true))
+        .Where(x => Body?.IsMatch(x.Name) ?? true)
+        .ToArray();
+
 	public static string[] SearchFirstLast(char firstChar, char lastChar)
     {
-        if (firstChar is '*' or '＊' && lastChar is '*' or '＊') return Words.PerfectNameDic.AsParallel().Where(x => x.At(^1) != 'ん').ToArray();
-        if (firstChar is '*' or '＊') return Words.PerfectNameDic.AsParallel().Where(x => x.GetLastChar() == lastChar).ToArray();
-        if (lastChar is '*' or '＊') return Words.PerfectNameDic.AsParallel().Where(x => x.At(0) == firstChar && x.At(^1) != 'ん').ToArray();
+        if (firstChar is '*' or '＊' && lastChar is '*' or '＊') 
+            return Words.PerfectNameDic.AsParallel().Where(x => x.At(^1) != 'ん').ToArray();
+
+        if (firstChar is '*' or '＊') 
+            return Words.PerfectNameDic.AsParallel().Where(x => x.GetLastChar() == lastChar).ToArray();
+
+        if (lastChar is '*' or '＊') 
+            return Words.PerfectNameDic.AsParallel().Where(x => x.At(0) == firstChar && x.At(^1) != 'ん').ToArray();
+
         return Words.PerfectNameDic.AsParallel().Where(x => x.At(0) == firstChar && x.GetLastChar() == lastChar).ToArray();
     }
+
 	public static string[] SearchFirstLast(char firstChar, char lastChar, Func<string, bool> pred)
 	{
-		if (firstChar is '*' or '＊' && lastChar is '*' or '＊') return Words.PerfectNameDic.AsParallel().Where(x => x.At(^1) != 'ん' && pred(x)).ToArray();
-		if (firstChar is '*' or '＊') return Words.PerfectNameDic.AsParallel().Where(x => x.GetLastChar() == lastChar && pred(x)).ToArray();
-		if (lastChar is '*' or '＊') return Words.PerfectNameDic.AsParallel().Where(x => x.At(0) == firstChar && x.At(^1) != 'ん' && pred(x)).ToArray();
-		return Words.PerfectNameDic.AsParallel().Where(x => x.At(0) == firstChar && x.GetLastChar() == lastChar && pred(x)).ToArray();
+		if (firstChar is '*' or '＊' && lastChar is '*' or '＊') 
+            return Words.PerfectNameDic.AsParallel().Where(x => x.At(^1) != 'ん' && pred(x)).ToArray();
+
+		if (firstChar is '*' or '＊') 
+            return Words.PerfectNameDic.AsParallel().Where(x => x.GetLastChar() == lastChar && pred(x)).ToArray();
+
+		if (lastChar is '*' or '＊') 
+            return Words.PerfectNameDic.AsParallel().Where(x => x.At(0) == firstChar && x.At(^1) != 'ん' && pred(x)).ToArray();
+		
+        return Words.PerfectNameDic.AsParallel().Where(x => x.At(0) == firstChar && x.GetLastChar() == lastChar && pred(x)).ToArray();
 	}
-    public static string[] SearchRegex(Regex regex) => Words.PerfectNameDic.AsParallel().Where(x => regex.IsMatch(x)).ToArray();
+
+    public static string[] SearchRegex(Regex regex) 
+        => Words.PerfectNameDic.AsParallel().Where(x => regex.IsMatch(x)).ToArray();
 	
     [GeneratedRegex(".*")]
 	private static partial Regex DefaultRegex();
@@ -73,7 +107,9 @@ public static class SearchOptions
     {
 		TreeSearchResult.Query = query;
 		TreeSearchResult.IsTyped = isTD;
-		if (isTD) SetTD(null!);
-		else SetTL(default, default, null, null, ListDeclType.Last);
+		if (isTD) 
+            SetTD(null!);
+		else 
+            SetTL(default, default, null, null, ListDeclType.Last);
 	}
 }

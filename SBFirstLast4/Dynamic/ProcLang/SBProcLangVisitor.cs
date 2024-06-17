@@ -50,7 +50,7 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 		return result;
 	}
 
-	public override async Task<object?> VisitScoping_stat([Antlr4.Runtime.Misc.NotNull] SBProcLangParser.Scoping_statContext context)
+	public override async Task<object?> VisitScoping_stat([NotNull] SBProcLangParser.Scoping_statContext context)
 	{
 		await Visit(context.stat_block());
 		return "SCOPING";
@@ -559,7 +559,7 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 			else if(value is IAsyncDisposable asyncDisposableValue)
 				asyncDisposable.Value = asyncDisposableValue;
 
-			WideVariable.SetValue(varName, disposable?.RefValue);
+			WideVariable.DefineValue(varName, disposable?.RefValue, true, false);
 			await Visit(context.stat_block());
 		}
 		finally

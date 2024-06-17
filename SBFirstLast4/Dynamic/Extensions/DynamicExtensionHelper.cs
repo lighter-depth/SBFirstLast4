@@ -55,6 +55,16 @@ public static class DynamicExtensionHelper
 }
 
 [DynamicLinqType]
+public sealed class Disposable(ProcCall proc) : IDisposable, IAsyncDisposable
+{
+	private readonly AsyncProcCall _proc = proc.Async();
+
+	public void Dispose() => DisposeAsync().AsTask();
+
+	public async ValueTask DisposeAsync() => await _proc.Invoke(Array.Empty<object>());
+}
+
+[DynamicLinqType]
 public static class ProcHelper
 {
 	public static Func<string> Action(this ProcCall proc)

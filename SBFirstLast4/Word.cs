@@ -73,14 +73,14 @@ public readonly record struct Word(string Name, WordType Type1, WordType Type2) 
 	public int CompareTo(Word other) => string.Compare(Name, other.Name, StringComparison.Ordinal);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public double CalcEffectiveDmg(Word other)
-		=> CalcEffectiveDmg(Type1, other.Type1)
-		   * CalcEffectiveDmg(Type1, other.Type2)
-		   * CalcEffectiveDmg(Type2, other.Type1)
-		   * CalcEffectiveDmg(Type2, other.Type2);
+	public double CalcEffectiveDmg(Word receiver)
+		=> CalcEffectiveDmg(Type1, receiver.Type1)
+		   * CalcEffectiveDmg(Type1, receiver.Type2)
+		   * CalcEffectiveDmg(Type2, receiver.Type1)
+		   * CalcEffectiveDmg(Type2, receiver.Type2);
 
-	public double CalcEffectiveDmg(MultiWord other)
-		=> new MultiWord(this).CalcEffectiveDmg(other);
+	public double CalcEffectiveDmg(MultiWord receiver)
+		=> new MultiWord(this).CalcEffectiveDmg(receiver);
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static double CalcEffectiveDmg(WordType t1, WordType t2)

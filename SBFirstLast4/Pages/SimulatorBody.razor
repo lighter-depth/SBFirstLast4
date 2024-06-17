@@ -1355,8 +1355,11 @@
 			if (AppSettings.UseExists)
 			{
 				DamageType = WordPreview.DamageType.MidDamage;
+				/*
 				var exists = await Server.ExistsAsync(wordText, PreviewCancellation.Token);
 				Preview = exists ? (Word)wordText : Word.Default;
+				*/
+				Preview = (Word)wordText;
 				SetSubmitOpacity();
 				StateHasChanged();
 				return;

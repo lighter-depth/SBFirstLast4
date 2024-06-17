@@ -4,20 +4,20 @@ namespace SBFirstLast4.Logging;
 
 public static class Server
 {
-    private static readonly HttpClient client = new();
-    private const string SERVER_URL = "https://sbfl4logging.onrender.com/log";
+    private static readonly HttpClient Client = new();
+    private const string ServerUrl = "https://sbfl4logging-lite.onrender.com/log";
 
     internal static async void Log<T>(T value)
     {
         if (!AppSettings.IsAdmin)
-            await client.PostAsJsonAsync(SERVER_URL, value);
+            await Client.PostAsJsonAsync(ServerUrl, value);
     }
 
     public static async Task<string> GetAsync()
     {
         try
         {
-            var response = await client.GetAsync(SERVER_URL);
+            var response = await Client.GetAsync(ServerUrl);
 
             response.EnsureSuccessStatusCode();
 
@@ -35,7 +35,7 @@ public static class Server
     {
         try
         {
-            var response = await client.GetFromJsonAsync<AutoResponse>($"https://sbfl4logging.onrender.com/auto?string={input}");
+            var response = await Client.GetFromJsonAsync<AutoResponse>($"https://sbfl4logging-lite.onrender.com/auto?string={input}");
             return response?.Result ?? false;
         }
         catch
@@ -44,6 +44,7 @@ public static class Server
         }
     }
 
+    /*
     internal static async Task<bool> ExistsAsync(string input, CancellationToken token = default)
     {
 		try
@@ -57,6 +58,7 @@ public static class Server
 			return true;
 		}
 	}
+    */
 }
 
 file sealed class AutoResponse

@@ -272,6 +272,4 @@ public sealed class AsyncProcCall
 
 public delegate Task<object?> ProcCallDelegate(object?[] args);
 
-internal sealed class NoSuchProcedureException(string message) : Exception(message)
-{
-}
+internal sealed class NoSuchProcedureException(string message) : Exception(message);
