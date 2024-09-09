@@ -4,7 +4,7 @@ namespace SBFirstLast4;
 
 public static class Damage
 {
-	public static int Calculate(Word attacker, Word receiver, double allyATK, double foeDEF, Skill skill, double random)
+	public static int Calculate(Word attacker, Word receiver, double allyATK, double foeDEF, Skill skill, double random, bool critIfPossible = false)
 	{
 		// 攻防倍率
 		var statusEffect = allyATK / foeDEF;
@@ -32,7 +32,7 @@ public static class Damage
 		var skillEffect = SkillEffect(attacker, skill);
 
 		// 急所倍率
-		var doesCrit = DoesCrit(attacker, skill);
+		var doesCrit = DoesCrit(attacker, skill, critIfPossible);
 		var critEffect = doesCrit ? 1.5 : 1;
 
 		// 急所時の処理
@@ -49,11 +49,11 @@ public static class Damage
 		return (int)((int)(10 * random * statusEffect * typeEffect) * skillEffect * critEffect);
 	}
 
-	public static int CalculateLow(Word attacker, Word receiver, double allyATK, double foeDEF, Skill skill)
-		=> Calculate(attacker, receiver, allyATK, foeDEF, skill, 0.85);
+	public static int CalculateLow(Word attacker, Word receiver, double allyATK, double foeDEF, Skill skill, bool critIfPossible)
+		=> Calculate(attacker, receiver, allyATK, foeDEF, skill, 0.85, critIfPossible);
 
-	public static int CalculateHigh(Word attacker, Word receiver, double allyATK, double foeDEF, Skill skill)
-		=> Calculate(attacker, receiver, allyATK, foeDEF, skill, 0.99);
+	public static int CalculateHigh(Word attacker, Word receiver, double allyATK, double foeDEF, Skill skill, bool critIfPossible)
+		=> Calculate(attacker, receiver, allyATK, foeDEF, skill, 0.99, critIfPossible);
 
 	public static int Calculate(int baseDamage, double statusEffect, double skillEffect, double typeEffect, double critEffect, double random)
 	{
@@ -74,8 +74,9 @@ public static class Damage
 		_ => 1
 	};
 
-	private static bool DoesCrit(Word word, Skill skill)
-		=> (skill == Skills.Karate && word.Contains(Skills.Karate))
+	private static bool DoesCrit(Word word, Skill skill, bool critIfPossible)
+		=> critIfPossible ? word.Contains(Skills.Karate, Skills.Zuboshi) && !word.IsHeal
+		: (skill == Skills.Karate && word.Contains(Skills.Karate))
 		|| (skill == Skills.Zuboshi && word.Contains(Skills.Zuboshi));
 }
 

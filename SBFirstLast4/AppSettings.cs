@@ -27,6 +27,10 @@ internal static class AppSettings
 
 	internal static string BattleBgm { get; set; } = "overflow";
 
+	internal static bool IsOffline { get; set; } = true;
+
+	internal static bool IsUnderMaintainance { get; set; } = false;
+
 	internal static async Task SetSortResult(ILocalStorageService localStorage, bool value) 
 	{
 		SortResult = value;
@@ -55,6 +59,29 @@ internal static class AppSettings
 			Date = DateTime.Now
 		});
 	}
+
+	internal static async Task InitOnlineStatusAsync(HttpClient client)
+	{
+		string? status;
+		try
+		{
+			status = await client.GetStringAsync($"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/binary/.appstatus.txt?token={DateTime.Now:yyyyMMddHHmmss}");
+		}
+		catch(Exception ex)
+		when(ex is HttpRequestException)
+		{
+			IsOffline = true;
+			return;
+		}
+		IsOffline = false;
+		if(status is "true")
+		{
+			IsUnderMaintainance = true;
+			return;
+		}
+		IsUnderMaintainance = false;
+	}
+
 	internal static async Task InitUserInfoAsync(ILocalStorageService localStorage, Func<string, Task> update)
 	{
 		IsLoggedIn = await localStorage.GetItemAsync<bool>(LSKeys.IsLoggedIn);

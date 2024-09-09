@@ -9,6 +9,14 @@
 @using SBFirstLast4.Logging
 <PageTitle>SBFirstLast4</PageTitle>
 
+@if (IsOffline)
+{
+	// return;
+}
+@if (IsUnderMaintainance)
+{
+	// return;
+}
 @if (IsLoading)
 {
 	<p>@LoadingMsg</p>
@@ -142,7 +150,8 @@
 </style>
 
 @code {
-
+	private bool IsOffline;
+	private bool IsUnderMaintainance;
 	private bool IsLoading = true;
 	private string LoadingMsg = "読み込み中...";
 	private bool IsAccepted;
@@ -169,6 +178,23 @@
 			}
 			catch { }
 		};
+
+		await AppSettings.InitOnlineStatusAsync(Http);
+
+		if (AppSettings.IsOffline)
+		{
+			IsOffline = true;
+			StateHasChanged();
+			return;
+		}
+
+		if (AppSettings.IsUnderMaintainance)
+		{
+			IsUnderMaintainance = true;
+			StateHasChanged();
+			return;
+		}
+
 		try
 		{
 			await Update("ユーザー情報を読み込み中...");

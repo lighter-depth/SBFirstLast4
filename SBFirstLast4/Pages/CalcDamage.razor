@@ -355,8 +355,8 @@
 			return;
 		}
 		var resultStr = string.Empty;
-		var dmgLow = Damage.CalculateLow(Attacker, Receiver, ValueA, ValueB, Ability);
-		var dmgHigh = Damage.CalculateHigh(Attacker, Receiver, ValueA, ValueB, Ability);
+		var dmgLow = Damage.CalculateLow(Attacker, Receiver, ValueA, ValueB, Ability, CritIfPossible);
+		var dmgHigh = Damage.CalculateHigh(Attacker, Receiver, ValueA, ValueB, Ability, CritIfPossible);
 		resultStr += $"{Attacker} → {Receiver}：";
 		resultStr += $" [{dmgLow}-{dmgHigh}]";
 		var ability = Ability is WordType.Empty ? "特性なし " : $"{Ability.AbilityToString()} ";

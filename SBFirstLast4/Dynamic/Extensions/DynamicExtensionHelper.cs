@@ -52,6 +52,17 @@ public static class DynamicExtensionHelper
 	/// </summary>
 	/// <seealso cref="ScriptExecutor._singletonEnumerable"/>
 	public static int[] GetSingleton() => [0];
+
+	public static string HashTest(string str)
+	{
+		var hashRoot = Encoding.UTF8.GetBytes(str);
+
+		var hash = System.Security.Cryptography.SHA256.HashData(hashRoot);
+
+		if (hash is null) return "UNKNOWN_HASH";
+
+		return hash.Select(b => b.ToString("x2")).StringJoin();
+	}
 }
 
 [DynamicLinqType]
