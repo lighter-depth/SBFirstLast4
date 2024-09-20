@@ -74,7 +74,7 @@ internal static class AppSettings
 			return;
 		}
 		IsOffline = false;
-		if(status is "true")
+		if(status.Trim().StartsWith("true"))
 		{
 			IsUnderMaintainance = true;
 			return;

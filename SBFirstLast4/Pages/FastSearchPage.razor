@@ -1,0 +1,19 @@
+﻿@page "/fastsearch"
+@using SBFirstLast4.Logging
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+<PageTitle>高速前方後方一致</PageTitle>
+<h3>FastSearchPage</h3>
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (!AppSettings.IsLoggedIn)
+        {
+            NavigationManager.NavigateTo("", false);
+            return;
+        }
+        if (!Words.IsLoadedCorrectly)
+            NavigationManager.NavigateTo("top", false);
+    }
+}
