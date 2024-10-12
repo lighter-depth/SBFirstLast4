@@ -97,7 +97,6 @@ public static class Server
 		}
 	}
 
-#if DEBUG
 	internal static async Task<string> JsonMirrorAsync<T>(T json)
 	{
 		try
@@ -111,7 +110,6 @@ public static class Server
 			return ex.Stringify();
 		}
 	}
-#endif
 
 	/*
     internal static async Task<bool> ExistsAsync(string input, CancellationToken token = default)
