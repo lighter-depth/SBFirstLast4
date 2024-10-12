@@ -311,17 +311,25 @@
 
 	private string SelectedSearchOptionItem = "前方後方一致";
 	private List<string> SearchOptionItemList = ["前方後方一致", "前方一致", "後方一致", "ワイルドカード", "正規表現"];
-	protected override void OnInitialized()
+	
+	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
+
 		if (!Words.IsLoadedCorrectly)
+		{
 			NavigationManager.NavigateTo("top", false);
+			return;
+		}
+
+		if (await AppSettings.ShouldReturn(Http))
+			NavigationManager.NavigateTo("", false);
 	}
-	private void SearchButton_Click()
+	private async Task SearchButton_Click()
 	{
 		var returnFlag = false;
 		var isWildcard = SelectedSearchOptionItem == "ワイルドカード";
@@ -412,10 +420,10 @@
 			_ => default
 		});
 
-		Server.Log(new
-		{
-			Type = "SEARCH_TL",
-			Order = new
+		await Server.Log
+		(
+			type: StatusTypes.SearchTL,
+			order: new
 			{
 				First = FirstChar,
 				Last = LastChar,
@@ -427,15 +435,8 @@
 					_ => CustomLength
 				},
 				Regex = regexPattern
-			},
-			UserInfo = new
-			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash,
-			},
-			Date = DateTime.Now
-		});
+			}
+		);
 
 
 

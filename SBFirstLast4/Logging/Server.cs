@@ -1,50 +1,119 @@
-﻿using System.Net.Http.Json;
+﻿using Microsoft.JSInterop;
+using SpawnDev.BlazorJS.JSObjects;
+using System.Net.Http.Json;
 
 namespace SBFirstLast4.Logging;
 
 public static class Server
 {
-    private static readonly HttpClient Client = new();
-    private const string ServerUrl = "https://sbfl4logging-lite.onrender.com/log";
+	private static readonly HttpClient Client = new();
+	private const string ServerUrl = "https://sbfl4logging-lite.onrender.com/log";
 
-    internal static async void Log<T>(T value)
-    {
-        if (!AppSettings.IsAdmin)
-            await Client.PostAsJsonAsync(ServerUrl, value);
-    }
+	internal static IJSRuntime? JSRuntime { get; set; }
 
-    public static async Task<string> GetAsync()
-    {
-        try
-        {
-            var response = await Client.GetAsync(ServerUrl);
+	internal static Task Log(string type) => Log(type, new { });
 
-            response.EnsureSuccessStatusCode();
+	internal static Task Log<T>(string type, T order) => Log(StatusTemplate.Create(type, order));
 
-            var message = await response.Content.ReadAsStringAsync();
+	internal static async Task Log<T>(StatusTemplate<T> value)
+	{
+		if (!AppSettings.IsAdmin)
+		{
+			var response = await Client.PostAsJsonAsync(ServerUrl, value);
+			response.EnsureSuccessStatusCode();
+			return;
+		}
 
-            return message;
-        }
-        catch (Exception ex)
-        {
-            return ex.Stringify();
-        }
-    }
+#if DEBUG
+		if (!AppSettings.IsAdmin)
+			return;
 
-    internal static async Task<bool> CheckAsync(string input)
-    {
-        try
-        {
-            var response = await Client.GetFromJsonAsync<AutoResponse>($"https://sbfl4logging-lite.onrender.com/auto?string={input}");
-            return response?.Result ?? false;
-        }
-        catch
-        {
-            return false;
-        }
-    }
+		var json = await JsonMirrorAsync(value);
+		if (JSRuntime is not null)
+			await JSRuntime.Alert(json);
+#endif
+	}
 
-    /*
+	public static async Task<string> GetAsync()
+	{
+		try
+		{
+			var response = await Client.GetAsync(ServerUrl);
+
+			response.EnsureSuccessStatusCode();
+
+			var message = await response.Content.ReadAsStringAsync();
+
+			return message;
+		}
+		catch (Exception ex)
+		{
+			return ex.Stringify();
+		}
+	}
+
+	internal static async Task<bool> CheckAsync(string input)
+	{
+		try
+		{
+			var response = await Client.GetFromJsonAsync<AutoResponse>($"https://sbfl4logging-lite.onrender.com/auto?string={input}");
+			return response?.Result ?? false;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+	internal static async Task<bool> AuthorizeAsync(string input)
+	{
+		var debugAuth =
+#if DEBUG
+			true;
+#else
+			false;
+#endif
+		if (debugAuth)
+		{
+			try
+			{
+				var debugKey = await Client.GetStringAsync($"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/binary/.mys.txt?token={DateTime.Now:yyyyMMddHHmmss}");
+				return debugKey.Trim() == input.Trim();
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
+		try
+		{
+			var response = await Client.GetFromJsonAsync<AutoResponse>($"https://sbfl4logging-lite.onrender.com/authorize?string={input}");
+			return response?.Result ?? false;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+#if DEBUG
+	internal static async Task<string> JsonMirrorAsync<T>(T json)
+	{
+		try
+		{
+			var response = await Client.PostAsJsonAsync("https://sbfl4logging-lite.onrender.com/jsonmirror", json);
+			response.EnsureSuccessStatusCode();
+			return await response.Content.ReadAsStringAsync();
+		}
+		catch (Exception ex)
+		{
+			return ex.Stringify();
+		}
+	}
+#endif
+
+	/*
     internal static async Task<bool> ExistsAsync(string input, CancellationToken token = default)
     {
 		try
@@ -63,10 +132,10 @@ public static class Server
 
 file sealed class AutoResponse
 {
-    public bool Result { get; set; }
+	public bool Result { get; set; }
 }
 
-file sealed class TLResponse 
+file sealed class TLResponse
 {
-    public bool Exists { get; set; }
+	public bool Exists { get; set; }
 }

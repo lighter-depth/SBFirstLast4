@@ -2,6 +2,7 @@
 @using System.Text.RegularExpressions
 @using SBFirstLast4.Logging
 @using SBFirstLast4.Syntax
+@inject HttpClient Http
 @inject NavigationManager NavigationManager
 <PageTitle>しりバト単語検索</PageTitle>
 
@@ -444,7 +445,7 @@
 	private string SelectedType1Item = "指定なし";
 	private string SelectedType2Item = "指定なし";
 
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
@@ -452,9 +453,15 @@
 			return;
 		}
 		if (!Words.IsLoadedCorrectly)
+		{
 			NavigationManager.NavigateTo("top", false);
+			return;
+		}
+
+		if (await AppSettings.ShouldReturn(Http))
+			NavigationManager.NavigateTo("", false);
 	}
-	private void SearchButton_Click()
+	private async Task SearchButton_Click()
 	{
 		var returnFlag = false;
 
@@ -566,10 +573,10 @@
 			_ => pred
 		});
 
-		Server.Log(new
-		{
-			Type = "SEARCH_TD",
-			Order = new
+		await Server.Log
+		(
+			type: StatusTypes.SearchTD,
+			order: new
 			{
 				Type1 = SelectedType1Item,
 				Type2 = SelectedType2Item,
@@ -582,15 +589,8 @@
 				},
 				Regex = regexPattern,
 				TypeOption = SelectedTypeOptionItem
-			},
-			UserInfo = new
-			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash,
-			},
-			Date = DateTime.Now
-		});
+			}
+		);
 
 
 		NavigationManager.NavigateTo("result");

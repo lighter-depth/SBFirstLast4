@@ -6,6 +6,7 @@ internal static class VersionHistory
 
 	internal static readonly (Version Version, string[] Changes)[] Versions =
 	[
+		(new(14, 0, 0), ["新機能「高速前方後方一致」を追加", "総合的な不具合の修正"]),
 		(new(13, 5, 2), ["機能「ダメージ計算」において、設定「自然急所」が反映されない問題の修正"]),
 		(new(13, 5, 1), ["ロギングが正常に動作しない不具合の修正", "「タイプ判定」ページから機能「分類無し単語のタイプ判定」を削除"]),
 		(new(13, 5, 0), ["プロシージャに文法「scoping文」「ローカル変数」を追加"]),

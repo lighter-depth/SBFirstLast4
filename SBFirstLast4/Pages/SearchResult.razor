@@ -1,5 +1,6 @@
 ﻿@page "/result"
 @using System.Text.RegularExpressions
+@inject HttpClient Http
 @inject NavigationManager NavigationManager
 <PageTitle>検索結果</PageTitle>
 
@@ -104,32 +105,32 @@
 			cursor: not-allowed;
 		}
 
-	.download-button{
+	.download-button {
 		width: max(10%, 200px);
 	}
 
-	.download-button a {
-		padding: 10px 20px;
-		border: none;
-		border-radius: 30px;
-		font-size: 16px;
-		cursor: pointer;
-		background: linear-gradient(to right, #45aaf2, #007bff);
-		color: white;
-		transition: background-color 0.3s, color 0.3s;
-		text-decoration: none;
-	}
-
-		.download-button a:hover {
-			background-color: white;
-			color: #45aaf2;
+		.download-button a {
+			padding: 10px 20px;
+			border: none;
+			border-radius: 30px;
+			font-size: 16px;
+			cursor: pointer;
+			background: linear-gradient(to right, #45aaf2, #007bff);
+			color: white;
+			transition: background-color 0.3s, color 0.3s;
+			text-decoration: none;
 		}
 
-		.download-button a:disabled {
-			background-color: #ddd;
-			color: #999;
-			cursor: not-allowed;
-		}
+			.download-button a:hover {
+				background-color: white;
+				color: #45aaf2;
+			}
+
+			.download-button a:disabled {
+				background-color: #ddd;
+				color: #999;
+				cursor: not-allowed;
+			}
 
 	.indicators {
 		display: flex;
@@ -154,7 +155,7 @@
 	public static char FirstChar { get; set; }
 	public static char LastChar { get; set; }
 	public static Func<string, bool>? CustomLengthPred { get; set; }
-	public static Func<Word, bool>? CustomLengthPredTyped{ get; set; }
+	public static Func<Word, bool>? CustomLengthPredTyped { get; set; }
 	public static Regex? RegexBody { get; set; }
 	public static bool IsTyped { get; set; } = false;
 	public static Searcher TypedSearcher { get; set; } = new();
@@ -173,7 +174,7 @@
 		.Take(ItemsPerPage)
 		.ToList();
 
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
@@ -183,7 +184,11 @@
 		if (!Words.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("top", false);
+			return;
 		}
+
+		if (await AppSettings.ShouldReturn(Http))
+			NavigationManager.NavigateTo("", false);
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)

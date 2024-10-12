@@ -83,7 +83,7 @@
 	private static int AudioIndex = AudioManager.AudioNames.IndexOf("denno") is int result and >= 0 ? result : 0;
 	private static bool IsPlaying = false;
 
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
@@ -93,17 +93,7 @@
 		if (!Words.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 
-		Server.Log(new
-		{
-			Type = "SOUND_ROOM",
-			UserInfo = new
-			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash,
-			},
-			Date = DateTime.Now
-		});
+		await Server.Log(StatusTypes.SoundRoom);
 	}
 
 	private async Task PlayCurrentAudio()

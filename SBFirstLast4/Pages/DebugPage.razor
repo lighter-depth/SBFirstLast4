@@ -1,52 +1,35 @@
 ﻿@page "/debug"
-@implements IAsyncDisposable
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
+@using SBFirstLast4.Logging
 
-<head>
-	<script type="text/javascript">
-		function onDblClick() {
-			alert("Hello World from Javascript!");
-		}
-		$(function () {
-			$("button").click(function () {
-				alert("Hello World from jQuery!");
-			});
-		});
-	</script>
-</head>
-
-<button @onclick=@(async() => await Task.CompletedTask)>Button</button>
-
-<select class="dropdown">
-	<option disabled hidden selected value>＋</option>
-	<option>Option 1</option>
-	<option>Option 2</option>
-</select>
-
-<style>
-	.dropdown {
-		-moz-appearance: none;
-		-webkit-appearance: none;
-	}
-
-		.dropdown::-ms-expand {
-			display: none;
-		}
-</style>
+<button @onclick=DebugBtn_OnClick>Click Here!!</button>
+@JsonText
 
 
 @code {
-	protected override async Task OnAfterRenderAsync(bool firstRender)
+	private string JsonText = string.Empty;
+
+	protected override void OnInitialized()
 	{
-		if (firstRender)
-			await JSRuntime.InvokeVoidAsync("eval", "document.addEventListener('dblclick', onDblClick);");
+		if (!AppSettings.IsDebug && !AppSettings.IsAdmin)
+			NavigationManager.NavigateTo("", false);
 	}
 
-	public async ValueTask DisposeAsync()
+	private async Task DebugBtn_OnClick()
 	{
-		await JSRuntime.Alert("Bye!!");
-		await JSRuntime.InvokeVoidAsync("eval", "document.removeEventListener('dblclick', onDblClick);");
+		var j1 = StatusTemplate.Create
+			(
+				type: "TEST_MSG",
+				order: new
+				{
+					Type = "EMPTY",
+					Category = "EMPTY",
+					Char = "EMPTY"
+				}
+			);
+		JsonText = await Server.JsonMirrorAsync(j1);
+		StateHasChanged();
 	}
 }

@@ -257,7 +257,7 @@
 
 
 
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
@@ -267,17 +267,7 @@
 		if (!Words.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 
-		Server.Log(new
-		{
-			Type = "CALC_DMG",
-			UserInfo = new
-			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash,
-			},
-			Date = DateTime.Now
-		});
+		await Server.Log(StatusTypes.CalcDmg);
 	}
 
 	private async Task AttackerInput_KeyUp()

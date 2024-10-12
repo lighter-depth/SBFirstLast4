@@ -1,4 +1,5 @@
 ﻿@page "/bestdamage"
+@inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @using SBFirstLast4.Logging
@@ -394,7 +395,7 @@
 	private int TakeCount = 5;
 	private static bool IsAttackSide;
 
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
@@ -402,19 +403,18 @@
 			return;
 		}
 		if (!Words.IsLoadedCorrectly)
-			NavigationManager.NavigateTo("top", false);
-
-		Server.Log(new
 		{
-			Type = "BEST_DMG",
-			UserInfo = new
-			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash,
-			},
-			Date = DateTime.Now
-		});
+			NavigationManager.NavigateTo("top", false);
+			return;
+		}
+
+		if (await AppSettings.ShouldReturn(Http))
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+
+		await Server.Log(StatusTypes.BestDmg);
 	}
 
 	private async Task TextInput_KeyUp() => await ReloadResult();

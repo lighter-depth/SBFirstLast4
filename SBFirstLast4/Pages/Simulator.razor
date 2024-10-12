@@ -196,26 +196,19 @@
 		NavigationManager.NavigateTo("simulator-skill");
 	}
 
-	private void StartButton_Click()
+	private async Task StartButton_Click()
 	{
 		SimulatorBody.Player1Ability = Player1Ability;
 		SimulatorBody.Player2Ability = Player2Ability;
-		Server.Log(new
-		{
-			Type = "SIMULATOR",
-			Order = new
+		await Server.Log
+		(
+			type: StatusTypes.Simulator,
+			order: new
 			{
 				First = Player1Ability.ToString(),
 				Last = Player2Ability.ToString()
-			},
-			UserInfo = new
-			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash
-			},
-			Date = DateTime.Now
-		});
+			}
+		);
 		NavigationManager.NavigateTo("simulator-body");
 	}
 }

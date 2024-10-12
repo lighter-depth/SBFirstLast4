@@ -2,6 +2,7 @@
 @using System.Text.RegularExpressions
 @using Interpreter = SBFirstLast4.Dynamic.Interpreter;
 @using ScriptExecutor = SBFirstLast4.Dynamic.ScriptExecutor;
+@inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 <PageTitle>検索結果</PageTitle>
@@ -174,18 +175,23 @@
 	private int CurrentPage = 1;
 	private int TotalPages => (int)Math.Ceiling((double)(IsTyped ? TypedData.Length : TypelessData.Length) / ItemsPerPage);
 
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
 			NavigationManager.NavigateTo("", false);
 			return;
 		}
+
 		if (!Words.IsLoadedCorrectly)
 		{
 			NavigationManager.NavigateTo("top", false);
 			return;
 		}
+
+
+		if (await AppSettings.ShouldReturn(Http))
+			NavigationManager.NavigateTo("", false);
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)

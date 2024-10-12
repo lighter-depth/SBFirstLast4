@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using SBFirstLast4.Dynamic;
 using SBFirstLast4.Simulator;
@@ -163,6 +164,13 @@ public static class JSHelper
 
 	public static void ClearElementValueById(this IJSInProcessRuntime jsRuntime, string id) => jsRuntime.InvokeVoid("eval", $"document.getElementById('{id}').value = ''");
 
+}
+
+public static class NavHelper
+{
+	public static void GoToIndex(this NavigationManager nav) => nav.NavigateTo(string.Empty, false);
+
+	public static void GoToTop(this NavigationManager nav) => nav.NavigateTo("top", false);
 }
 
 public static class CollectionHelper

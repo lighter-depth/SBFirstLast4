@@ -386,19 +386,15 @@ else
 		StateHasChanged();
 		await Task.Delay(1);
 
-		Server.Log(new
-		{
-			Type = "DOWNLOAD",
-			Peek = (listType == default || IsNotype ? DataListStr.At(0) : DataListWord.At(0).ToString()) ?? "NULL",
-			Name = FileName,
-			UserInfo = new
+		await Server.Log
+		(
+			type: StatusTypes.Download,
+			order: new
 			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash,
-			},
-			Date = DateTime.Now
-		});
+				Peek = (listType == default || IsNotype ? DataListStr.At(0) : DataListWord.At(0).ToString()) ?? "NULL",
+				Name = FileName
+			}
+		);
 
 		var content = listType == default
 		? ListBuilder.BuildSingle

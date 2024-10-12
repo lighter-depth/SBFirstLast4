@@ -239,7 +239,7 @@ else
 
 	private string LoadingMethod = "ファイル指定";
 
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
@@ -249,17 +249,7 @@ else
 		if (!Words.IsLoadedCorrectly)
 			NavigationManager.NavigateTo("top", false);
 
-		Server.Log(new
-		{
-			Type = "TYPE_CHECK",
-			UserInfo = new
-			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash,
-			},
-			Date = DateTime.Now
-		});
+		await Server.Log(StatusTypes.TypeCheck);
 	}
 	private async Task TextInput_KeyUp()
 	{

@@ -8,53 +8,6 @@
 @using Blazored.LocalStorage
 @using SBFirstLast4.Logging
 <PageTitle>SBFirstLast4</PageTitle>
-
-@if (IsOffline)
-{
-	<p>
-		通信エラーが発生しました。<br />
-		通信環境を確認してもう一度お試しください。
-	</p>
-	return;
-}
-@if (IsUnderMaintainance)
-{
-	<p>
-		現在、Webサイトはメンテナンス中です。<br />
-		ご不便をおかけして申し訳ございませんが、しばらくお待ちください。<br />
-		メンテナンスが完了次第、再度アクセスいただけます。<br /><br />
-		ご理解とご協力のほど、よろしくお願い申し上げます。
-	</p>
-	return;
-}
-@if (IsLoading)
-{
-	<p>@LoadingMsg</p>
-	return;
-}
-<p id="desc">ユーザー名を入力</p>
-<InputText id="username" type="text" @bind-Value="@UserNameModel" />
-<div class="privacypolicy">
-	<p>
-		SBFirstLast4は、機能改善並びに不正利用防止のため、以下の情報をサーバーに送信することがあります。<br><br>
-		・ユーザー名<br>
-		・ユーザーに紐づけられるID（GUID）<br>
-		・ユーザーを識別するハッシュ値<br>　（IPアドレスをハッシュ化したもの）<br>
-		・ユーザーのアクセス日時<br>
-		・ユーザーのアクション<br>
-		送信されたデータは、APIを通じて第三者に閲覧される可能性があります。
-	</p>
-</div>
-<div class="checkbox">
-	<InputCheckbox id="checkbox" @bind-Value=IsAccepted @onclick=OnChange />
-	<label for="checkbox">私は上記の方針に同意します。</label>
-</div>
-<button type="submit" id="submit" @onclick=OnSubmit disabled="@IsDisabled">決定</button>
-<p id="usernameError" style=@($"color: {ErrorMsgColor};")>@ErrorMsg</p>
-
-<div class="cache-button">
-	<button @onclick=CacheBtn_Click>キャッシュを消去する</button>
-</div>
 <style>
 	body {
 		font-family: Arial, sans-serif;
@@ -75,7 +28,7 @@
 			margin: 10px;
 		}
 
-	.checkbox{
+	.checkbox {
 		margin-top: 10px;
 	}
 
@@ -117,6 +70,41 @@
 		font-size: 16px;
 	}
 
+	.submit {
+		width: 200px;
+		height: 50px;
+		background: linear-gradient(to right, #5f10ff, #ad06ff);
+		border: none;
+		border-radius: 10px;
+		color: white;
+		font-size: 18px;
+		font-weight: bold;
+		margin: 10px auto;
+		margin-left: 20px;
+		cursor: pointer;
+		box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+	}
+
+		.submit:hover {
+			transform: scale(1.1);
+		}
+
+		.submit:active {
+			transform: scale(0.9);
+		}
+
+		.submit[disabled] {
+			background: #A0A0A0;
+		}
+
+			.submit[disabled]:hover {
+				transform: none;
+			}
+
+			.submit[disabled]:active {
+				transform: none;
+			}
+
 	#submit {
 		display: block;
 		width: 200px;
@@ -143,12 +131,14 @@
 		#submit[disabled] {
 			background: #A0A0A0;
 		}
-		#submit[disabled]:hover{
-			transform: none;
-		}
-		#submit[disabled]:active{
-			transform: none;
-		}
+
+			#submit[disabled]:hover {
+				transform: none;
+			}
+
+			#submit[disabled]:active {
+				transform: none;
+			}
 
 
 	#usernameError {
@@ -158,10 +148,70 @@
 	}
 
 </style>
+@if (IsOffline)
+{
+	<p>
+		通信エラーが発生しました。<br />
+		通信環境を確認してもう一度お試しください。
+	</p>
+	return;
+}
+@if (IsUnderMaintainance)
+{
+	<p>
+		現在、当Webサイトはメンテナンス中です。<br />
+		ご不便をおかけして申し訳ございませんが、しばらくお待ちください。<br />
+		メンテナンスが完了次第、再度アクセスいただけます。<br /><br />
+		ご理解とご協力のほど、よろしくお願い申し上げます。
+	</p>
+	return;
+}
+@if (IsBlocking)
+{
+	<p>
+		現在、当Webサイトは入場者数を制限しています。<br />
+		ご利用いただくには、特定の認証情報が必要です。<br />
+		事前にお知らせした認証情報をご入力の上、ご入場ください。<br /><br />
+		ご理解とご協力のほど、よろしくお願い申し上げます。
+	</p>
+	<br />
+	<br />
+	<button class="submit" style="transform: scale(0.9);" @onclick=AuthorizeBtn_Click> &gt;&nbsp;認証情報を入力</button>
+	return;
+}
+@if (IsLoading)
+{
+	<p>@LoadingMsg</p>
+	return;
+}
+<p id="desc">ユーザー名を入力</p>
+<InputText id="username" type="text" @bind-Value="@UserNameModel" />
+<div class="privacypolicy">
+	<p>
+		SBFirstLast4は、機能改善並びに不正利用防止のため、以下の情報をサーバーに送信することがあります。<br><br>
+		・ユーザー名<br>
+		・ユーザーに紐づけられるID（GUID）<br>
+		・ユーザーを識別するハッシュ値<br>　（IPアドレスをハッシュ化したもの）<br>
+		・ユーザーのアクセス日時<br>
+		・ユーザーのアクション<br>
+		送信されたデータは、APIを通じて第三者に閲覧される可能性があります。
+	</p>
+</div>
+<div class="checkbox">
+	<InputCheckbox id="checkbox" @bind-Value=IsAccepted @onclick=OnChange />
+	<label for="checkbox">私は上記の方針に同意します。</label>
+</div>
+<button type="submit" class="submit" id="submit" @onclick=OnSubmit disabled="@IsDisabled">決定</button>
+<p id="usernameError" style=@($"color: {ErrorMsgColor};")>@ErrorMsg</p>
+
+<div class="cache-button">
+	<button @onclick=CacheBtn_Click>キャッシュを消去する</button>
+</div>
 
 @code {
 	private bool IsOffline;
 	private bool IsUnderMaintainance;
+	private bool IsBlocking;
 	private bool IsLoading = true;
 	private string LoadingMsg = "読み込み中...";
 	private bool IsAccepted;
@@ -175,11 +225,14 @@
 
 	protected override async Task OnInitializedAsync()
 	{
+		#if DEBUG
+	Server.JSRuntime = JSRuntime;
+		#endif
 		NavigationManager.LocationChanged += (s, e) =>
 		{
 			var location = e.Location;
 			var slash = location.LastIndexOf('/');
-			if(location[slash..] == "/manualquery")
+			if (location[slash..] == "/manualquery")
 				return;
 
 			try
@@ -189,20 +242,36 @@
 			catch { }
 		};
 
-		await AppSettings.InitOnlineStatusAsync(Http);
-
-		if (AppSettings.IsOffline)
+		if (!AppSettings.IgnoreOnlineStatus)
 		{
-			IsOffline = true;
-			StateHasChanged();
-			return;
-		}
+			await AppSettings.InitOnlineStatusAsync(Http, LocalStorage);
 
-		if (AppSettings.IsUnderMaintainance)
-		{
-			IsUnderMaintainance = true;
-			StateHasChanged();
-			return;
+			if (AppSettings.IsOffline)
+			{
+				IsOffline = true;
+				StateHasChanged();
+				return;
+			}
+
+			if (AppSettings.IsUnderMaintainance)
+			{
+				IsUnderMaintainance = true;
+				StateHasChanged();
+				return;
+			}
+
+			if (AppSettings.IsBlocking && !AppSettings.IsAccepted)
+			{
+				IsBlocking = true;
+				StateHasChanged();
+				return;
+			}
+
+			if(AppSettings.IsObsolete)
+			{
+				NavigationManager.NavigateTo("", true);
+				return;
+			}
 		}
 
 		try
@@ -221,24 +290,15 @@
 				await Task.WhenAny(AppSettings.RefreshHashAsync(Http, LocalStorage), Task.Delay(3000));
 				await Update("準備中...");
 
-				Server.Log(new
-				{
-					Type = "LOGIN",
-					UserInfo = new
-					{
-						Name = AppSettings.UserName,
-						Guid = AppSettings.Guid,
-						Hash = AppSettings.Hash,
-					},
-					Date = DateTime.Now
-				});
+				await Server.Log(StatusTypes.Login);
+
 				NavigationManager.NavigateTo("top");
 				return;
 			}
 			IsLoading = false;
 			StateHasChanged();
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			await JSRuntime.AlertEx(ex);
 		}
@@ -280,21 +340,12 @@
 		await Task.Delay(1);
 
 		var guid = Guid.NewGuid().ToString();
-		var hash = await AppSettings.GetHashAsync(Http);
+		var (hash, v4, v6) = await AppSettings.GetHashAsync(Http);
 
-		await AppSettings.SetUserInfoAsync(LocalStorage, userName, guid, hash);
+		await AppSettings.SetUserInfoAsync(LocalStorage, userName, guid, hash, v4, v6);
 
-		Server.Log(new
-		{
-			Type = "REGISTER",
-			UserInfo = new
-			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash
-			},
-			Date = DateTime.Now
-		});
+		await Server.Log(StatusTypes.Register);
+
 		NavigationManager.NavigateTo("top");
 	}
 
@@ -305,5 +356,11 @@
 
 		await LocalStorage.ClearAsync();
 		await JSRuntime.Alert("キャッシュを消去しました。");
+	}
+
+	private void AuthorizeBtn_Click()
+	{
+		AuthPage.Accepting = true;
+		NavigationManager.NavigateTo("auth", false);
 	}
 }

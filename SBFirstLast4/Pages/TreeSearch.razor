@@ -201,7 +201,7 @@
 
 	const string AND = "&&";
 
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
@@ -214,17 +214,7 @@
 			return;
 		}
 
-		Server.Log(new
-		{
-			Type = "GROUP_SEARCH_OPEN",
-			UserInfo = new
-			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash,
-			},
-			Date = DateTime.Now
-		});
+		await Server.Log(StatusTypes.GroupSearchOpen);
 
 		StateHasChanged();
 	}
@@ -291,25 +281,18 @@
 			Nodes.RemoveAll(n => n.IsTypedOnly);
 	}
 
-	private void SearchBtn_OnClick()
+	private async Task SearchBtn_OnClick()
 	{
 		var selector = IsTyped ? "@TW" : "@NN";
 		var query = $"{selector}.Where({nameof(Expressions.Extensions.BooleanEvaluator)}(){Nodes.Select(n => n.ToString()).StringJoin()}.{nameof(Expressions.Extensions.BooleanEvaluator.Evaluate)}()).ToArray()";
 
 		SearchOptions.SetTree(IsTyped, query);
 
-		Server.Log(new
-		{
-			Type = "SEARCH_GROUP",
-			Order = query,
-			UserInfo = new
-			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash,
-			},
-			Date = DateTime.Now
-		});
+		await Server.Log
+		(
+			type: StatusTypes.SearchGroup,
+			order: query
+		);
 
 		NavigationManager.NavigateTo("treesearch-result");
 	}

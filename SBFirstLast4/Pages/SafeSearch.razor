@@ -517,7 +517,7 @@
 	}
 
 
-	private void SearchButton_Click()
+	private async Task SearchButton_Click()
 	{
 		try
 		{
@@ -529,9 +529,9 @@
 
 			foreach (var i in SelectedCategoryFilterItem switch
 			{
-				"おまかせ（弱）" => ["即死", "準即死", "強ロクロ", "強毒針" ],
+				"おまかせ（弱）" => ["即死", "準即死", "強ロクロ", "強毒針"],
 				"おまかせ（中）" => ["即死", "準即死", "４注", "強ロクロ", "中ロクロ", "強毒針", "中毒針"],
-				"おまかせ（強）" => ["即死", "準即死", "４注", "４倍", "安全暴力", "強ロクロ", "中ロクロ", "強毒針", "中毒針", "強やどりぎ" ],
+				"おまかせ（強）" => ["即死", "準即死", "４注", "４倍", "安全暴力", "強ロクロ", "中ロクロ", "強毒針", "中毒針", "強やどりぎ"],
 				"カスタム" => AppliedCategoryFilters,
 				_ => []
 			})
@@ -545,10 +545,10 @@
 
 			SearchOptions.SetTD(new() { IsTypedOnly = true }, predicate: predicate);
 
-			Server.Log(new
-			{
-				Type = "SEARCH_SAFE",
-				Order = new
+			await Server.Log
+			(
+				type: StatusTypes.SearchSafe,
+				order: new
 				{
 					Type = SelectedTypeItem,
 					Category = SelectedCategoryFilterItem switch
@@ -560,21 +560,14 @@
 						_ => "EMPTY"
 					},
 					Char = SelectedCharFilterItem == "なし" ? "EMPTY" : $"[{AppliedEndFilters.StringJoin(", ")}]"
-				},
-				UserInfo = new
-				{
-					Name = AppSettings.UserName,
-					Guid = AppSettings.Guid,
-					Hash = AppSettings.Hash,
-				},
-				Date = DateTime.Now
-			});
+				}
+			);
 
 			NavigationManager.NavigateTo("result");
 		}
 		catch (Exception ex)
 		{
-			JSRuntime.InvokeVoidAsync("alert", ex.GetType().Name + " " + ex.Message);
+			await JSRuntime.AlertEx(ex);
 		}
 	}
 

@@ -447,22 +447,12 @@
 	private bool ShowVersionHistory;
 
 
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
 			return;
 
-		Server.Log(new
-		{
-			Type = "ABOUT",
-			UserInfo = new
-			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash,
-			},
-			Date = DateTime.Now
-		});
+		await Server.Log(StatusTypes.About);
 	}
 
 	private void Set(ref bool loc, bool val)

@@ -447,7 +447,7 @@
 
 	private bool IsRunning;
 
-	protected override void OnInitialized()
+	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
@@ -461,17 +461,7 @@
 			return;
 		}
 
-		Server.Log(new
-		{
-			Type = "REV_SIMULATOR_OPEN",
-			UserInfo = new
-			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash,
-			},
-			Date = DateTime.Now
-		});
+		await Server.Log(StatusTypes.RevSimulatorOpen);
 	}
 
 	private async Task EndCharInput_KeyDown(KeyboardEventArgs e)
@@ -516,25 +506,21 @@
 			maxLength: maxLength.Value,
 			bannedWords: BannedWords.ToHashSet()
 		);
-		Server.Log(new
-		{
-			Type = "REV_SIMULATOR",
-			Char = FirstWordName,
-			WType = FirstWordTypeStr,
-			HP = $"{AllyHP} {FoeHP}",
-			ATK = $"{AllyATK} {FoeATK}",
-			DEF = $"{AllyDEF} {FoeDEF}",
-			Rand = $"{AllyRandom} {FoeRandom}",
-			MaxLen = MaxLength,
-			Banned = $"{BannedWords.StringJoin(' ')}",
-			UserInfo = new
+		await Server.Log
+		(
+			type: "REV_SIMULATOR",
+			order: new
 			{
-				Name = AppSettings.UserName,
-				Guid = AppSettings.Guid,
-				Hash = AppSettings.Hash,
-			},
-			Date = DateTime.Now
-		});
+				Char = FirstWordName,
+				WType = FirstWordTypeStr,
+				HP = $"{AllyHP} {FoeHP}",
+				ATK = $"{AllyATK} {FoeATK}",
+				DEF = $"{AllyDEF} {FoeDEF}",
+				Rand = $"{AllyRandom} {FoeRandom}",
+				MaxLen = MaxLength,
+				Banned = $"{BannedWords.StringJoin(' ')}"
+			}
+		);
 		NavigationManager.NavigateTo("rev-simulator-result");
 	}
 
