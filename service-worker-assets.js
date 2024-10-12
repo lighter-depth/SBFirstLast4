@@ -537,7 +537,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-3J6JDHAHsKSGaTzTGzJh\/aSkVFzIC0g4DXQVAL7DADE=",
+      "hash": "sha256-voYyM9Fs9rQRVELP43CyFmBaM0iUCWWvNlSfYjPpXAQ=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -557,15 +557,15 @@
       "url": "_framework\/Blazored.LocalStorage.dll"
     },
     {
-      "hash": "sha256-2Abjv4zGozzdmXmNpv9\/TqZUzD1AIIAlCC9Ez2RpfqU=",
+      "hash": "sha256-iYrN3\/RkZznCJUtCYpPdXDcK6lptVpHAxn2ROPLmwy0=",
       "url": "_framework\/Microsoft.AspNetCore.Components.dll"
     },
     {
-      "hash": "sha256-pQoWP3Uh\/CZZzTMhv11fQE5sgvDII75r\/\/DhN4aQxW0=",
+      "hash": "sha256-1cnfA9uN7twJR7HxGtn37KB+T\/u4iHYkqRCL6bkEEsU=",
       "url": "_framework\/Microsoft.AspNetCore.Components.Forms.dll"
     },
     {
-      "hash": "sha256-eqEnC+gGscTxXcV8Md0jSpjXVz3iXlfMkwPjCsFEBqI=",
+      "hash": "sha256-EAY\/9pHBM3XxjGck3H+62MwNkRjHDQMFp9P+aV7O3DA=",
       "url": "_framework\/Microsoft.AspNetCore.Components.Web.dll"
     },
     {
@@ -625,11 +625,15 @@
       "url": "_framework\/Microsoft.NET.StringTools.dll"
     },
     {
-      "hash": "sha256-qLro6UKgptlc6zX7E+ti6pOa01dTdy+VkudoQpjSTI8=",
+      "hash": "sha256-TJN8amtss1ZAmM8xCJ\/Vus1ehpVQFgy26iLuqbPsxnc=",
       "url": "_framework\/netstandard.dll"
     },
     {
-      "hash": "sha256-nU+YtAqI62lKj\/2skTlHpVzZjXLbeuFvSYx8h6BLkL4=",
+      "hash": "sha256-EiHBwK8\/ofPpaBmwCnitUNsHGXly1w7DII5W8K3hnOg=",
+      "url": "_framework\/rm.Trie.dll"
+    },
+    {
+      "hash": "sha256-mjSGCXrmSDvH7GmqY1jgsfPSizOy\/3\/trFicYP5cxOc=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -649,7 +653,7 @@
       "url": "_framework\/System.Collections.Concurrent.dll"
     },
     {
-      "hash": "sha256-rZe04yq6Lr7YipI0wa3D6kKICZ5ZAvcGiAmIwPEBJQw=",
+      "hash": "sha256-BP5MLxuw+bNBFEkKMOQxRJaoTwnPJEfXFul0ntEWu9k=",
       "url": "_framework\/System.Collections.dll"
     },
     {
@@ -765,7 +769,7 @@
       "url": "_framework\/System.ObjectModel.dll"
     },
     {
-      "hash": "sha256-oK1IrJk\/vFm\/brhK4Ugo2St03QKFDPv3zKhWZT2Ts2E=",
+      "hash": "sha256-C\/rzUwYSsKqmb9wT9I9\/20Fx\/zjwcQAwhv5Twcw6T0w=",
       "url": "_framework\/System.Private.CoreLib.dll"
     },
     {
@@ -889,5 +893,5 @@
       "url": "_content\/SpawnDev.BlazorJS\/SpawnDev.BlazorJS.lib.module.js"
     }
   ],
-  "version": "RLxNgtR4"
+  "version": "GtKVG19F"
 };
