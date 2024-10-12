@@ -431,7 +431,6 @@
 		align-self: center;
 		text-align: center;
 		width: 75%;
-		font-family: mplus-1p-bold;
 		line-height: 50px;
 		font-weight: bold;
 		height: 60px;
@@ -459,7 +458,6 @@
 		align-self: center;
 		text-align: center;
 		width: 75%;
-		font-family: mplus-1p-bold;
 		line-height: 60px;
 		font-weight: bold;
 		height: 70px;
@@ -650,50 +648,57 @@
 
 	private async Task GenerateTrie()
 	{
-		var sw = new Stopwatch();
-		sw.Start();
-		IsTrieGenerated = false;
-		IsTrieGenerating = true;
-		StateHasChanged();
-		await Task.Delay(1);
-
-		await Message("無属性の単語を読み込み中...");
-
-		var tlMax = Words.NoTypeWords.Count;
-		var tlProgress = new ProgressBoundary(tlMax);
-		var tlCount = 0;
-		for (var i = 0; i < tlMax; i++)
+		try
 		{
-			WordTrie.AddWord(Words.NoTypeWords[i]);
-			if (i == tlProgress.Boundaries.At(0))
+			var sw = new Stopwatch();
+			sw.Start();
+			IsTrieGenerated = false;
+			IsTrieGenerating = true;
+			StateHasChanged();
+			await Task.Delay(1);
+
+			await Message("無属性の単語を読み込み中...");
+
+			var tlMax = Words.NoTypeWords.Count;
+			var tlProgress = new ProgressBoundary(tlMax);
+			var tlCount = 0;
+			for (var i = 0; i < tlMax; i++)
 			{
-				tlCount++;
-				await Message($"無属性の単語を読み込み中... ({tlCount}%)");
-				tlProgress.Boundaries.RemoveAt(0);
+				WordTrie.AddWord(Words.NoTypeWords[i]);
+				if (i == tlProgress.Boundaries.At(0))
+				{
+					tlCount++;
+					await Message($"無属性の単語を読み込み中... ({tlCount}%)");
+					tlProgress.Boundaries.Remove(tlProgress.Boundaries.At(0));
+				}
 			}
+
+			await Message("有属性の単語を読み込み中...");
+
+			var tdMax = Words.TypedWords.Count;
+			var tdProgress = new ProgressBoundary(tdMax);
+			var tdCount = 0;
+			for (var i = 0; i < tdMax; i++)
+			{
+				WordTrie.AddWord(Words.TypedWords[i].Name);
+				if (i == tdProgress.Boundaries.At(0))
+				{
+					tdCount++;
+					await Message($"有属性の単語を読み込み中... ({tdCount}%)");
+					tdProgress.Boundaries.Remove(tdProgress.Boundaries.At(0));
+				}
+			}
+
+			IsTrieGenerating = false;
+			IsTrieGenerated = true;
+			sw.Stop();
+			TrieTime = $"{sw.ElapsedMilliseconds}ms";
+			StateHasChanged();
 		}
-
-		await Message("有属性の単語を読み込み中...");
-
-		var tdMax = Words.TypedWords.Count;
-		var tdProgress = new ProgressBoundary(tdMax);
-		var tdCount = 0;
-		for (var i = 0; i < tdMax; i++)
+		catch(Exception ex)
 		{
-			WordTrie.AddWord(Words.TypedWords[i].Name);
-			if (i == tdProgress.Boundaries.At(0))
-			{
-				tdCount++;
-				await Message($"有属性の単語を読み込み中... ({tdCount}%)");
-				tdProgress.Boundaries.RemoveAt(0);
-			}
+			await JSRuntime.AlertEx(ex);
 		}
-
-		IsTrieGenerating = false;
-		IsTrieGenerated = true;
-		sw.Stop();
-		TrieTime = $"{sw.ElapsedMilliseconds}ms";
-		StateHasChanged();
 
 		async Task Message(string msg)
 		{
@@ -730,7 +735,7 @@
 				{
 					tlCount++;
 					await Message($"無属性の単語を読み込み中... ({tlCount}%)");
-					tlProgress.Boundaries.RemoveAt(0);
+					tlProgress.Boundaries.Remove(tlProgress.Boundaries.At(0));
 				}
 			}
 
@@ -747,7 +752,7 @@
 				{
 					tdCount++;
 					await Message($"有属性の単語を読み込み中... ({tdCount}%)");
-					tdProgress.Boundaries.RemoveAt(0);
+					tdProgress.Boundaries.Remove(tdProgress.Boundaries.At(0));
 				}
 			}
 
@@ -798,7 +803,7 @@
 				{
 					tlCount++;
 					await Message($"無属性の単語を読み込み中... ({tlCount}%)");
-					tlProgress.Boundaries.RemoveAt(0);
+					tlProgress.Boundaries.Remove(tlProgress.Boundaries.At(0));
 				}
 			}
 
@@ -815,7 +820,7 @@
 				{
 					tdCount++;
 					await Message($"有属性の単語を読み込み中... ({tdCount}%)");
-					tdProgress.Boundaries.RemoveAt(0);
+					tdProgress.Boundaries.Remove(tdProgress.Boundaries.At(0));
 				}
 			}
 
