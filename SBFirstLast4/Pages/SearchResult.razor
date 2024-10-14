@@ -12,7 +12,7 @@
 	{
 		<p class="loading-text">
 			単語を検索中...<br>
-			(これには時間がかかることがあります)
+			Tips：@Tips
 		</p>
 	}
 	else
@@ -173,6 +173,8 @@
 		.Skip((CurrentPage - 1) * ItemsPerPage)
 		.Take(ItemsPerPage)
 		.ToList();
+
+	private const string Tips = "機能「高速前方後方一致」を使うことで、一瞬で単語を検索することができます";
 
 	protected override async Task OnInitializedAsync()
 	{
