@@ -216,6 +216,9 @@
 							: Searcher.SearchRegex(RegexBody);
 				if (AppSettings.SortResult)
 					Array.Sort(dataArr);
+
+				// 検索が完了するまで待機
+				await Task.Delay(5000);
 			}
 
 			isSearching = false;
