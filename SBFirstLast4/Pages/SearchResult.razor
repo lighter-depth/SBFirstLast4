@@ -209,6 +209,9 @@
 
 			else
 			{
+				// 検索が完了するまで待機
+				await Task.Delay(5000);
+
 				dataArr = RegexBody is null
 							? CustomLengthPred is null
 							? Searcher.SearchFirstLast(FirstChar, LastChar)
@@ -216,9 +219,6 @@
 							: Searcher.SearchRegex(RegexBody);
 				if (AppSettings.SortResult)
 					Array.Sort(dataArr);
-
-				// 検索が完了するまで待機
-				await Task.Delay(10000);
 			}
 
 			isSearching = false;
