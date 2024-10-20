@@ -1039,16 +1039,24 @@
 			TotalWords = ResultBuffer.Sum(x => x.Length);
 		CurrentPage = 0;
 		IsSearching = false;
-		await Server.Log
-		(
-			type: StatusTypes.FastSearch,
-			order: new
-			{
-				DicStyle = IsTrie ? "TRIE" : IsLastHash ? "LASTHASH" : "FIRSTHASH",
-				Key = key,
-				Option = option
-			}
-		);
+		try
+		{
+			await Server.Log
+			(
+				type: StatusTypes.FastSearch,
+				order: new
+				{
+					DicStyle = IsTrie ? "TRIE" : IsLastHash ? "LASTHASH" : "FIRSTHASH",
+					Key = key,
+					Option = option
+				}
+			);
+		}
+		catch(Exception ex)
+		{
+			await JSRuntime.Alert($"不明なエラー：{ex.Stringify()}");
+			NavigationManager.NavigateTo(string.Empty, true);
+		}
 		StateHasChanged();
 	}
 

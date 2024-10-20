@@ -1,0 +1,35 @@
+﻿@page "/ldload"
+@layout NoMenuLayout
+@inject NavigationManager NavigationManager
+@implements IDisposable
+<PageTitle>トップページ</PageTitle>
+<div class="file-input">
+	<InputFile OnChange="HandleFileSelected" multiple />
+</div>
+<style>
+	.file-input {
+		border: 2px dashed lightgray;
+		background-color: white;
+		color: black;
+		cursor: pointer;
+		padding: 10px;
+		margin: 10px;
+	}
+</style>
+
+@code {
+	internal static bool Accepting { get; set; }
+
+	protected override void OnInitialized()
+	{
+		if (!Accepting)
+			NavigationManager.GoToIndex();
+	}
+
+	public void Dispose() => Accepting = false;
+
+	private async Task HandleFileSelected(InputFileChangeEventArgs e)
+	{
+
+	}
+}

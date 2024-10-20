@@ -414,7 +414,15 @@
 			return;
 		}
 
-		await Server.Log(StatusTypes.BestDmg);
+		try
+		{
+			await Server.Log(StatusTypes.BestDmg);
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.Alert($"不明なエラー：{ex.Stringify()}");
+			NavigationManager.NavigateTo(string.Empty, true);
+		}
 	}
 
 	private async Task TextInput_KeyUp() => await ReloadResult();

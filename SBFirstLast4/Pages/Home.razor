@@ -4,6 +4,7 @@
 @using SBFirstLast4.Syntax
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
+@inject IJSRuntime JSRuntime
 <PageTitle>しりとり単語検索</PageTitle>
 
 
@@ -311,7 +312,7 @@
 
 	private string SelectedSearchOptionItem = "前方後方一致";
 	private List<string> SearchOptionItemList = ["前方後方一致", "前方一致", "後方一致", "ワイルドカード", "正規表現"];
-	
+
 	protected override async Task OnInitializedAsync()
 	{
 		if (!AppSettings.IsLoggedIn)
@@ -420,24 +421,31 @@
 			_ => default
 		});
 
-		await Server.Log
-		(
-			type: StatusTypes.SearchTL,
-			order: new
-			{
-				First = FirstChar,
-				Last = LastChar,
-				Length = SelectedCustomLengthItem switch
+		try
+		{
+			await Server.Log
+			(
+				type: StatusTypes.SearchTL,
+				order: new
 				{
-					"なし" => "NULL",
-					"７文字以上" => "7+",
-					"６文字以上" => "6",
-					_ => CustomLength
-				},
-				Regex = regexPattern
-			}
-		);
-
+					First = FirstChar,
+					Last = LastChar,
+					Length = SelectedCustomLengthItem switch
+					{
+						"なし" => "NULL",
+						"７文字以上" => "7+",
+						"６文字以上" => "6",
+						_ => CustomLength
+					},
+					Regex = regexPattern
+				}
+			);
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.Alert($"不明なエラー：{ex.Stringify()}");
+			NavigationManager.NavigateTo(string.Empty, true);
+		}
 
 
 		NavigationManager.NavigateTo("result");
