@@ -153,7 +153,7 @@
 		try
 		{
 			var spec = await Server.SpeculateAsync();
-			var invalidSpec = spec is null or "none";
+			var invalidSpec = spec is null || spec.Contains("不明");
 			if (!invalidSpec)
 			{
 				await JSRuntime.Alert(spec);
