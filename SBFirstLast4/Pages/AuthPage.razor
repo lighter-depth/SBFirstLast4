@@ -152,6 +152,14 @@
 	{
 		try
 		{
+			var spec = await Server.SpeculateAsync();
+			var invalidSpec = spec is null or "none";
+			if (!invalidSpec)
+			{
+				await JSRuntime.Alert(spec);
+				return;
+			}
+
 			var name = await LocalStorage.GetItemAsync<string?>(LSKeys.UserName);
 			var guid = await LocalStorage.GetItemAsync<string?>(LSKeys.UserId);
 			var hash = await LocalStorage.GetItemAsync<string?>(LSKeys.HashId);
@@ -164,7 +172,8 @@
 
 			var guidTrim = guid.Take(6).StringJoin();
 			var hashTrim = hash.Take(6).StringJoin();
-			await JSRuntime.Alert($"Data: {{ Name: {name}, Id: g0{guidTrim}h0{hashTrim} }}");
+			var data = $"Data: {{ Name: {name}, Id: g0{guidTrim}h0{hashTrim} }}";
+			await JSRuntime.Alert(data);
 		}
 		catch(Exception ex)
 		{

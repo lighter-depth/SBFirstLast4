@@ -111,6 +111,20 @@ public static class Server
 		}
 	}
 
+	internal static async Task<string?> SpeculateAsync()
+	{
+		try
+		{
+			var response = await Client.PostAsync("https://sbfl4logging-lite.onrender.com/speculate", null);
+			response.EnsureSuccessStatusCode();
+			return await response.Content.ReadAsStringAsync();
+		}
+		catch
+		{
+			return null;
+		}
+	}
+
 	/*
     internal static async Task<bool> ExistsAsync(string input, CancellationToken token = default)
     {
