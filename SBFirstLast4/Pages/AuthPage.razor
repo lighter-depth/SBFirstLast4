@@ -18,6 +18,9 @@
 {
 	<p id="passwordError">@ErrorMessage</p>
 }
+<div class="cache-button">
+	<button @onclick=CacheBtn_Click>ユーザー情報の確認</button>
+</div>
 <style>
 	body {
 		font-family: Arial, sans-serif;
@@ -73,6 +76,25 @@
 		text-align: center;
 		font-size: 16px;
 	}
+
+	.cache-button {
+		display: flex;
+		justify-content: end;
+		align-items: center;
+		position: absolute;
+		right: 20px;
+		bottom: 40px;
+	}
+
+		.cache-button button {
+			padding: 10px 20px;
+			border: none;
+			border-radius: 30px;
+			font-size: 16px;
+			cursor: pointer;
+			transition: background-color 0.3s, color 0.3s;
+			text-decoration: none;
+		}
 </style>
 @code {
 	internal static bool Accepting { get; set; }
@@ -124,6 +146,30 @@
 		AppSettings.IsAccepted = true;
 		await LocalStorage.SetItemAsync(LSKeys.CachedAuthKey, Model.Password);
 		NavigationManager.GoToIndex();
+	}
+
+	private async Task CacheBtn_Click()
+	{
+		try
+		{
+			var name = await LocalStorage.GetItemAsync<string?>(LSKeys.UserName);
+			var guid = await LocalStorage.GetItemAsync<string?>(LSKeys.UserId);
+			var hash = await LocalStorage.GetItemAsync<string?>(LSKeys.HashId);
+
+			if (name is null || guid is null || hash is null)
+			{
+				await JSRuntime.Alert("CacheNotFound: キャッシュされたユーザー情報が見つかりませんでした。");
+				return;
+			}
+
+			var guidTrim = guid.Take(6).StringJoin();
+			var hashTrim = hash.Take(6).StringJoin();
+			await JSRuntime.Alert($"Data: {{ Name: {name}, Id: g0{guidTrim}h0{hashTrim} }}");
+		}
+		catch(Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+		}
 	}
 
 	public sealed class PasswordModel
