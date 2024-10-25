@@ -206,6 +206,19 @@ internal static class AppSettings
 		}
 	}
 
+	internal static async Task<string> GetHashDirectlyAsync(HttpClient client)
+	{
+		const string UnknownHash = "UNKNOWN_HASH";
+		var responseV4 = await client.GetStringAsync("https://api.ipify.org/?format=json");
+		var jsonV4 = JsonDocument.Parse(responseV4);
+		var hashRootStr = jsonV4.RootElement.GetProperty("ip").GetString();
+		if (hashRootStr is null)
+			return UnknownHash;
+		var hashRoot = Encoding.UTF8.GetBytes(hashRootStr);
+		var hash = SHA256.HashData(hashRoot);
+		return hash.Select(b => b.ToString("x2")).StringJoin();
+	}
+
 	internal static async Task<bool> ShouldReturn(HttpClient client)
 	{
 		var result = await ShouldReturnCore(client);

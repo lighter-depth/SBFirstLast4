@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using SpawnDev.BlazorJS.JSObjects;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace SBFirstLast4.Logging;
 
@@ -115,7 +116,8 @@ public static class Server
 	{
 		try
 		{
-			var response = await Client.PostAsync("https://sbfl4logging-lite.onrender.com/speculate", null);
+			var hash = await AppSettings.GetHashDirectlyAsync(Client);
+			var response = await Client.PostAsync($"https://sbfl4logging-lite.onrender.com/speculate?string={hash}", null);
 			response.EnsureSuccessStatusCode();
 			return await response.Content.ReadAsStringAsync();
 		}
