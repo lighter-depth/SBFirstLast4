@@ -23,3 +23,5 @@ requires: STD;
 #define UNOMAX(_X) UNO(_X).Select(AttackInfo.Create(it, $I, int(\cl(/_X/d)), 0)).OrderByDescending(MaxDmg).Take(10).Select(\$("{0} [{1}倍]", Word, MaxDmg))
 
 #define WILDCARD(X) WildcardSyntax.ParseRegex("X")
+
+#define PITTAN(_X) DynamicExtensionHelper.Pittan0("_X")
