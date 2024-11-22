@@ -25,3 +25,7 @@ requires: STD;
 #define WILDCARD(X) WildcardSyntax.ParseRegex("X")
 
 #define PITTAN(_X) DynamicExtensionHelper.Pittan0("_X")
+
+#define ATTACKD(_X, _Y) /_X/d.\cl(/_Y/d)
+#define ATTACKR(_X, _Y) /_X/m.\cl(/_Y/m)
+#define ATTACKP(_X, _Y) PITTAN(_X).\cl(PITTAN(_Y))
