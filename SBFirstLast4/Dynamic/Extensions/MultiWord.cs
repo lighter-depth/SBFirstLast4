@@ -44,6 +44,33 @@ public readonly record struct MultiWord(string Name, IReadOnlyList<WordType> Typ
 
 	public double CalcEffectiveDmg(Word other) => CalcEffectiveDmg(new MultiWord(other));
 
+	public string Count
+	{
+		get
+		{
+			var types = new Dictionary<WordType, int>();
+			foreach(var type in Types)
+			{
+				if(!types.ContainsKey(type))
+				{
+					types.Add(type, 1);
+					continue;
+				}
+				types[type]++;
+			}
+			var builder = new StringBuilder();
+			builder.Append($"{Name} (");
+			foreach(var ((type, count), index) in types.WithIndex())
+			{
+				builder.Append($"{type.TypeToString()}: {count}");
+				if (index != types.Count - 1)
+					builder.Append(", ");
+			}
+			builder.Append(')');
+			return builder.ToString();
+		}
+	}
+
 	public Word.SuitableIndicator IsSuitable(MultiWord prev)
 	{
 		if (End == 'ん')

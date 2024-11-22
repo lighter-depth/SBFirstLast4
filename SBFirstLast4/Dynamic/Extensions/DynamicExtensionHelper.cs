@@ -63,6 +63,33 @@ public static class DynamicExtensionHelper
 
 		return hash.Select(b => b.ToString("x2")).StringJoin();
 	}
+
+	private static Word[] PittanWords => _pittanWords ??= Words.TypedWords.Where(x => x.Length > 1).ToArray();
+	private static Word[]? _pittanWords;
+
+	// #define PITTAN(_X) DynamicExtensionHelper.Pittan0("_X")
+	public static MultiWord Pittan0(string name)
+	{
+		if (name.Length < 2)
+			return (MultiWord)Word.FromString(name);
+
+		var buffer = new List<WordType>();
+		var words = new List<Word>();
+
+		foreach (var i in PittanWords)
+			if (name.Contains(i.Name))
+			{
+				buffer.AddRange(i.Types);
+				words.Add(i);
+			}
+		foreach (var i in words)
+		{
+			var count = (name.Length - name.Replace(i.Name, string.Empty).Length) / i.Length;
+			for (var j = 0; j < count - 1; j++)
+				buffer.AddRange(i.Types);
+		}
+		return new MultiWord(name, buffer.ToArray());
+	}
 }
 
 [DynamicLinqType]

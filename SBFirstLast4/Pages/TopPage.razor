@@ -38,7 +38,7 @@
 				<p class="card-text">タイプ無しの単語も含んだ、<br>完全版の辞書です。</p>
 			</div>
 		</div>
-		@*
+		<!--
 		<div class="card" @onclick="LocalDictionaryBtn_Click">
 			<div class="card-body">
 				<button class="btn btn-local" @onclick="LocalDictionaryBtn_Click">
@@ -48,7 +48,7 @@
 				<p class="card-text">ローカル環境から、任意の単語を<br>読み込みます。</p>
 			</div>
 		</div>
-		*@
+		-->
 	</div>
 </div>
 
@@ -200,6 +200,22 @@
 		StateHasChanged();
 		await Task.Delay(1);
 		await LoadDictionaryAsync(DictionaryInitializationToken.Lite);
+
+		var count = 0;
+		var len = AuxLists.Killable.Length;
+		var killers = Words.TypedWords.Where(x => !x.IsHeal && !x.Contains(WordType.Normal));
+		foreach (var (i, index) in AuxLists.Killable.Select(x => Word.FromString(x)).WithIndex())
+		{
+			Content = $"計算中... {index}/{len}";
+			StateHasChanged();
+			await Task.Delay(1);
+			foreach (var j in killers.Where(x => x != i && x.Start == i.End))
+				if (j.CalcEffectiveDmg(i) == 8)
+					count++;
+		}
+
+		await JSRuntime.Alert(count);
+
 		NavigationManager.NavigateTo("typed", false);
 	}
 
