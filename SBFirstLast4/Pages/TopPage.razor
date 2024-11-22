@@ -200,22 +200,6 @@
 		StateHasChanged();
 		await Task.Delay(1);
 		await LoadDictionaryAsync(DictionaryInitializationToken.Lite);
-
-		var count = 0;
-		var len = AuxLists.Killable.Length;
-		var killers = Words.TypedWords.Where(x => !x.IsHeal && !x.Contains(WordType.Normal));
-		foreach (var (i, index) in AuxLists.Killable.Select(x => Word.FromString(x)).WithIndex())
-		{
-			Content = $"計算中... {index}/{len}";
-			StateHasChanged();
-			await Task.Delay(1);
-			foreach (var j in killers.Where(x => x != i && x.Start == i.End))
-				if (j.CalcEffectiveDmg(i) == 8)
-					count++;
-		}
-
-		await JSRuntime.Alert(count);
-
 		NavigationManager.NavigateTo("typed", false);
 	}
 
