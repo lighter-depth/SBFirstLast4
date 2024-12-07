@@ -78,7 +78,7 @@ public static class Server
 		{
 			try
 			{
-				var debugKey = await Client.GetStringAsync($"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/binary/.mys.txt?token={DateTime.Now:yyyyMMddHHmmss}");
+				var debugKey = await Client.GetStringAsync($"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/binary/.mys.txt");
 				return debugKey.Trim() == input.Trim();
 			}
 			catch

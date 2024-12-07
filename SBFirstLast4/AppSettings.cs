@@ -75,11 +75,16 @@ internal static class AppSettings
 		string? status;
 		try
 		{
-			status = await client.GetStringAsync($"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/binary/.dsync.txt?token={DateTime.Now:yyyyMMddHHmmss}");
+			status = await client.GetStringAsync($"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/binary/.dsync.txt");
 		}
 		catch (Exception ex)
-		when (ex is HttpRequestException)
+		when (ex is HttpRequestException　hex)
 		{
+			var statusCode = hex.StatusCode;
+			var msg = hex.Message;
+
+			var sss = $"{statusCode}: {msg}";
+
 			IsOffline = true;
 			return;
 		}
@@ -231,7 +236,7 @@ internal static class AppSettings
 			string? status;
 			try
 			{
-				status = await client.GetStringAsync($"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/binary/.dsync.txt?token={DateTime.Now:yyyyMMddHHmmss}");
+				status = await client.GetStringAsync($"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/binary/.dsync.txt");
 			}
 			catch (Exception ex)
 			when (ex is HttpRequestException)
