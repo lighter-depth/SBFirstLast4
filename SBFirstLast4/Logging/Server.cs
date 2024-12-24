@@ -25,7 +25,7 @@ public static class Server
 			return;
 		}
 
-#if DEBUG
+#if NEVER
 		if (!AppSettings.IsAdmin)
 			return;
 

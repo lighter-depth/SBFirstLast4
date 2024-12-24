@@ -35,9 +35,11 @@ public static class Words
 	public static string[] TypedWordNames => _typedWordNames ??= TypedWords.Select(x => x.Name).ToArray();
 	private static string[]? _typedWordNames;
 
-	public static bool IsLoadedCorrectly => NoTypeWords.Count > 2_000_000 || TypedWords.Count > 10_000 || _loadSkip;
-	public static bool IsLite => NoTypeWords.Count < 2_000_000;
+	public static bool IsLoadedCorrectly => NoTypeWords.Count > 2_000_000 || TypedWords.Count > 10_000 || IsLocal || _loadSkip;
+	public static bool IsLite => !IsLocal && NoTypeWords.Count < 2_000_000;
 	private static bool _loadSkip;
+
+	internal static bool IsLocal { get; set; } = false;
 
 	private static readonly string[] _dummyData = [
 		"のーまる", "どうぶつ", "しょくぶつ", "ちめい", "かんじょう",
@@ -156,8 +158,10 @@ public static class Words
 	}
 	private static void InitSplitList()
 	{
-		foreach (var i in Utils.KanaListSpread) SplitList.Add(TypedWords.Where(x => x.Name.At(0) == i[0]).ToList());
+		foreach (var i in Utils.KanaListSpread)
+			SplitList.Add(TypedWords.Where(x => x.Name.At(0) == i[0]).ToList());
 	}
+
 	public static List<Word> GetSplitList(char startChar) => SplitList.At(Utils.KanaListSpread.ToList().IndexOf(startChar.ToString())) ?? Enumerable.Empty<Word>().ToList();
 
 	private static void ExceptDictionaries() => NoTypeWords = NoTypeWords.AsParallel().Except(TypedWords.AsParallel().Select(x => x.Name)).ToList();

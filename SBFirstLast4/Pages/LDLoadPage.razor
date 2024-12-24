@@ -6,6 +6,9 @@
 <div class="file-input">
 	<InputFile OnChange="HandleFileSelected" multiple />
 </div>
+<button @onclick=TmpBtn_OnClick>
+	確定
+</button>
 <style>
 	.file-input {
 		border: 2px dashed lightgray;
@@ -18,6 +21,9 @@
 </style>
 
 @code {
+	private static readonly string[] TmpWords = ["ぬがー 食べ物", "にちろせんそう 社会 暴力", "cat 動物"];
+
+
 	internal static bool Accepting { get; set; }
 
 	protected override void OnInitialized()
@@ -31,5 +37,13 @@
 	private async Task HandleFileSelected(InputFileChangeEventArgs e)
 	{
 
+	}
+
+	private void TmpBtn_OnClick()
+	{
+		foreach (var i in TmpWords.Select(x => x.Split()))
+			Words.TypedWords.Add(Word.FromVerbatim(i.At(0), i.At(1) ?? string.Empty, i.At(2) ?? string.Empty));
+
+		NavigationManager.NavigateTo("typed", false);
 	}
 }

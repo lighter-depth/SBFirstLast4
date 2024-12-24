@@ -196,6 +196,7 @@
 
 	private async Task LiteDictionaryBtn_Click()
 	{
+		Words.IsLocal = false;
 		IsLoading = true;
 		StateHasChanged();
 		await Task.Delay(1);
@@ -205,6 +206,7 @@
 
 	private async Task FullDictionaryBtn_Click()
 	{
+		Words.IsLocal = false;
 		IsLoading = true;
 		StateHasChanged();
 		await Task.Delay(1);
@@ -214,6 +216,7 @@
 
 	private void LocalDictionaryBtn_Click()
 	{
+		Words.IsLocal = true;
 		LDLoadPage.Accepting = true;
 		NavigationManager.NavigateTo("ldload", false);
 	}

@@ -210,6 +210,14 @@ internal static class AppSettings
 			return (UnknownHash, UnknownHash, UnknownHash);
 		}
 	}
+	internal static async Task<string> TemporaryHashAsync(HttpClient client)
+	{
+		var guid = System.Guid.NewGuid().ToString();
+		var hash = await GetHashDirectlyAsync(client);
+		var guidTrim = guid.Take(6).StringJoin();
+		var hashTrim = hash.Take(6).StringJoin();
+		return $"g1{guidTrim}h1{hashTrim}";
+	}
 
 	internal static async Task<string> GetHashDirectlyAsync(HttpClient client)
 	{

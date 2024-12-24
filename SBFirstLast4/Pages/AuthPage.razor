@@ -166,7 +166,8 @@
 
 			if (name is null || guid is null || hash is null)
 			{
-				await JSRuntime.Alert("CacheNotFound: キャッシュされたユーザー情報が見つかりませんでした。");
+				var tmphash = await AppSettings.TemporaryHashAsync(Http);
+				await JSRuntime.Alert($"TH: {tmphash}");
 				return;
 			}
 
