@@ -152,7 +152,7 @@
 	{
 		try
 		{
-			var spec = await Server.SpeculateAsync();
+			var spec = await Server.SpeculateAsync(LocalStorage);
 			if(spec is null)
 			{
 				await JSRuntime.Alert("通信エラーが発生しました。しばらく時間を置いてからもう一度お試しください。");
