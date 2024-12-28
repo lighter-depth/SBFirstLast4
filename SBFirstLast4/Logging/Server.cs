@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using Blazored.LocalStorage;
+using Microsoft.JSInterop;
 using SpawnDev.BlazorJS.JSObjects;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -112,12 +113,14 @@ public static class Server
 		}
 	}
 
-	internal static async Task<string?> SpeculateAsync()
+	internal static async Task<string?> SpeculateAsync(ILocalStorageService localStorage)
 	{
 		try
 		{
+			var guid = await localStorage.GetItemAsync<string?>(LSKeys.UserId) ?? string.Empty;
 			var hash = await AppSettings.GetHashDirectlyAsync(Client);
-			var response = await Client.PostAsync($"https://sbfl4logging-lite.onrender.com/speculate?string={hash}", null);
+
+			var response = await Client.PostAsync($"https://sbfl4logging-lite.onrender.com/speculate?string={hash}{guid}", null);
 			response.EnsureSuccessStatusCode();
 			return await response.Content.ReadAsStringAsync();
 		}
