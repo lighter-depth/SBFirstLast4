@@ -84,7 +84,7 @@ internal static partial class WideVariableRegex
 		(XorAssign(), AssignmentType.Xor),
 		(LeftShiftAssign(), AssignmentType.LeftShift),
 		(RightShiftAssign(), AssignmentType.RightShift),
-		(CoarseAssign(), AssignmentType.Coarse)
+		(CoalsceAssign(), AssignmentType.Coalsce)
 	];
 
 	private const string VariablePattern = "&(?<name>[A-Z_a-z][0-9A-Z_a-z]*)";
@@ -168,10 +168,10 @@ internal static partial class WideVariableRegex
 	internal static partial Regex RightShiftAssign();
 
 	[GeneratedRegex($@"^\s*{VariablePattern}\s*\?\?=(?<expr>.*)$")]
-	internal static partial Regex CoarseAssign();
+	internal static partial Regex CoalsceAssign();
 }
 
 internal enum AssignmentType
 {
-	Add, Subtract, Multiply, Divide, Modulus, And, Or, Xor, LeftShift, RightShift, Coarse
+	Add, Subtract, Multiply, Divide, Modulus, And, Or, Xor, LeftShift, RightShift, Coalsce
 }

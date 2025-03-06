@@ -38,7 +38,7 @@ public static class DynamicExtensionHelper
 
 	public static T? At<T>(this IList<T> source, int index) => index < 0 || index >= source.Count ? default : source[index];
 
-	public static TValue? At<TKey, TValue>(this IDictionary<TKey, TValue> source, TKey key) => source.TryGetValue(key, out var value) ? value : default;
+	public static TValue? AtKey<TKey, TValue>(this IDictionary<TKey, TValue> source, TKey key) => source.TryGetValue(key, out var value) ? value : default;
 
 	public static void Add<T>(this Stack<T> stack, T value) => stack.Push(value);
 

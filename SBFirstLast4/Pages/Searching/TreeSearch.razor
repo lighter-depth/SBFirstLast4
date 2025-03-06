@@ -1,0 +1,300 @@
+﻿@page "/treesearch"
+@namespace SBFirstLast4.Pages
+@using SBFirstLast4.Expressions
+@using SBFirstLast4.Logging
+@using Interpreter = SBFirstLast4.Dynamic.Interpreter;
+@using ScriptExecutor = SBFirstLast4.Dynamic.ScriptExecutor;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+<PageTitle>@AppTitle.Format("グループ検索")</PageTitle>
+
+<div id="transparent-screen" style="display: @(NodeMenu.DisplayAttr(ShowScreen.Value))" @onclick="TransparentScreen_OnClick" />
+
+<div class="source-pane">
+	ソース辞書
+	<select id="source-selector-inst" class="source-selector" @onchange=SourceSelector_OnChange>
+		<option value="有属性辞書">有属性辞書</option>
+		<option value="無属性辞書">無属性辞書</option>
+	</select>
+</div>
+
+<div style="display: flex; flex-flow: column; justify-content: center; align-items: center;">
+	@foreach (var (node, index) in Nodes.WithIndex())
+	{
+		@if (index > 0)
+		{
+			var op = node.Operator;
+			node.Operator = op == NodeOperator.Head ? NodeOperator.And : op;
+			if (node.Operator != op) StateHasChanged();
+			var color = OperatorToColor(node.Operator);
+			<div class="pipe" style="height: 30px; background-color: @color;" />
+			<select class="operator-selector" value="@node.Operator.ToSymbol()" @onchange="e =>
+				{
+					node.Operator = (e.Value as string).SymbolToOperator();
+					StateHasChanged();
+				}">
+				@foreach (var i in (ReadOnlySpan<string>)["&&", "||", "^", "!&&", "!||", "!^", "→", "!→"])
+				{
+					<option value="@i">@i</option>
+				}
+			</select>
+			<div class="pipe" style="height: 30px; background-color: @color;" />
+		}
+		else
+		{
+			var op = node.Operator;
+			node.Operator = NodeOperator.Head;
+			if (op != node.Operator)
+				StateHasChanged();
+			<div class="pipe" style="height: 40px;" />
+		}
+		<NodeDisplay Node="node" Nodes="Nodes" OnHide="OnHide" ShowScreen="ShowScreen" />
+	}
+	<div class="pipe" style="height: 40px;" />
+	<div class="dropdown" style="margin-top: 0px;">
+		<button @onclick="() => (ShowMenu.Node, ShowScreen.Value) = (true, true)">
+			＋
+		</button>
+		<div style="display: block; margin-left: max(-50vw, -100px);">
+			<NodeMenu ShowMenu="ShowMenu" Nodes="Nodes" IsTyped="IsTyped" OnHide="OnHide" ShowScreen="ShowScreen" />
+		</div>
+	</div>
+
+	<div class="search-button" @onclick="SearchBtn_OnClick">検索!</div>
+</div>
+
+<style type="text/css">
+	body {
+		background-color: #F5F6F1;
+	}
+
+	.source-pane {
+		display: flex;
+		flex-flow: column;
+		margin: 0px 20px 0px 20px;
+		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+		border-radius: 20px;
+		background-color: white;
+		font-weight: bold;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+		font-size: 20px;
+		padding-top: 10px;
+		padding-bottom: 10px;
+	}
+
+	.source-selector {
+		-moz-appearance: none;
+		-webkit-appearance: none;
+		text-align: center;
+		text-align-last: center;
+		padding: 5px 10px 5px 10px;
+		font-size: 16px;
+		background-color: white;
+		color: black;
+		margin: 10px 10px 10px 10px;
+		min-width: 120px;
+		border: 2px solid lightgray;
+	}
+
+		.source-selector::-ms-expand {
+			display: none;
+		}
+
+		.source-selector option {
+			padding-left: 5px;
+			padding-right: 5px;
+			text-align: center;
+		}
+
+	.pipe {
+		width: 10px;
+		height: 120px;
+		background-color: lightgray;
+		z-index: 0;
+	}
+
+	.operator-selector {
+		-moz-appearance: none;
+		-webkit-appearance: none;
+		width: 60px;
+		height: 60px;
+		z-index: 1;
+		border-radius: 20px;
+		border: 2px solid lightgray;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		text-align-last: center;
+		font-weight: bold;
+		box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+		background-color: white;
+		color: black;
+		position: relative;
+	}
+
+		.operator-selector::-ms-expand {
+			display: none;
+		}
+
+	.dropdown {
+		position: relative;
+		display: inline-block;
+		margin-bottom: 50px;
+		margin-top: 30px;
+	}
+
+		.dropdown button {
+			border: 1px solid black;
+			background-color: white;
+			color: black;
+			border-radius: 0px;
+		}
+
+	#transparent-screen {
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		width: max(100%, 100vw);
+		height: max(100%, 100vh);
+		color: transparent;
+		z-index: 2;
+	}
+
+	.search-button {
+		align-self: center;
+		text-align: center;
+		width: 95%;
+		line-height: 60px;
+		font-weight: bold;
+		height: 60px;
+		border: none;
+		border-radius: 30px;
+		font-size: 24px;
+		cursor: pointer;
+		background: linear-gradient(to right, #2524c0, #f035cb);
+		color: white;
+		transition: background-color 0.3s, color 0.3s;
+		text-decoration: none;
+		margin-top: 20px;
+		margin-bottom: 50px;
+	}
+</style>
+
+@code {
+
+	private ShowMenuUI ShowMenu = new();
+
+	private IEnumerable<string?> NodeStrings => Nodes.Select(n => n.ToString());
+
+	private readonly List<Node> Nodes = [];
+
+	private string SourceName = "有属性辞書";
+
+	private bool IsTyped => SourceName == "有属性辞書";
+
+	private ActionWrapper OnHide = new();
+
+	private Wrapper<bool> ShowScreen = new(false);
+
+	private static Action _stateHasChanged = () => { };
+
+	const string AND = "&&";
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (!AppSettings.IsLoggedIn)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+		if (!Words.IsLoadedCorrectly)
+		{
+			NavigationManager.NavigateTo("top", false);
+			return;
+		}
+
+		await Server.Log(StatusTypes.GroupSearchOpen);
+
+		StateHasChanged();
+	}
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+			ShowScreen.Value = false;
+
+		_stateHasChanged = StateHasChanged;
+	}
+
+	internal static void RaiseStateHasChanged() => _stateHasChanged();
+
+	internal static string OperatorToColor(NodeOperator op) => op switch
+	{
+		NodeOperator.And => "olivedrab",
+		NodeOperator.Or => "darkmagenta",
+		NodeOperator.Xor => "cadetblue",
+		NodeOperator.Nand => "indianred",
+		NodeOperator.Nor => "dimgray",
+		NodeOperator.Xnor => "limegreen",
+		NodeOperator.Imply => "darkgoldenrod",
+		NodeOperator.Nimply => "steelblue",
+		_ => "lightgray"
+	};
+
+	private void TransparentScreen_OnClick()
+	{
+		OnHide.Invoke();
+		ShowScreen.Value = false;
+		ShowMenu.AlterDefault();
+		StateHasChanged();
+	}
+
+	private async Task SourceSelector_OnChange(ChangeEventArgs e)
+	{
+		var value = e.Value as string ?? string.Empty;
+
+		var isTL = value == "無属性辞書";
+
+		if (isTL && Words.IsLite)
+		{
+			var backToTop = await JSRuntime.Confirm("完全版の辞書が読み込まれていないため、辞書選択画面に戻ります。よろしいですか？");
+
+			if (backToTop)
+			{
+				NavigationManager.NavigateTo("top", false);
+				return;
+			}
+
+			await JSRuntime.SetElementValueById("source-selector-inst", "有属性辞書");
+			return;
+		}
+
+		if (isTL && Nodes.Any(n => n.IsTypedOnly) && !await JSRuntime.Confirm("有属性辞書でのみ有効なノードが含まれています。無属性辞書に変更しますか？（無効なノードは削除されます）"))
+		{
+			await JSRuntime.SetElementValueById("source-selector-inst", "有属性辞書");
+			return;
+		}
+
+		SourceName = value;
+		if (isTL)
+			Nodes.RemoveAll(n => n.IsTypedOnly);
+	}
+
+	private async Task SearchBtn_OnClick()
+	{
+		var selector = IsTyped ? "@TW" : "@NN";
+		var query = $"{selector}.Where({nameof(Expressions.Extensions.BooleanEvaluator)}(){Nodes.Select(n => n.ToString()).StringJoin()}.{nameof(Expressions.Extensions.BooleanEvaluator.Evaluate)}()).ToArray()";
+
+		SearchOptions.SetTree(IsTyped, query);
+
+		await Server.Log
+		(
+			type: StatusTypes.SearchGroup,
+			order: query
+		);
+
+		NavigationManager.NavigateTo("treesearch-result");
+	}
+}

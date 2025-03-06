@@ -1,0 +1,36 @@
+﻿@page "/debug"
+@namespace SBFirstLast4.Pages
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject HttpClient Http
+@using SBFirstLast4.Logging
+
+<button @onclick=DebugBtn_OnClick>Click Here!!</button>
+@JsonText
+
+
+@code {
+	private string JsonText = string.Empty;
+
+	protected override void OnInitialized()
+	{
+		if (!AppSettings.IsDebug && !AppSettings.IsAdmin)
+			NavigationManager.NavigateTo("", false);
+	}
+
+	private async Task DebugBtn_OnClick()
+	{
+		var j1 = StatusTemplate.Create
+			(
+				type: "TEST_MSG",
+				order: new
+				{
+					Type = "EMPTY",
+					Category = "EMPTY",
+					Char = "EMPTY"
+				}
+			);
+		JsonText = await Server.JsonMirrorAsync(j1);
+		StateHasChanged();
+	}
+}

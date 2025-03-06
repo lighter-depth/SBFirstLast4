@@ -1,4 +1,6 @@
-﻿namespace SBFirstLast4.Specialized.RevSimulator;
+﻿using SBFirstLast4.Syntax;
+
+namespace SBFirstLast4.Specialized.RevSimulator;
 
 internal static class GetDic
 {
@@ -78,7 +80,7 @@ internal static class GetDic
 		var syokiti = 1000;
 		var minDamageDict = new Dictionary<char, int>();
 
-		foreach (var i in Utils.KanaListCharSpread)
+		foreach (var i in ValidLetterSyntax.LetterList)
 			minDamageDict[i] = syokiti;
 
 		foreach (var i in PlayWords.Keys)

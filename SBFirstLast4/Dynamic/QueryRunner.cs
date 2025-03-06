@@ -351,7 +351,7 @@ public static partial class QueryRunner
 				WideVariable.SetValue(name, WideVariable.GetValue(name) >> result);
 				break;
 
-			case AssignmentType.Coarse:
+			case AssignmentType.Coalsce:
 				WideVariable.SetValue(name, WideVariable.GetValue(name) ?? result);
 				break;
 

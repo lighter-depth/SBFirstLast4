@@ -1,0 +1,392 @@
+﻿@page "/manualquery"
+@namespace SBFirstLast4.Pages
+@using Blazored.LocalStorage
+@using BlazorDownloadFile
+@using System.Linq.Expressions
+@using System.Linq.Dynamic.Core
+@using SBFirstLast4.Dynamic
+@using SBFirstLast4.Logging
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ILocalStorageService LocalStorage
+@inject IBlazorDownloadFileService DownloadFileService
+
+<PageTitle>@AppTitle.Format("手動クエリ")</PageTitle>
+
+<div class="cmd">
+	<div class="cmd-input" style="display: flex; flex-flow: row">
+		<span>>&nbsp;</span>
+		<input type="text" class="input" id="console-input" autocomplete="off" @onkeydown="HandleInput" />
+	</div>
+	@foreach (var item in Enumerable.Reverse(outputBuffer).Where(e => !string.IsNullOrEmpty(e.Content)))
+	{
+		<p style="color: @(item.Type switch
+		{
+			TextType.Error => "red",
+			TextType.Cmd => "yellow",
+			TextType.Monitor => "lightblue",
+			TextType.Safe => "lime",
+			TextType.General => "white",
+			var color => color
+		});">@item.Content</p>
+	}
+</div>
+@if (AppSettings.IsDebug)
+{
+	<div class="translated-lbl">@_translatedStr</div>
+}
+<div class="file-input">
+	<InputFile OnChange="HandleFileSelected" multiple />
+</div>
+
+@if (_moduleFiles != null)
+{
+	<div style="display: flex; flex-flow: column;">
+		@foreach (var (file, i) in _moduleFiles.WithIndex())
+		{
+			<div>
+				<span class="file-name">@file.Name</span>
+				<span class="file-size">(@file.Size) bytes</span>
+			</div>
+			<div id="file@($"{file.Name}")" class="progress-bar" style="width: @($"{(_progressPercentages.TryGetValue(file.Name, out var percentage) ? percentage : 100)}%");">
+			</div>
+			<label for="file@($"{file.Name}")" @onclick="async() =>
+				{
+					try
+					{
+						await RemoveFileAsync(file);
+					}
+					catch(Exception ex)
+					{
+						await JSRuntime.AlertEx(ex);
+					}
+				}">
+				<span class="oi oi-x"></span>
+			</label>
+		}
+	</div>
+}
+<div style="display: flex; flex-flow: column; gap: 20px; margin-top: 30px;">
+	@{
+		Task Href_OnClick(bool linkIndex) => Server.Log(linkIndex ? StatusTypes.QueryDocument : StatusTypes.QueryMacro);
+	}
+	<a href="https://github.com/lighter-depth/FirstLast4Sample/wiki" rel="nofollow" target="_blank" @onclick="() => Href_OnClick(true)">ドキュメント　<span class="oi oi-external-link" style="font-size: 12px;" /></a>
+	<a href="https://github.com/lighter-depth/FirstLast4Sample/wiki/SBFirstLast4%E3%81%AE%E7%B5%84%E3%81%BF%E8%BE%BC%E3%81%BF%E3%83%A2%E3%82%B8%E3%83%A5%E3%83%BC%E3%83%AB" rel="nofollow" target="_blank" @onclick="() => Href_OnClick(false)">マクロ一覧　<span class="oi oi-external-link" style="font-size: 12px;" /></a>
+</div>
+<style>
+	.cmd {
+		background-color: black;
+		color: white;
+		font-family: Consolas, monospace;
+		padding: 10px;
+		width: 95%;
+		height: 300px;
+		overflow-y: scroll;
+		display: flex;
+		flex-direction: column-reverse;
+	}
+
+	.input {
+		background-color: black;
+		color: yellow;
+		font-family: Consolas, monospace;
+		border: none;
+		outline: none;
+		width: 100%;
+	}
+
+		.input::placeholder {
+			color: white;
+		}
+
+	.translated-lbl {
+		border-color: gray;
+		padding: 20px;
+		overflow-y: scroll;
+		overflow: scroll;
+	}
+
+	.file-input {
+		border: 2px dashed lightgray;
+		background-color: white;
+		color: black;
+		cursor: pointer;
+		padding: 10px;
+		margin: 10px;
+	}
+
+	.file-name {
+		font-weight: bold;
+		margin-left: 10px;
+	}
+
+	.file-size {
+		font-style: italic;
+		margin-left: 10px;
+	}
+
+	.progress-bar {
+		height: 20px;
+		background-color: lightblue;
+	}
+
+</style>
+
+@code {
+	private QueryAgent _agent = new();
+
+	private string _translatedStr = string.Empty;
+
+	internal static bool IsReflect { get; set; }
+
+	private List<FileModel> _moduleFiles = [];
+
+
+	private Dictionary<string, int> _progressPercentages = [];
+
+	internal static TaskCompletionSource<string> InputStream { get; private set; } = new();
+
+	internal static CancellationTokenSource Cancellation { get; private set; } = new();
+
+	private static bool WaitingForInput;
+
+	private Action<string> _setTranslated => s => _translatedStr = s;
+
+	private Func<Task> _update => async () =>
+	{
+		StateHasChanged();
+		await Task.Delay(1);
+	};
+
+	private static bool IsInitialized;
+
+	protected override async Task OnInitializedAsync()
+	{
+
+		if (!AppSettings.IsLoggedIn)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+		if (!Words.IsLoadedCorrectly)
+			NavigationManager.NavigateTo("top", false);
+
+		try
+		{
+			Cancellation.Cancel();
+		}
+		catch (Exception e)
+		when (e is OperationCanceledException or TaskCanceledException)
+		{
+		}
+
+		Cancellation = new();
+		await ImportStoredModules();
+		InitProcedures();
+		await InitModulesAsync();
+		IsInitialized = true;
+		StateHasChanged();
+	}
+
+	private void InitProcedures()
+	{
+		foreach (var proc in ModuleManager.Procedures)
+			proc.Update(_agent, outputBuffer, _setTranslated, _update, Cancellation.Token);
+	}
+
+	private async Task InitModulesAsync()
+	{
+		if (!IsInitialized)
+			foreach (var module in ModuleManager.Modules)
+				if (module.StaticStatements.Count > 0)
+					foreach (var statement in module.StaticStatements)
+						await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+
+		foreach (var module in ModuleManager.Modules)
+			if (module.InitStatements.Count > 0)
+				foreach (var statement in module.InitStatements)
+					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+	}
+
+	private async Task ImportStoredModules()
+	{
+		var storedFiles = await LocalStorage.GetItemAsync<List<FileModel>?>(LSKeys.ModuleFiles);
+
+		if (storedFiles?.Count > 0)
+		{
+			foreach (var file in storedFiles)
+				_progressPercentages[file.Name] = 100;
+
+			_moduleFiles = storedFiles;
+		}
+		foreach (var file in _moduleFiles)
+		{
+			if (!ModuleManager.Import(Module.Compile(file.Content, true, file.Name), out var status))
+			{
+				outputBuffer.Add(status, TextType.Error);
+				_moduleFiles.Remove(file);
+				StateHasChanged();
+				continue;
+			}
+			outputBuffer.Add(status, TextType.Safe);
+			StateHasChanged();
+		}
+	}
+
+
+	private List<(string Content, string Type)> outputBuffer = new();
+
+
+	private async Task HandleInput(KeyboardEventArgs e)
+	{
+		try
+		{
+			if (e.Key is "Process" or not "Enter") return;
+			var input = await JSRuntime.GetElementValueById<string>("console-input");
+			await JSRuntime.ClearElementValueById("console-input");
+
+			outputBuffer.Add($"> {input}", TextType.Cmd);
+			StateHasChanged();
+			await Task.Delay(1);
+
+			InputStream.TrySetResult(input);
+
+			if (WaitingForInput)
+			{
+				WaitingForInput = false;
+				return;
+			}
+
+			if (_agent.CurrentContext == QueryContext.RunningProcedure)
+				return;
+
+			if (string.IsNullOrWhiteSpace(input))
+				return;
+
+			await _agent.RunAsync(input, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+
+			StateHasChanged();
+
+			await Server.Log
+			(
+				type: _agent.StatementKind is TextType.Monitor ? StatusTypes.Monitor : StatusTypes.Query,
+				order: input.Trim()
+			);
+		}
+		catch (Exception ex)
+		{
+			outputBuffer.Add(ex.ToFormat(), TextType.Error);
+			StateHasChanged();
+		}
+	}
+
+	internal static Task<string> GetInputStream()
+	{
+		WaitingForInput = true;
+		InputStream = new();
+		return InputStream.Task;
+	}
+
+	private async Task HandleFileSelected(InputFileChangeEventArgs e)
+	{
+		foreach (var file in e.GetMultipleFiles())
+			if (_moduleFiles.Any(f => f.Name == file.Name))
+			{
+				_moduleFiles.RemoveAll(f => f.Name != file.Name);
+				_progressPercentages.Remove(file.Name);
+			}
+
+
+		foreach (var file in e.GetMultipleFiles())
+		{
+			_progressPercentages[file.Name] = 0;
+
+			using var stream = file.OpenReadStream();
+
+			using var reader = new StreamReader(stream);
+
+			var fileContent = await reader.ReadToEndAsync();
+			var fileModel = new FileModel(file.Name, fileContent, file.Size);
+			_moduleFiles.Add(fileModel);
+			StateHasChanged();
+			await Task.Delay(1);
+
+			for (var i = 0; i < 100; i += 2)
+			{
+				_progressPercentages[file.Name] += 2;
+				StateHasChanged();
+				await Task.Delay(1);
+			}
+
+			StateHasChanged();
+			await Task.Delay(100);
+
+			var module = Module.Compile(fileContent, true, file.Name);
+			if (!ModuleManager.Import(module, out var status))
+			{
+				outputBuffer.Add(status, TextType.Error);
+				_moduleFiles.Remove(fileModel);
+				StateHasChanged();
+				continue;
+			}
+			outputBuffer.Add(status, TextType.Safe);
+			StateHasChanged();
+
+			if (module?.StaticStatements.Count > 0)
+				foreach (var statement in module.StaticStatements)
+					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+
+			if (module?.InitStatements.Count > 0)
+				foreach (var statement in module.InitStatements)
+					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+
+		}
+		await LocalStorage.SetItemAsync(LSKeys.ModuleFiles, _moduleFiles);
+		InitProcedures();
+	}
+
+	private async Task RemoveFileAsync(FileModel file)
+	{
+		try
+		{
+			if (!ModuleManager.DeleteByRuntimeName(file.Name, out var status))
+			{
+				outputBuffer.Add(status, TextType.Error);
+				StateHasChanged();
+				return;
+			}
+			outputBuffer.Add(status, TextType.Safe);
+
+			await HandleDeletedFiles();
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+		}
+	}
+
+	private async Task HandleDeletedFiles()
+	{
+		try
+		{
+			var filesToRemove = new List<FileModel>();
+
+			foreach (var m in _moduleFiles)
+				if (!ModuleManager.RuntimeModules.Any(r => r.RuntimeName == m.Name))
+				{
+					filesToRemove.Add(m);
+					_progressPercentages.Remove(m.Name);
+				}
+			_moduleFiles = _moduleFiles.RemoveRange(filesToRemove);
+
+			await LocalStorage.SetItemAsync("MODULE_FILES", _moduleFiles);
+			StateHasChanged();
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+		}
+	}
+
+	internal record FileModel(string Name, string Content, long Size);
+}

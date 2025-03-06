@@ -21,7 +21,7 @@ public static class WildcardSyntax
 			.Replace('？', '.')
 			.Replace("*", ".*")
 			.Replace("＊", ".*")
-			.Where(c => c is '.' or '*' or (>='\u3040' and <'\u30FF'))
+			.WhereWhen(c => c is '.' or '*' or (>='\u3040' and <'\u30FF'), !Words.IsLocal)
 			.StringJoin();
 
 		var pattern = $"^{replaced}$";

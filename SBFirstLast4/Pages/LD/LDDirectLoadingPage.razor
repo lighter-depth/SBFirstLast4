@@ -1,0 +1,82 @@
+﻿@page "/ldloading"
+@namespace SBFirstLast4.Pages
+@layout NoMenuLayout
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+@using LocalLoader = SBFirstLast4.Words.LocalLoader
+
+<PageTitle>@AppTitle.Format("辞書の読み込み")</PageTitle>
+
+@LoadingText
+
+<style>
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f5f6f1;
+		display: flex;
+		flex-flow: column;
+	}
+
+	.text-label {
+		padding-top: 10px;
+		text-align: center;
+		font-size: 18px;
+		font-weight: 100;
+		color: black;
+	}
+</style>
+
+@code {
+	internal static bool Accepting { get; set; }
+
+	internal static List<string> FilesToRemove { get; set; } = [];
+
+	private string LoadingText = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (!Accepting)
+		{
+			NavigationManager.GoToIndex();
+			return;
+		}
+
+		await LoadWords();
+	}
+
+	public void Dispose() => Accepting = false;
+
+	private async Task LoadWords()
+	{
+		LoadingText = "読み込み中...";
+		StateHasChanged();
+		await Task.Delay(100);
+
+		foreach (var i in FilesToRemove)
+		{
+			LDLoadComponent.ProgressPercentages.Remove(i);
+			LDLoadComponent.ListFiles.RemoveAll(x => x.Name == i);
+		}
+
+		using (var loader = new LocalLoader())
+		{
+			foreach (var i in LDLoadComponent.ListFiles.Where(f => f.IsEnabled))
+			{
+				LoadingText = $"読み込み中... ({i.Name})";
+				StateHasChanged();
+				await Task.Delay(100);
+
+				loader.Load(i.Content.TL).Load(i.Content.TD);
+			}
+			LoadingText = $"辞書の統合...";
+			StateHasChanged();
+			await Task.Delay(100);
+		}
+
+		Accepting = false;
+		NavigationManager.NavigateTo("typed", false);
+	}
+}

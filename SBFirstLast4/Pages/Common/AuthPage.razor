@@ -1,0 +1,194 @@
+﻿@page "/auth"
+@namespace SBFirstLast4.Pages
+@layout NoMenuLayout
+@using SBFirstLast4.Logging
+@using Blazored.LocalStorage
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ILocalStorageService LocalStorage
+@implements IDisposable
+<PageTitle>@AppTitle.Format("認証")</PageTitle>
+<EditForm Model="@Model" OnSubmit="@OnSubmit">
+	<p id="desc">認証情報を入力</p>
+	<InputText id="password" type="password" @bind-Value="@Model.Password" />
+	<button type="submit" id="submit">送信</button>
+	<input name="__RequestVerificationToken" type="hidden" />
+</EditForm>
+@if (ErrorMessage != null)
+{
+	<p id="passwordError">@ErrorMessage</p>
+}
+<div class="cache-button">
+	<button @onclick=CacheBtn_Click>ユーザー情報の確認</button>
+</div>
+<style>
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f5f6f1;
+	}
+
+	#desc {
+		font-size: 22px;
+		color: #333;
+		text-align: center;
+		margin-top: 20px;
+		font-weight: 600
+	}
+
+	#password {
+		display: block;
+		width: 300px;
+		height: 40px;
+		border: 2px solid #ccc;
+		border-radius: 10px;
+		margin: 20px auto;
+		padding: 10px;
+		font-size: 16px;
+	}
+
+	#submit {
+		display: block;
+		width: 200px;
+		height: 50px;
+		background: linear-gradient(to right, #ff105f, #ffad06);
+		border: none;
+		border-radius: 10px;
+		color: white;
+		font-size: 18px;
+		font-weight: bold;
+		margin: 10px auto;
+		cursor: pointer;
+		box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+	}
+
+		#submit:hover {
+			transform: scale(1.1);
+		}
+
+		#submit:active {
+			transform: scale(0.9);
+		}
+
+	#passwordError {
+		margin-top: 20px;
+		text-align: center;
+		font-size: 16px;
+	}
+
+	.cache-button {
+		display: flex;
+		justify-content: end;
+		align-items: center;
+		position: absolute;
+		right: 20px;
+		bottom: 40px;
+	}
+
+		.cache-button button {
+			padding: 10px 20px;
+			border: none;
+			border-radius: 30px;
+			font-size: 16px;
+			cursor: pointer;
+			transition: background-color 0.3s, color 0.3s;
+			text-decoration: none;
+		}
+</style>
+@code {
+	internal static bool Accepting { get; set; }
+
+	private PasswordModel Model = new();
+	private string ErrorMessage = string.Empty;
+
+	protected override void OnInitialized()
+	{
+		if (!Accepting)
+			NavigationManager.GoToIndex();
+	}
+
+	public void Dispose() => Accepting = false;
+
+	private async Task OnSubmit()
+	{
+		if(string.IsNullOrWhiteSpace(Model.Password))
+		{
+			ErrorMessage = "認証情報を入力してください。";
+			StateHasChanged();
+			return;
+		}
+
+		ErrorMessage = "Loading...";
+		StateHasChanged();
+		await Task.Delay(100);
+		try
+		{
+			var isCorrectPassword = await Server.AuthorizeAsync(Model.Password);
+			if (isCorrectPassword)
+			{
+				await OnAcceptedAsync();
+				return;
+			}
+			else
+				ErrorMessage = "認証情報が違います。もう一度お試しください。";
+			StateHasChanged();
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+		}
+	}
+
+	private async Task OnAcceptedAsync()
+	{
+		AppSettings.IsAccepted = true;
+		await LocalStorage.SetItemAsync(LSKeys.CachedAuthKey, Model.Password);
+		NavigationManager.GoToIndex();
+	}
+
+	private async Task CacheBtn_Click()
+	{
+		try
+		{
+			var spec = await Server.SpeculateAsync(LocalStorage);
+			if(spec is null)
+			{
+				await JSRuntime.Alert("通信エラーが発生しました。しばらく時間を置いてからもう一度お試しください。");
+				return;
+			}
+
+			if (!spec.Contains("不明"))
+			{
+				await JSRuntime.Alert(spec);
+				return;
+			}
+
+			var name = await LocalStorage.GetItemAsync<string?>(LSKeys.UserName);
+			var guid = await LocalStorage.GetItemAsync<string?>(LSKeys.UserId);
+			var hash = await AppSettings.GetHashDirectlyAsync(Http);
+
+			if (name is null || guid is null || hash is null)
+			{
+				var tmphash = await AppSettings.TemporaryHashAsync(Http);
+				await JSRuntime.Alert($"Data: {{ Status: \"新規ユーザー\", TH: {tmphash} }}");
+				return;
+			}
+
+			var guidTrim = guid.Take(6).StringJoin();
+			var hashTrim = hash.Take(6).StringJoin();
+			var data = $"Data: {{ Status: \"不明なユーザー\", Name: {name}, Id: g0{guidTrim}h0{hashTrim} }}";
+			await JSRuntime.Alert(data);
+		}
+		catch(Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+		}
+	}
+
+	public sealed class PasswordModel
+	{
+		public string? Password { get; set; }
+	}
+}

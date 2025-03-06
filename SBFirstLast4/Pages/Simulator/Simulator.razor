@@ -1,0 +1,215 @@
+﻿@page "/simulator"
+@namespace SBFirstLast4.Pages
+@using SBFirstLast4.Simulator
+@using SBFirstLast4.Logging
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+<PageTitle>@AppTitle.Format("簡易シミュレーター")</PageTitle>
+
+<link rel="stylesheet" href="css/simulator.css" />
+<div class="top-grid">
+	<div class="border">
+		<div class="stack-panel">
+			<label class="label">簡易シミュレーター</label>
+			<label class="text-label">
+				※ 実際のゲーム内容とは差異がある可能性があります
+			</label>
+		</div>
+	</div>
+</div>
+
+<div class="stack-panel">
+	<div class="type">
+		<div class="value" id="type_item1"><img class="icon" src="images/@Player1Ability.ImgFile"></div>
+		<a id="link2equipment" @onclick="async() => await SetEquipment(PlayerSelector.Player1)"><img class="pen" src="images/pen.png"></a>
+		<div class="type-info"><div class="type-label">先攻のとくせい</div><br><div class="type-name">@Player1Ability.ToString()</div></div>
+	</div>
+	<div class="divider"></div>
+	<div class="type">
+		<div class="value" id="type_item2"><img class="icon" src="images/@Player2Ability.ImgFile"></div>
+		<a id="link2equipment" @onclick="async() => await SetEquipment(PlayerSelector.Player2)"><img class="pen" src="images/pen.png"></a>
+		<div class="type-info"><div class="type-label">後攻のとくせい</div><br><div class="type-name">@Player2Ability.ToString()</div></div>
+	</div>
+	<div class="divider"></div>
+	<button class="start-button" @onclick="StartButton_Click">バトル開始</button>
+</div>
+
+<style>
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f5f6f1;
+	}
+
+	.type {
+		position: relative;
+		width: 100%;
+		font-size: 0.7em;
+		height: 110px;
+		letter-spacing: -1px;
+	}
+
+	.value {
+		position: absolute;
+		margin-bottom: 5px;
+		margin-left: 5px;
+		font-size: 20px;
+	}
+
+	.icon {
+		width: 76px;
+		height: 76px;
+		padding: 10px;
+		background-color: white;
+		border-radius: 42px;
+		vertical-align: top;
+		image-rendering: pixelated;
+		image-rendering: -moz-crisp-edges;
+		-ms-interpolation-mode: nearest-neighbor;
+	}
+
+	.pen {
+		position: absolute;
+		width: 30px;
+		height: 30px;
+		top: 64px;
+		background-color: white;
+		left: 64px;
+		border-radius: 15px;
+	}
+
+	.type-info {
+		position: absolute;
+		left: 110px;
+	}
+
+	.type-label {
+		display: inline-block;
+		color: #2A2A2A;
+		font-size: 20px;
+	}
+
+	.type-name {
+		font-family: mplus-1p-bold;
+		font-size: 20px;
+		font-style: italic;
+		display: inline;
+		color: black;
+		white-space: nowrap;
+	}
+
+	.top-grid {
+		display: block;
+	}
+
+	.grid {
+		display: grid;
+	}
+
+	.border {
+		margin: 20px;
+		border: 2px solid gray;
+		border-radius: 10px;
+		padding: 20px;
+		background-color: white;
+		box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+	}
+
+	.stack-panel {
+		display: flex;
+		flex-direction: column;
+		padding-left: 30px;
+		padding-right: 30px;
+		padding-top: 10px;
+		padding-bottom: 10px
+	}
+
+	.inner-grid {
+		display: grid;
+		grid-template-rows: auto auto;
+		row-gap: 15px;
+		margin-bottom: 10px;
+		justify-items: center;
+		align-items: center;
+	}
+
+	.label {
+		text-align: center;
+		font-weight: bold;
+		font-size: 30px;
+		color: black;
+	}
+
+	.text-label {
+		padding-top: 10px;
+		text-align: center;
+		font-size: 18px;
+		font-weight: 100;
+		color: black;
+	}
+
+
+	.divider {
+		height: 2px;
+		background-color: darkgray;
+		margin: 10px 0;
+	}
+
+	.start-button {
+		text-align: center;
+		width: 95%;
+		line-height: 60px;
+		font-weight: bold;
+		height: 60px;
+		border: none;
+		border-radius: 30px;
+		font-size: 24px;
+		cursor: pointer;
+		background: linear-gradient(to right, #c02425, #f0cb35);
+		color: white;
+		transition: background-color 0.3s, color 0.3s;
+		text-decoration: none;
+		margin-top: 20px;
+	}
+</style>
+
+@code {
+	public static Ability Player1Ability { get; internal set; } = new Debugger();
+	public static Ability Player2Ability { get; internal set; } = new MagicMirror();
+
+	protected override void OnInitialized()
+	{
+		if (!AppSettings.IsLoggedIn)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+		if (!Words.IsLoadedCorrectly)
+			NavigationManager.NavigateTo("top", false);
+	}
+
+	private async Task SetEquipment(PlayerSelector selector)
+	{
+		await AudioManager.PlayAudio("pera");
+		SimulatorSkill.Selector = selector;
+		SimulatorSkill.CurrentAbility = selector == PlayerSelector.Player1 ? Player1Ability : Player2Ability;
+		NavigationManager.NavigateTo("simulator-skill");
+	}
+
+	private async Task StartButton_Click()
+	{
+		SimulatorBody.Player1Ability = Player1Ability;
+		SimulatorBody.Player2Ability = Player2Ability;
+		await Server.Log
+		(
+			type: StatusTypes.Simulator,
+			order: new
+			{
+				First = Player1Ability.ToString(),
+				Last = Player2Ability.ToString()
+			}
+		);
+		NavigationManager.NavigateTo("simulator-body");
+	}
+}

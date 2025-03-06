@@ -34,6 +34,6 @@ internal sealed class WordLoaderService : IWordLoaderService
         Words.TypedWords.AddRange(resBodyStr.Split('\n')
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Select(x => x.Trim().Split())
-            .Select(x => new Word(x.At(0) ?? string.Empty, x.At(1)?.StringToType() ?? WordType.Empty, x.At(2)?.StringToType() ?? WordType.Empty)));
+            .Select(x => new Word(x.At(0), x.At(1), x.At(2))));
     }
 }

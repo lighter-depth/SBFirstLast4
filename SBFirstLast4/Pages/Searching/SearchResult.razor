@@ -1,0 +1,253 @@
+﻿@page "/result"
+@namespace SBFirstLast4.Pages
+@using System.Text.RegularExpressions
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+<PageTitle>@AppTitle.Format("検索結果")</PageTitle>
+
+
+<h1>検索結果</h1>
+
+<div class="container">
+	@if (isSearching)
+	{
+		<p class="loading-text">
+			単語を検索中...<br>
+			Tips：@Tips
+		</p>
+	}
+	else
+	{
+		<ul class="fancy-list">
+			@foreach (var item in VisibleItems)
+			{
+				<li>@item</li>
+			}
+		</ul>
+	}
+</div>
+
+<div class="pagination">
+	<div class="pagination-buttons">
+		<button @onclick="GoToPreviousPage" disabled="@IsFirstPage"><span class="oi oi-chevron-left" /></button>
+		<button @onclick="GoToNextPage" disabled="@IsLastPage"><span class="oi oi-chevron-right" /></button>
+	</div>
+	<div class="download-button">
+		@if (!isSearching && VisibleItems.Any())
+		{
+			<a @onclick="DownloadButton_OnClick" class="btn-download">ファイルに保存</a>
+		}
+	</div>
+</div>
+
+<div class="indicators">
+	<div class="count-indicator">合計 @(IsTyped ? wordDataArr.Length : dataArr.Length) 件</div>
+	<div class="page-indicator">@CurrentPage/@TotalPages</div>
+</div>
+
+<style>
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f5f6f1;
+	}
+
+	.container {
+		max-width: 800px;
+		margin: 0 auto;
+		padding: 20px;
+	}
+
+	h1 {
+		text-align: center;
+		color: #333;
+		font-weight: bold;
+	}
+
+	.fancy-list {
+		list-style: none;
+		padding: 0;
+	}
+
+		.fancy-list li {
+			background: #f4f4f4;
+			margin: 10px 0;
+			padding: 15px;
+			border-radius: 5px;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+			transition: background 0.3s ease-in-out;
+		}
+
+			.fancy-list li:hover {
+				background: #ddd;
+			}
+
+	.pagination {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 20px;
+	}
+
+	.pagination-buttons button {
+		padding: 10px 20px;
+		border: none;
+		border-radius: 30px;
+		font-size: 16px;
+		cursor: pointer;
+		transition: background-color 0.3s, color 0.3s;
+		text-decoration: none;
+	}
+
+		.pagination-buttons button[disabled] {
+			background-color: #ddd;
+			color: #999;
+			cursor: not-allowed;
+		}
+
+	.download-button {
+		width: max(10%, 200px);
+	}
+
+		.download-button a {
+			padding: 10px 20px;
+			border: none;
+			border-radius: 30px;
+			font-size: 16px;
+			cursor: pointer;
+			background: linear-gradient(to right, #45aaf2, #007bff);
+			color: white;
+			transition: background-color 0.3s, color 0.3s;
+			text-decoration: none;
+		}
+
+			.download-button a:hover {
+				background-color: white;
+				color: #45aaf2;
+			}
+
+			.download-button a:disabled {
+				background-color: #ddd;
+				color: #999;
+				cursor: not-allowed;
+			}
+
+	.indicators {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 10px;
+	}
+
+	.count-indicator,
+	.page-indicator {
+		font-size: 14px;
+		color: #666;
+		margin-bottom: 20px;
+	}
+
+	.loading-text {
+		font-size: 16px;
+		color: #999;
+	}
+</style>
+
+@code {
+	public static char FirstChar { get; set; }
+	public static char LastChar { get; set; }
+	public static Func<string, bool>? CustomLengthPred { get; set; }
+	public static Func<Word, bool>? CustomLengthPredTyped { get; set; }
+	public static Regex? RegexBody { get; set; }
+	public static bool IsTyped { get; set; } = false;
+	public static Searcher TypedSearcher { get; set; } = new();
+	public static Func<Word, bool>? TypedPredicate { get; set; }
+	private string[] dataArr = [];
+	private Word[] wordDataArr = [];
+	private bool IsFirstPage => CurrentPage == 1;
+	private bool IsLastPage => CurrentPage == TotalPages;
+	private bool isSearching = true;
+	private const int ItemsPerPage = 20;
+	private int CurrentPage = 1;
+	private int TotalPages => (int)Math.Ceiling((double)(IsTyped ? wordDataArr.Length : dataArr.Length) / ItemsPerPage);
+	private List<string> VisibleItems
+	=> (IsTyped ? wordDataArr.Select(x => x.ToString()) : dataArr)
+		.Skip((CurrentPage - 1) * ItemsPerPage)
+		.Take(ItemsPerPage)
+		.ToList();
+
+	private const string Tips = "機能「高速前方後方一致」を使うことで、一瞬で単語を検索することができます";
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (!AppSettings.IsLoggedIn)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+		if (!Words.IsLoadedCorrectly)
+		{
+			NavigationManager.NavigateTo("top", false);
+			return;
+		}
+
+		if (await AppSettings.ShouldReturn(Http))
+			NavigationManager.NavigateTo("", false);
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			// 画面遷移が完了するまで待機
+			await Task.Delay(100);
+
+			if (IsTyped)
+			{
+				wordDataArr = TypedSearcher.SearchTyped(TypedPredicate, CustomLengthPredTyped);
+				if (AppSettings.SortResult)
+					Array.Sort(wordDataArr);
+			}
+
+			else
+			{
+				// 検索が完了するまで待機
+				await Task.Delay(5000);
+
+				dataArr = RegexBody is null
+							? CustomLengthPred is null
+							? Searcher.SearchFirstLast(FirstChar, LastChar)
+							: Searcher.SearchFirstLast(FirstChar, LastChar, CustomLengthPred)
+							: Searcher.SearchRegex(RegexBody);
+				if (AppSettings.SortResult)
+					Array.Sort(dataArr);
+			}
+
+			isSearching = false;
+			StateHasChanged();
+		}
+	}
+
+	private void GoToPreviousPage()
+	{
+		if (!IsFirstPage)
+		{
+			CurrentPage--;
+			StateHasChanged();
+		}
+	}
+
+	private void GoToNextPage()
+	{
+		if (!IsLastPage)
+		{
+			CurrentPage++;
+			StateHasChanged();
+		}
+	}
+	private void DownloadButton_OnClick()
+	{
+		if (IsTyped) DownloadConfig.DataListWord = wordDataArr;
+		else DownloadConfig.DataListStr = dataArr;
+		NavigationManager.NavigateTo("download-config");
+	}
+}

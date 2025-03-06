@@ -1,0 +1,369 @@
+﻿@page "/component/ldload"
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+@using SBFirstLast4.Pages
+@using LocalLoader = SBFirstLast4.Words.LocalLoader
+@using WordTypeFormat = SBFirstLast4.ListLoader.WordTypeFormat
+
+<div class="top-grid">
+	<div class="border">
+		<div class="stack-panel">
+			<div class="label">ローカル辞書</div>
+			<div class="text-label">
+				ローカル環境から、任意の単語を読み込みます。<br />
+				<div style="display: flex; flex-flow: column; gap: 20px; margin-top: 30px;">
+					<a href="https://github.com/lighter-depth/FirstLast4Sample/blob/main/LD/LocalDictionary.md" rel="nofollow" target="_blank">
+						使い方　
+						<span class="oi oi-external-link" style="font-size: 12px;" />
+					</a>
+					<a href="https://github.com/lighter-depth/FirstLast4Sample/tree/main/LD/Samples" rel="nofollow" target="_blank">
+						サンプル辞書　
+						<span class="oi oi-external-link" style="font-size: 12px;" />
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="file-input">
+	<InputFile OnChange="HandleFileSelected" multiple />
+</div>
+@if (ListFiles != null)
+{
+	<div style="display: flex; flex-flow: column;">
+		@foreach (var (file, i) in ListFiles.Where(x => !FilesToRemove.Contains(x.Name)).WithIndex())
+		{
+			var percentage = ProgressPercentages.TryGetValue(file.Name, out var p) ? p : 100;
+			<div>
+				<span class="file-name">@file.DisplayName()</span>
+				@if (file.HasLoaded)
+				{
+					<span class="file-size">@file.Count words</span>
+				}
+				else
+				{
+					<span class="file-size">@percentage%</span>
+				}
+			</div>
+			<div id="file@($"{file.Name}")" class="progress-bar" style="width: @(($"{percentage}%"));">
+			</div>
+			@if (file.HasLoaded)
+			{
+				<div class="flex-label">
+					<label for="file@($"{file.Name}")" @onclick="async() =>
+				{
+					try
+					{
+						RemoveFile(file);
+					}
+					catch(Exception ex)
+					{
+						await JSRuntime.AlertEx(ex);
+					}
+				}">
+						<span class="oi oi-x"></span>
+					</label>
+					<button class="toggle-button" style="background-color: @(BackgroundColor(file.IsEnabled));" @onclick="() => ToggleFile(file)">@(file.IsEnabled ? "無効にする" : "有効にする")</button>
+				</div>
+			}
+		}
+	</div>
+}
+
+@if (ShowLoadBtn)
+{
+	<br />
+	<br />
+	<div class="flex-label">
+		<button class="load-button" @onclick=LoadBtn_OnClick>
+			@(Editing ? "変更を反映" : "確定")
+		</button>
+		<div class="text-label">
+			@NumberOfWords()
+		</div>
+	</div>
+}
+<br />
+<br />
+<br />
+<br />
+
+<style>
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f5f6f1;
+		display: flex;
+		flex-flow: column;
+	}
+
+	.top-grid {
+		display: block;
+	}
+
+	.border {
+		margin: 20px;
+		border: 2px solid gray;
+		border-radius: 10px;
+		padding: 20px;
+		background-color: white;
+		box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+	}
+
+	.stack-panel {
+		display: flex;
+		flex-direction: column;
+		padding-left: 30px;
+		padding-right: 30px;
+		padding-top: 10px;
+		padding-bottom: 10px
+	}
+
+	.file-input {
+		border: 2px dashed lightgray;
+		background-color: #F5F6F1;
+		color: black;
+		cursor: pointer;
+		padding: 10px;
+		margin: 10px;
+	}
+
+	.file-name {
+		font-weight: bold;
+		margin-left: 10px;
+	}
+
+	.file-size {
+		font-style: italic;
+		margin-left: 10px;
+	}
+
+	.flex-label {
+		display: flex;
+		flex-flow: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.progress-bar {
+		height: 20px;
+		background-color: lightblue;
+	}
+
+	.toggle-button {
+		border: none;
+		color: white;
+		padding: 5px 10px;
+		margin: 5px;
+		border-radius: 10px;
+		cursor: pointer;
+	}
+
+	.load-button {
+		padding: 10px 20px;
+		border: none;
+		border-radius: 30px;
+		font-size: 16px;
+		cursor: pointer;
+		transition: background-color 0.3s, color 0.3s;
+		text-decoration: none;
+	}
+
+	.label {
+		text-align: center;
+		font-weight: bold;
+		font-size: 30px;
+		color: black;
+	}
+
+	.text-label {
+		padding-top: 10px;
+		text-align: center;
+		font-size: 18px;
+		font-weight: 100;
+		color: black;
+	}
+</style>
+
+@code {
+	internal static bool Accepting { get; set; }
+
+	internal static bool Editing { get; set; }
+
+	internal static List<FileModel> ListFiles { get; set; } = [];
+
+	private List<string> FilesToRemove = [];
+
+	internal static Dictionary<string, int> ProgressPercentages { get; set; } = [];
+
+	private bool ShowLoadBtn;
+
+	private const int MaxFileSize = 320_000_000;
+
+	protected override void OnInitialized()
+	{
+		if (!Accepting)
+		{
+			NavigationManager.GoToIndex();
+			return;
+		}
+
+		if (Editing)
+			ShowLoadBtn = true;
+	}
+
+	public void Dispose() => Accepting = false;
+
+	private async Task HandleFileSelected(InputFileChangeEventArgs e)
+	{
+		ShowLoadBtn = false;
+		StateHasChanged();
+		await Task.Delay(100);
+
+		foreach (var file in e.GetMultipleFiles())
+			if (ListFiles.Any(f => f.Name == file.Name))
+			{
+				ListFiles.RemoveAll(f => f.Name == file.Name);
+				ProgressPercentages.Remove(file.Name);
+			}
+
+		foreach (var file in e.GetMultipleFiles())
+		{
+			if (file.Size > MaxFileSize)
+			{
+				await JSRuntime.Alert($"ファイルのサイズが {MaxFileSize / 1000000} MB を超えています ({file.Size})");
+				return;
+			}
+
+			await FastUploadAsync(file);
+		}
+		ShowLoadBtn = true;
+		StateHasChanged();
+	}
+
+	private void RemoveFile(FileModel file) => FilesToRemove.Add(file.Name);
+
+	private async Task FastUploadAsync(IBrowserFile file)
+	{
+		const int chunkSize = 400000;
+		ProgressPercentages[file.Name] = 0;
+		ListFiles.Add(new(file.Name, default, file.Size, false));
+
+		using var stream = file.OpenReadStream(MaxFileSize);
+
+		using var reader = new StreamReader(stream);
+		var fileContent = new StringBuilder(512000);
+
+		var buffer = new byte[chunkSize];
+		int bytesRead;
+		var bytesAccumulated = 0;
+
+		while ((bytesRead = await stream.ReadAsync(buffer, 0, chunkSize)) > 0)
+		{
+			fileContent.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+			bytesAccumulated += bytesRead;
+			ProgressPercentages[file.Name] = Math.Min(99, (int)(file.Size > 0 ? (double)bytesAccumulated / file.Size * 100 : 100));
+			StateHasChanged();
+			await Task.Delay(1);
+		}
+
+		var sample = ProgressPercentages[file.Name];
+		ListFiles.RemoveAll(f => f.Name == file.Name);
+
+
+		var content = fileContent.ToString();
+
+		var loader = FileModel.RequiresForwarding(file.Name) ? ListLoader.DefaultFormat : ListLoader.CreateFormat(content);
+
+		var fileModel = FileModel.Create(loader, file, content);
+		ListFiles.Add(fileModel);
+
+		StateHasChanged();
+	}
+
+	private void ToggleFile(FileModel file) => file.IsEnabled = !file.IsEnabled;
+
+
+	private void LoadBtn_OnClick()
+	{
+		Accepting = false;
+		LDDirectLoadingPage.Accepting = true;
+		LDDirectLoadingPage.FilesToRemove = FilesToRemove;
+		NavigationManager.NavigateTo("ldloading", false);
+	}
+
+	private string BackgroundColor(bool isEnabled) => isEnabled ? "darkgray" : "#0056b3";
+
+	private string NumberOfWords()
+	{
+		try
+		{
+			if (ListFiles?.Any(x => !x.HasLoaded) ?? true)
+				return string.Empty;
+
+			var sum = ListFiles
+				?.Where(x => x.IsEnabled && !FilesToRemove.Contains(x.Name))
+				.Select(x => x.Count)
+				.Sum();
+
+			return $"合計 {sum}単語";
+		}
+		catch
+		{
+			return $"不明な単語数";
+		}
+	}
+
+	internal sealed record FileModel(string Name, (ICollection<string> TL, ICollection<Word> TD) Content, long Size, bool HasLoaded, bool IsEnabled = true)
+	{
+		public bool IsEnabled { get; set; } = IsEnabled;
+
+		public int Count => Content.TL.Count + Content.TD.Count;
+
+		public static FileModel Create(ListLoader loader, IBrowserFile file, string fileContent) => FileNameToFileType(file.Name) switch
+		{
+			FileType.Mixed => new(file.Name, loader.LoadMixed(fileContent), file.Size, true, Enables(file.Name)),
+			FileType.Typeless => new(file.Name, (loader.LoadTL(fileContent), []), file.Size, true, Enables(file.Name)),
+			FileType.Typed => new(file.Name, ([], loader.LoadTD(fileContent)), file.Size, true, Enables(file.Name)),
+			FileType.Typeless_A => new(file.Name, (ListLoader.LoadTL_A(fileContent), []), file.Size, true, Enables(file.Name)),
+			FileType.Typed_A => new(file.Name, ([], ListLoader.LoadTD_A(fileContent)), file.Size, true, Enables(file.Name)),
+			_ => new(file.Name, (ListLoader.LoadTL_A(fileContent), []), file.Size, true, Enables(file.Name))
+		};
+
+		public string DisplayName() => IsEnabled ? Name : $"(無効) {Name}";
+
+		public static bool RequiresForwarding(string fileName)
+			=> FileNameToFileType(fileName) is FileType.Typeless_A or FileType.Typed_A;
+
+		private static FileType FileNameToFileType(string fileName)
+		{
+			var identifier = fileName.ToLower();
+
+			const FileType defaultValue = FileType.Typeless_A;
+
+			if (identifier.ContainsAny("[mixed]", "[m]"))
+				return FileType.Mixed;
+
+			if (identifier.ContainsAny("[typeless], [tl], [l]"))
+				return FileType.Typeless;
+
+			if (identifier.ContainsAny("[typed], [td], [d]"))
+				return FileType.Typed;
+
+			if (identifier.ContainsAny("[typeless_authentic]", "[typeless_a]", "[tl_authentic]", "[tl_a]", "[la]", "[n]"))
+				return FileType.Typeless_A;
+
+			if (identifier.ContainsAny("[typed_authentic]", "[typed_a]", "[td_authentic]", "[td_a]", "[da]", "[t]"))
+				return FileType.Typed_A;
+
+			return defaultValue;
+		}
+
+		private static bool Enables(string fileName) => !fileName.ToLower().Contains("[quiet]");
+
+		private enum FileType { Mixed, Typeless, Typed, Typeless_A, Typed_A }
+	}
+}

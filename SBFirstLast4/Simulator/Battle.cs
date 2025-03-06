@@ -1,5 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
+﻿using SBFirstLast4.Syntax;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SBFirstLast4.Simulator;
 
@@ -133,7 +133,7 @@ public sealed partial class Battle
 			var type1 = order.TypeParam?.Length > 0 ? order.TypeParam?[0].CharToType() : WordType.Empty;
 			var type2 = order.TypeParam?.Length > 0 ? order.TypeParam?.Length > 1 ? order.TypeParam?[1].CharToType() : WordType.Empty : WordType.Empty;
 			word = new Word(order.Body, type1 ?? WordType.Empty, type2 ?? WordType.Empty);
-			isInferSuccessed = word.Name.IsWild() || KanaRegex().IsMatch(word.Name);
+			isInferSuccessed = word.Name.IsWild() || ValidLetterSyntax.RegexConsole.IsMatch(word.Name);
 		}
 
 		// ContractType の決定。
@@ -237,10 +237,6 @@ public sealed partial class Battle
 		PlayerSelector.Player2 => Player2,
 		_ => null
 	};
-
-
-	[GeneratedRegex("^[ぁ-ゔゟヴー]*$")]
-	private static partial Regex KanaRegex();
 
 	public void AlterTo(BattleData? d)
 	{

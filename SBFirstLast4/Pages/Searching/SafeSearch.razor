@@ -1,0 +1,619 @@
+﻿@page "/safe"
+@namespace SBFirstLast4.Pages
+@using SBFirstLast4.Logging
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@AppTitle.Format("安全単語検索")</PageTitle>
+<div class="top-grid">
+	<div class="border">
+		<div class="stack-panel">
+			<label class="label">安全単語検索</label>
+			<label class="text-label">
+				特定の条件を満たす、安全な単語を検索します。
+			</label>
+		</div>
+	</div>
+</div>
+
+<div class="grid">
+	<div class="border">
+		<div class="stack-panel">
+			<div class="inner-grid">
+				<label class="text-label" style="font-weight:600; font-size: 22px;">タイプ</label>
+				<div class="dropdown-container">
+					<select class="dropdown" @bind="SelectedTypeItem">
+						@foreach (var item in (ReadOnlySpan<string>)[
+											"指定なし", "ノーマル", "動物", "植物", "地名",
+									"感情", "芸術", "食べ物", "暴力", "医療",
+									"人体", "機械", "理科", "時間", "人物",
+									"工作", "服飾", "社会", "遊び", "虫",
+									"数学", "暴言", "宗教", "スポーツ", "天気",
+									"物語"])
+						{
+							<option value="@item">@item</option>
+						}
+					</select>
+				</div>
+			</div>
+			<div class="divider" />
+			<div class="inner-grid">
+				<label class="text-label" style="font-weight:600; font-size: 22px;">
+					カテゴリフィルタ
+					<span class="tooltip-icon" data-tooltip="
+カテゴリに該当する単語で攻撃される可能性がある場合に、その単語を除外します。&#10;
+「おまかせ」に設定すると、テンプレートを用いて単語の安全度を決定します。詳細は以下の通りです：&#10;
+おまかせ（弱）: 即死, 準即死, 強ロクロ, 強毒針
+おまかせ（中）: 即死, 準即死, ４注, 強ロクロ, 中ロクロ, 強毒針, 中毒針
+おまかせ（強）: 即死, 準即死, ４注, ４倍, 安全暴力, 強ロクロ, 中ロクロ, 強毒針 , 中毒針, 強やどりぎ&
+&#10;&#10;
+・その他用語説明&#10;
+「準即死」: ６倍弱点を表します。&#10;
+「４注」: ４倍弱点の単語のうち、有効な回復に乏しいものを示します。">?</span>
+				</label>
+				<div class="dropdown-container">
+					<select class="dropdown" @bind="SelectedCategoryFilterItem">
+						@foreach (var item in (ReadOnlySpan<string>)["なし", "おまかせ（弱）", "おまかせ（中）", "おまかせ（強）", "カスタム"])
+						{
+							<option value="@item">@item</option>
+						}
+					</select>
+				</div>
+			</div>
+			@if (SelectedCategoryFilterItem is "カスタム")
+			{
+				<div class="divider" style="background-color: transparent;"></div>
+				<div class="inner-grid">
+					<div class="filters-textarea" style="box-shadow: none;" @onclick="async() =>
+						{
+							ShowCategoryFilters = true;
+							StateHasChanged();
+							await Task.Delay(1);
+						}">
+						<ul class="filters-sortable">
+							@if (AppliedCategoryFilters.Count == 0)
+							{
+								<li class="filters-frame" style="background-color: darkblue; color: white; border-radius: 8px;">
+									フィルタを追加　+
+								</li>
+							}
+							else
+							{
+								foreach (var i in AppliedCategoryFilters)
+								{
+									<li class="filters-frame" @onclick="async() =>
+										{
+											AppliedCategoryFilters.Remove(i);
+											StateHasChanged();
+											await Task.Delay(1);
+										}">
+										@i
+										<span class="filters-delete" role="button" tabindex="0" />
+									</li>
+								}
+								<li class="filters-frame" @onclick="async() =>
+									{
+										ShowCategoryFilters = true;
+										StateHasChanged();
+										await Task.Delay(1);
+									}" style="max-width: 21px;" @onclick:stopPropagation=true>
+									＋
+								</li>
+							}
+						</ul>
+					</div>
+				</div>
+				@if (ShowCategoryFilters)
+				{
+					<div class="inner-grid">
+
+						<div class="scrollable-list">
+							@foreach (var filter in AvailableFilters)
+							{
+								<p @onclick="async() =>
+									{
+										AppliedCategoryFilters.Add(filter);
+										StateHasChanged();
+										await Task.Delay(1);
+									}">@filter</p>
+							}
+						</div>
+						<div class=transparent-screen @onclick="async() =>
+							{
+								ShowCategoryFilters = false;
+								StateHasChanged();
+								await Task.Delay(1);
+							}"></div>
+					</div>
+				}
+			}
+			<div class="divider" />
+			<div class="inner-grid">
+				<label class="text-label" style="font-weight:600; font-size: 22px;">
+					語尾フィルタ
+					<span class="tooltip-icon" data-tooltip="フィルタに設定した語尾と単語の語尾が一致する場合に、単語を結果から除外します。">?</span>
+				</label>
+				<div class="dropdown-container">
+					<select class="dropdown" @bind="SelectedCharFilterItem">
+						@foreach (var item in (ReadOnlySpan<string>)["なし", "カスタム"])
+						{
+							<option value="@item">@item</option>
+						}
+					</select>
+				</div>
+			</div>
+			@if (SelectedCharFilterItem == "カスタム")
+			{
+				<div class="divider" style="background-color: transparent;"></div>
+				<div class="inner-grid">
+					@if (AppliedEndFilters.Count > 0)
+					{
+						<div class="filters-textarea" style="box-shadow: none;">
+							<ul class="filters-sortable">
+								@foreach (var i in AppliedEndFilters)
+								{
+									<li class="filters-frame" @onclick="async() =>
+										{
+											AppliedEndFilters.Remove(i);
+											StateHasChanged();
+											await Task.Delay(1);
+										}">
+										@i
+										<span class="filters-delete" role="button" tabindex="0" />
+									</li>
+								}
+							</ul>
+						</div>
+					}
+					<input class="text-input" id="endchar-input" type="text" placeholder="語尾を入力..." @onkeydown=EndCharInput_KeyDown />
+				</div>
+			}
+			<div class="divider"></div>
+			<button class="search-button" @onclick=SearchButton_Click>単語を検索</button>
+		</div>
+	</div>
+</div>
+
+<style>
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f5f6f1;
+	}
+
+	.top-grid {
+		display: block;
+	}
+
+	.grid {
+		display: grid;
+	}
+
+	.border {
+		margin: 20px;
+		border: 2px solid gray;
+		border-radius: 10px;
+		padding: 20px;
+		background-color: white;
+		box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+	}
+
+	.stack-panel {
+		display: flex;
+		flex-direction: column;
+		padding-left: 30px;
+		padding-right: 30px;
+		padding-top: 10px;
+		padding-bottom: 10px
+	}
+
+	.inner-grid {
+		display: grid;
+		grid-template-rows: auto auto;
+		row-gap: 15px;
+		margin-bottom: 10px;
+		justify-items: center;
+		align-items: center;
+	}
+
+	.label {
+		text-align: center;
+		font-weight: bold;
+		font-size: 30px;
+		color: black;
+	}
+
+	.text-label {
+		padding-top: 10px;
+		text-align: center;
+		font-size: 18px;
+		font-weight: 100;
+		color: black;
+	}
+
+	.text-input {
+		width: 80%;
+		padding: 12px;
+		font-size: 18px;
+		border: 2px solid gray;
+		border-radius: 5px;
+		margin-top: 8px;
+	}
+
+		.text-input::placeholder {
+			color: dimgray;
+		}
+
+	.divider {
+		height: 2px;
+		background-color: darkgray;
+		margin: 10px 0;
+	}
+
+
+	.checkbox {
+		display: none;
+	}
+
+	.toggle {
+		position: relative;
+		display: inline-block;
+		width: 60px;
+		height: 34px;
+		background-color: lightgray;
+		border-radius: 17px;
+	}
+
+		.toggle::after {
+			content: "";
+			position: absolute;
+			width: 26px;
+			height: 26px;
+			border-radius: 50%;
+			background-color: white;
+			top: 4px;
+			left: 4px;
+			transition: all 0.3s;
+		}
+
+	.checkbox:checked + .toggle::after {
+		left: 30px;
+	}
+
+	.checkbox:checked + .toggle {
+		background-color: green;
+	}
+
+	.search-button {
+		align-self: center;
+		text-align: center;
+		width: 95%;
+		line-height: 60px;
+		font-weight: bold;
+		height: 60px;
+		border: none;
+		border-radius: 30px;
+		font-size: 24px;
+		cursor: pointer;
+		background: linear-gradient(to right, #c02524, #f035cb);
+		color: white;
+		transition: background-color 0.3s, color 0.3s;
+		text-decoration: none;
+		margin-top: 20px;
+	}
+
+
+	.dropdown-container {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+	}
+
+	.dropdown {
+		width: 80%;
+		padding: 12px;
+		font-size: 18px;
+		border: 2px solid gray;
+		border-radius: 5px;
+	}
+
+	.scrollable-list {
+		height: 150px;
+		overflow-y: scroll;
+		width: 90%;
+		border: 1px solid #888888;
+		border-radius: 10px;
+		background-color: #EEEEEE;
+		margin-top: 9px;
+		z-index: 2;
+	}
+
+		.scrollable-list > p {
+			margin: 10px 20px 10px 20px;
+			padding-left: 10px;
+			padding-top: 2px;
+			padding-bottom: 2px;
+			font-size: 18.5px;
+			background-color: white;
+			box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+			border-radius: 10px;
+			border-color: transparent;
+			cursor: pointer;
+		}
+
+			.scrollable-list > p:hover {
+				background-color: aliceblue;
+			}
+
+	.filters-textarea {
+		background: #fff;
+		border: 1px solid #ddd;
+		box-sizing: border-box;
+		margin: 2px 0;
+		padding: 4px;
+		width: 100%;
+	}
+
+	.filters-sortable {
+		-webkit-padding-start: 0;
+		align-items: center;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: left;
+		list-style: none;
+		margin: 0;
+		padding-inline-start: 0;
+		padding: 0;
+		gap: 10px;
+		min-height: 19px;
+	}
+
+	.filters-frame {
+		background: #fff;
+		border: 1px solid #d9d9d9;
+		border-radius: 5px;
+		box-shadow: none;
+		color: #404040;
+		cursor: pointer;
+		font-size: 17px;
+		margin: 0;
+		max-height: 100%;
+		max-width: 100%;
+		padding: 1px 23px 1px 6px;
+		resize: none;
+		word-break: break-all;
+		z-index: 10;
+	}
+
+	.filters-delete {
+		background: #fff;
+		border-radius: 50%;
+		box-shadow: 0 0 1px 1px #999;
+		cursor: pointer;
+		display: inline-block;
+		height: 15px;
+		line-height: 5px;
+		margin-left: 3px;
+		margin-top: 4px;
+		position: absolute;
+		vertical-align: middle;
+		width: 15px;
+	}
+
+		.filters-delete::before, .filters-delete::after {
+			background-color: #666;
+			content: "";
+			height: 1px;
+			left: 2px;
+			position: absolute;
+			top: 7px;
+			-webkit-transform: rotate(45deg);
+			transform: rotate(45deg);
+			width: 11px;
+		}
+
+		.filters-delete::after {
+			-webkit-transform: rotate(-45deg);
+			transform: rotate(-45deg);
+		}
+
+	.filters-list {
+		position: absolute;
+		top: 50px;
+		left: 50px;
+		width: 200px;
+		height: 300px;
+		border: 1px solid black;
+		background-color: white;
+		z-index: 10;
+		padding: 10px;
+		overflow-y: scroll;
+	}
+
+	.transparent-screen {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 1;
+		background-color: transparent;
+	}
+
+	.tooltip-icon {
+		font-size: 18px;
+		color: #999;
+		cursor: help;
+		margin-left: 5px;
+		position: relative;
+		z-index: 20;
+	}
+
+		.tooltip-icon:hover::after {
+			content: attr(data-tooltip);
+			position: absolute;
+			top: 100%;
+			left: 50%;
+			transform: translateX(-50%);
+			background-color: rgba(0, 0, 0, 0.8);
+			color: #fff;
+			font-weight: normal;
+			padding: 5px;
+			border-radius: 5px;
+			width: 400px;
+			text-align: left;
+			font-size: 14px;
+			white-space: pre-line;
+			z-index: 20;
+		}
+</style>
+
+
+@code {
+
+	private string SelectedTypeItem = "指定なし";
+	private string SelectedCategoryFilterItem = "なし";
+	private List<string> AppliedCategoryFilters = [];
+	private List<string> CategoryFilters =
+	[
+		"即死", "準即死", "４注", "４倍","暴力", "安全暴力", "強ロクロ", "中ロクロ", "弱ロクロ", "強毒針", "中毒針", "弱毒針", "強やどりぎ"
+	];
+	private List<string> AvailableFilters => CategoryFilters.Except(AppliedCategoryFilters).ToList();
+	private bool ShowCategoryFilters { get; set; } = false;
+
+	private string SelectedCharFilterItem = "なし";
+	private List<string> AppliedEndFilters = [];
+
+	protected override void OnInitialized()
+	{
+		if (!AppSettings.IsLoggedIn)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+		if (!Words.IsLoadedCorrectly)
+			NavigationManager.NavigateTo("top", false);
+	}
+
+
+	private async Task EndCharInput_KeyDown(KeyboardEventArgs e)
+	{
+		if (e.Key is "Process" or not "Enter") return;
+		var wordText = await JSRuntime.GetElementValueById<string>("endchar-input");
+		await Task.Delay(1);
+		if (string.IsNullOrWhiteSpace(wordText))
+		{
+			await JSRuntime.ClearElementValueById("endchar-input");
+			StateHasChanged();
+			await Task.Delay(1);
+			return;
+		}
+		AppliedEndFilters.AddRange(wordText.Select(x => x.ToString()));
+		AppliedEndFilters = AppliedEndFilters.Distinct().ToList();
+		StateHasChanged();
+		await Task.Delay(1);
+		await JSRuntime.ClearElementValueById("endchar-input");
+		StateHasChanged();
+	}
+
+
+	private async Task SearchButton_Click()
+	{
+		try
+		{
+			var predicates = new List<Func<Word, bool>> { _ => true };
+			var type1 = SelectedTypeItem.StringToType();
+			if (type1 is not WordType.Empty)
+				predicates.Add(word => word.Contains(type1));
+
+
+			foreach (var i in SelectedCategoryFilterItem switch
+			{
+				"おまかせ（弱）" => ["即死", "準即死", "強ロクロ", "強毒針"],
+				"おまかせ（中）" => ["即死", "準即死", "４注", "強ロクロ", "中ロクロ", "強毒針", "中毒針"],
+				"おまかせ（強）" => ["即死", "準即死", "４注", "４倍", "安全暴力", "強ロクロ", "中ロクロ", "強毒針", "中毒針", "強やどりぎ"],
+				"カスタム" => AppliedCategoryFilters,
+				_ => []
+			})
+				predicates.Add(GetCategoryPredicate(i));
+
+			foreach (var i in SelectedCharFilterItem == "なし" ? new() : AppliedEndFilters)
+				predicates.Add(word => word.End != i.At(0));
+
+			var predicate = predicates.Aggregate((p1, p2) => word => p1(word) && p2(word));
+
+
+			SearchOptions.SetTD(new() { IsTypedOnly = true }, predicate: predicate);
+
+			await Server.Log
+			(
+				type: StatusTypes.SearchSafe,
+				order: new
+				{
+					Type = SelectedTypeItem,
+					Category = SelectedCategoryFilterItem switch
+					{
+						"おまかせ（弱）" => "WEAK",
+						"おまかせ（中）" => "MID",
+						"おまかせ（強）" => "HEAVY",
+						"カスタム" => $"[{AppliedCategoryFilters.StringJoin(", ")}]",
+						_ => "EMPTY"
+					},
+					Char = SelectedCharFilterItem == "なし" ? "EMPTY" : $"[{AppliedEndFilters.StringJoin(", ")}]"
+				}
+			);
+
+			NavigationManager.NavigateTo("result");
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+		}
+	}
+
+	private static Func<Word, bool> GetCategoryPredicate(string predName) => predName switch
+	{
+		// 8倍弱点持ちかどうか判定
+		"即死" => word => AuxLists.Killable.BinarySearch(word.Name) < 0,
+
+		// 6倍弱点持ちかどうか判定
+		"準即死" => word => AuxLists.SemiKillable.BinarySearch(word.Name) < 0,
+
+		// ４注語尾: ぬ、わ、ぐ、ご、ぱ、ぺ、ぽ
+		"４注" => word => AuxLists.Danger4.BinarySearch(word.Name) < 0,
+
+		// 4倍弱点持ちかどうか判定
+		"４倍" => word => AuxLists.CanBe4xed.BinarySearch(word.Name) < 0,
+
+		// 暴力タイプが存在するか判定
+		"暴力" => word => word.End is 'べ' or 'ぴ' or 'ぺ',
+
+		// 安全暴力単語が存在するか判定
+		"安全暴力" => word => word.End is 'え' or 'へ' or 'ほ' or 'が' or 'ざ' or 'ず' or 'ぞ' or 'べ' or 'ぴ' or 'ぷ' or 'ぺ' or 'ぽ',
+
+		// ざ終わりロクロ
+		"強ロクロ" => word => word.End is not ('る' or 'も'),
+
+		// ぶ終わりロクロ
+		"中ロクロ" => word => word.End is not ('い' or 'え' or 'く' or 'す' or 'た' or 'む' or 'ら' or 'れ' or 'ぐ' or 'ぷ'),
+
+		// れ終わりロクロとか
+		"弱ロクロ" => word => word.End is not ('い' or 'う' or 'え' or 'か' or 'く' or 'は' or 'ま' or 'ゆ' or 'わ' or 'ぱ'),
+
+		// ご終わり / ぐ終わり 毒針
+		"強毒針" => word => word.End is not ('い' or 'む' or 'ぜ' or 'ば'),
+
+		// ぼ終わり毒針
+		"中毒針" => word => word.End is not ('あ' or 'か' or 'し' or 'と' or 'に' or 'ね' or 'へ'),
+
+		// が終わり毒針、ぶ終わり毒針、など
+		"弱毒針" => word => word.End is not ('は' or 'み' or 'や' or 'ゆ' or 'る' or 'が' or 'じ' or 'ど' or 'べ'),
+
+		// 勝ち確植物、かつ６倍弱点以上なし
+		"強やどりぎ" => word => word.End is not ('あ' or 'い' or 'き' or 'さ' or 'す' or 'ひ' or 'ろ' or 'で'),
+
+		// 破棄パターン
+		_ => word => true
+	};
+}
