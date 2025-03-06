@@ -113,7 +113,7 @@ public sealed class ListLoader(string? listOpen, string? listClose, string? word
 		var tlResult = new List<string>();
 		var tdResult = new List<Word>();
 
-		var lines = source.Split(["\r\n", "\n"], StringSplitOptions.None).WhereWhen(l => !IsOmittable(l), _omitHeaders.Length > 0);
+		var lines = source.Split((string[])["\r\n", "\n"], StringSplitOptions.None).WhereWhen(l => !IsOmittable(l), _omitHeaders.Length > 0);
 
 		foreach (var i in lines)
 			foreach (var j in i.SplitIfNotNull(_wordSeparator))
@@ -186,7 +186,7 @@ public sealed class ListLoader(string? listOpen, string? listClose, string? word
 
 		var result = new List<string>();
 
-		var lines = source.Split(["\r\n", "\n"], StringSplitOptions.None).WhereWhen(l => !IsOmittable(l), _omitHeaders.Length > 0);
+		var lines = source.Split((string[])["\r\n", "\n"], StringSplitOptions.None).WhereWhen(l => !IsOmittable(l), _omitHeaders.Length > 0);
 
 		foreach (var i in lines)
 			result.AddRange(i.Split(_wordSeparator));
@@ -221,7 +221,7 @@ public sealed class ListLoader(string? listOpen, string? listClose, string? word
 
 		var result = new List<Word>();
 
-		var lines = source.Split(["\r\n", "\n"], StringSplitOptions.None).WhereWhen(l => !IsOmittable(l), _omitHeaders.Length > 0);
+		var lines = source.Split((string[])["\r\n", "\n"], StringSplitOptions.None).WhereWhen(l => !IsOmittable(l), _omitHeaders.Length > 0);
 
 		foreach (var i in lines)
 			foreach (var j in i.SplitIfNotNull(_wordSeparator))
@@ -264,10 +264,10 @@ public sealed class ListLoader(string? listOpen, string? listClose, string? word
 	}
 
 	public static ICollection<string> LoadTL_A(string input)
-		=> input.Trim().Split(["\r\n", "\n"], StringSplitOptions.None);
+		=> input.Trim().Split((string[])["\r\n", "\n"], StringSplitOptions.None);
 
 	public static ICollection<Word> LoadTD_A(string input)
-		=> input.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+		=> input.Split((string[])["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
 			.Select(x => x.Split())
 			.Select(x => new Word(x.At(0), x.At(1), x.At(2)))
 			.ToArray();

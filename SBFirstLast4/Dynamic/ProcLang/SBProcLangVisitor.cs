@@ -723,7 +723,7 @@ internal sealed class SBProcLangVisitor : SBProcLangBaseVisitor<Task<object?>>
 
 		var value = await QueryRunner.EvaluateExpressionAsync(rhs);
 
-		var parts = lhs.Split(new[] { '.', '[' }, StringSplitOptions.RemoveEmptyEntries);
+		var parts = lhs.Split((string[])[".", "["], StringSplitOptions.RemoveEmptyEntries);
 
 		var obj = (object?)WideVariable.GetValue(parts[0][1..]);
 
