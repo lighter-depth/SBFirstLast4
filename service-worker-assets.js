@@ -537,7 +537,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-ROYC1vDXNE1ZgQz2gC4SD59lIITGE5r8yTHAnzhdeiM=",
+      "hash": "sha256-vSkVqRV4hX3EVTfrycacuKRf\/CiL9P0xakZ1K\/YGuA4=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -633,7 +633,7 @@
       "url": "_framework\/rm.Trie.dll"
     },
     {
-      "hash": "sha256-6pb0QPebwB0CAzmKveLp1OzisusT9bNLCrRgyNXmejA=",
+      "hash": "sha256-GzQ5rBAohWvqCPKbtWMMS7iu0AKk4HBBPARIh8XfoOU=",
       "url": "_framework\/SBFirstLast4.dll"
     },
     {
@@ -769,7 +769,7 @@
       "url": "_framework\/System.ObjectModel.dll"
     },
     {
-      "hash": "sha256-cJQEFKccd+Di6Ie\/IayhrY3S8woPIlxRy+TmpuTftDw=",
+      "hash": "sha256-PoNDGGrCeJEGY71a8qXXG9Zr6v9Fnyn89v05gePnUc0=",
       "url": "_framework\/System.Private.CoreLib.dll"
     },
     {
@@ -805,7 +805,7 @@
       "url": "_framework\/System.Runtime.CompilerServices.Unsafe.dll"
     },
     {
-      "hash": "sha256-LyEbGMvYpZJV+\/R1qiFWHa7V5VgVpoD9KmAa0w6zFVM=",
+      "hash": "sha256-gotyQAjDUyIh7XnkPQerccLNDg9wqUC1iRdOFgYPMdk=",
       "url": "_framework\/System.Runtime.dll"
     },
     {
@@ -893,5 +893,5 @@
       "url": "_content\/SpawnDev.BlazorJS\/SpawnDev.BlazorJS.lib.module.js"
     }
   ],
-  "version": "frHHQOPC"
+  "version": "dS16\/yLl"
 };
