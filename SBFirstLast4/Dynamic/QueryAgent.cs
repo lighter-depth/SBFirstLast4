@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using BlazorDownloadFile;
+using Blazored.LocalStorage;
 using SBFirstLast4.Logging;
 using SBFirstLast4.Pages;
 using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
@@ -24,7 +25,7 @@ public sealed partial class QueryAgent
 
 	private readonly List<string> _moduleBuffer = [];
 
-	public async Task RunAsync(string input, Buffer output, Action<string> setTranslated, Func<Task> handleDeletedFiles, Func<Task> update, IBlazorDownloadFileService service)
+	public async Task RunAsync(string input, Buffer output, Action<string> setTranslated, Func<Task> handleDeletedFiles, Func<Task> update, ILocalStorageService localStorage, IBlazorDownloadFileService service)
 	{
 		var inputTrim = input.Trim();
 
@@ -51,7 +52,7 @@ public sealed partial class QueryAgent
 		}
 
 		if (CurrentContext is QueryContext.Script)
-			await RunScriptAsync(inputTrim, output, setTranslated, handleDeletedFiles, update, service);
+			await RunScriptAsync(inputTrim, output, setTranslated, handleDeletedFiles, update, localStorage, service);
 
 		if (CurrentContext is QueryContext.AnonymousProcedure or QueryContext.NamedProcedure)
 			_currentProcedure?.Push(inputTrim);
@@ -127,7 +128,7 @@ public sealed partial class QueryAgent
 		}
 	}
 
-	public async Task RunScriptAsync(string input, Buffer output, Action<string> setTranslated, Func<Task> handleDeletedFiles, Func<Task> update, IBlazorDownloadFileService service)
+	public async Task RunScriptAsync(string input, Buffer output, Action<string> setTranslated, Func<Task> handleDeletedFiles, Func<Task> update, ILocalStorageService localStorage, IBlazorDownloadFileService service)
 	{
 		StatementKind = TextType.General;
 
@@ -155,7 +156,7 @@ public sealed partial class QueryAgent
 
 		if (inputTrim.At(0) == '#')
 		{
-			await Preprocessor.ProcessAsync(inputTrim, output, handleDeletedFiles, service);
+			await Preprocessor.ProcessAsync(inputTrim, output, handleDeletedFiles, localStorage, service);
 			return;
 		}
 

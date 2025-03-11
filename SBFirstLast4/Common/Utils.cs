@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
@@ -117,6 +118,9 @@ public static class Utils
 		await localStorage.SetItemAsync(key, default(object));
 		await localStorage.RemoveItemAsync(key);
 	}
+
+	public static string Hash(string root)
+		=> SHA256.HashData(Encoding.UTF8.GetBytes(root)).Select(b => b.ToString()).StringJoin();
 }
 
 
@@ -285,9 +289,11 @@ public static class CollectionHelper
 
 public static class StringHelper
 {
-	public static string[] SplitIfNotNull(this string str, string? separator) 
+	public static string[] SplitIfNotNull(this string str, string? separator)
 		=> separator is null ? [str] : str.Split(separator);
 
 	public static bool ContainsAny(this string str, params string[] values)
 		=> values.Any(x => str.Contains(x));
+
+	public static int IntParse(this string str) => int.TryParse(str, out var result) ? result : default;
 }

@@ -1,0 +1,437 @@
+﻿@page "/volatilequery"
+@namespace SBFirstLast4.Pages
+@using System.Security.Cryptography
+@using SBFirstLast4.Logging
+@using PayloadModel = (SBFirstLast4.Logging.QueryPayload Payload, string UserName)
+@implements IDisposable
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@AppTitle.Format("揮発性クエリ")</PageTitle>
+
+<link rel="stylesheet" href="css/fonts.css" />
+
+<div class="chatroom-selection">
+	<select class="select-menu" style="grid-column: 2; grid-row: 1;" @onchange=RoomIDOptions_OnChange>
+		@foreach (var i in RoomIDOptions)
+		{
+			<option value="@i">@i</option>
+		}
+	</select>
+	@if (CurrentRoomIDOption == "カスタム")
+	{
+		<input class="chatroom-input" @bind="BindRoomID" placeholder="部屋名を入力..." />
+		<button class="join-btn" @onclick="JoinChatroom">Join</button>
+	}
+</div>
+
+<div class="chat-container">
+	<div class="chat-header">
+		<div></div>
+		<h2 class="chatroom-title"><span>@RoomID</span></h2>
+		<button class="reload-btn" @onclick=ReloadMessages>⟳</button>
+	</div>
+
+	<div class="chat-messages">
+		@foreach (var message in Messages)
+		{
+			var isTheSameUser = IsTheSameUser(message.UserName);
+			<div class="message-wrapper @(isTheSameUser ? "sent-wrapper" : "received-wrapper")">
+				<strong class="user-name">@message.UserName</strong>
+				<div class="message-bubble @(isTheSameUser ? " sent" : "received")">
+					<span class="message-content">@message.Payload.Message</span>
+					<span class="message-timestamp">@message.Payload.Timestamp</span>
+				</div>
+			</div>
+		}
+		<div class="chat-input">
+			<input class="message-box" @bind="MessagePosted" placeholder="メッセージを入力..." />
+			<button class="send-btn" @onclick="SendMessage">➤</button>
+		</div>
+	</div>
+</div>
+
+
+<style>
+	@@media (min-width: 641px) {
+		main {
+			max-width: calc(100% - 250px);
+		}
+	}
+
+	.chatroom-selection {
+		width: 100%;
+		display: flex;
+		padding: 12px;
+		background: #ffffff;
+		justify-content: flex-start;
+		align-items: center;
+		gap: 10px;
+		flex-wrap: wrap;
+	}
+
+	.select-menu {
+		color: black;
+		padding: 8px 12px;
+		margin-top: 12px;
+		margin-bottom: 12px;
+		text-decoration: none;
+	}
+
+	.chatroom-input {
+		flex-grow: 1;
+		padding: 10px;
+		font-size: 16px;
+		border: 2px solid #ddd;
+		border-radius: 8px;
+		outline: none;
+		transition: 0.2s;
+	}
+
+		.chatroom-input:focus {
+			border-color: #007bff;
+		}
+
+	.join-btn {
+		background: #007bff;
+		color: white;
+		border: none;
+		padding: 10px 15px;
+		border-radius: 8px;
+		cursor: pointer;
+		font-weight: bold;
+		transition: 0.2s;
+	}
+
+		.join-btn:hover {
+			background: #0056b3;
+		}
+
+	.chat-container {
+		display: flex;
+		flex-direction: column;
+		height: 80vh;
+		max-width: 100vw;
+		margin: auto;
+		overflow-x: hidden;
+	}
+
+	.chat-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		background: #565656;
+		color: white;
+		padding: 0px 20px;
+		font-size: 18px;
+		font-weight: bold;
+	}
+
+	.reload-btn {
+		background: white;
+		color: #565656;
+		border: none;
+		padding: 6px 12px;
+		font-size: 14px;
+		border-radius: 6px;
+		cursor: pointer;
+		font-weight: bold;
+		transition: 0.2s;
+	}
+
+		.reload-btn:hover {
+			background: #ddd;
+		}
+
+	.chatroom-title {
+		background: #565656;
+		color: white;
+		text-align: center;
+		padding: 12px;
+		font-size: 18px;
+		font-weight: bold;
+		margin: 5px;
+	}
+
+		.chatroom-title span {
+			font-weight: bold;
+			font-family: mplus-1c-black;
+		}
+
+	.chat-messages {
+		flex-grow: 1;
+		overflow-y: auto;
+		overflow-x: hidden;
+		padding: 10px;
+		border-top: 2px solid #ddd;
+	}
+
+	.message-wrapper {
+		display: flex;
+		flex-direction: column;
+		margin-bottom: 10px;
+	}
+
+	.sent-wrapper {
+		align-items: flex-end;
+	}
+
+	.received-wrapper {
+		align-items: flex-start;
+	}
+
+	.user-name {
+		font-size: 0.75rem;
+		color: #666;
+		margin-bottom: 2px;
+	}
+
+	.message-bubble {
+		padding: 10px;
+		border-radius: 5px;
+		max-width: 60%;
+		position: relative;
+	}
+
+	.sent {
+		background-color: #dcf8c6;
+	}
+
+	.received {
+		background-color: #c6dcf8;
+	}
+
+	.message-content {
+		display: block;
+		font-size: 1rem;
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		white-space: pre-wrap;
+	}
+
+	.message-timestamp {
+		display: block;
+		font-size: 0.75rem;
+		color: #888;
+		text-align: right;
+	}
+
+	.chat-input {
+		width: 100%;
+		display: flex;
+		padding: 10px;
+		background: #ffffff;
+		border-top: 2px solid #ddd;
+	}
+
+	.message-box {
+		flex-grow: 1;
+		padding: 12px;
+		font-size: 16px;
+		border: 2px solid #ddd;
+		border-radius: 8px;
+		outline: none;
+		transition: 0.2s;
+	}
+
+		.message-box:focus {
+			border-color: #007bff;
+		}
+
+	.send-btn {
+		background: #007bff;
+		color: white;
+		border: none;
+		padding: 10px 15px;
+		margin-left: 10px;
+		border-radius: 50%;
+		font-size: 18px;
+		cursor: pointer;
+		transition: 0.2s;
+	}
+
+		.send-btn:hover {
+			background: #0056b3;
+		}
+
+</style>
+
+@code {
+
+	private string UserName = string.Empty;
+
+	private static string RoomID = DefaultRoomID;
+
+	private string MessagePosted = string.Empty;
+
+	private List<PayloadModel> Messages = [];
+
+	private string[] RoomIDOptions = [DefaultRoomID, "星の間", "月の間", "擂座の間", "カスタム"];
+
+	private static string CurrentRoomIDOption = DefaultRoomID;
+
+	private static string BindRoomID = RoomID;
+
+	private static DateTime LastReload = DateTime.Now;
+
+	private Timer? AutoReloadTimer;
+
+	private const string DefaultRoomID = "風の間";
+
+	private const int HashLength = 4;
+
+	protected override async Task OnInitializedAsync()
+	{
+
+		if (!AppSettings.IsLoggedIn || !AppSettings.VolatileMode)
+		{
+			NavigationManager.NavigateTo("", false);
+			return;
+		}
+
+		if (!Words.IsLoadedCorrectly)
+		{
+			NavigationManager.NavigateTo("top", false);
+			return;
+		}
+
+		await InitUserName();
+		await UpdateMessages();
+
+		AutoReloadTimer = new(async _ => await ReloadMessages(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+
+		await Server.Log(StatusTypes.VolatileQueryOpen);
+	}
+
+	public void Dispose() { }
+
+	private async Task RoomIDOptions_OnChange(ChangeEventArgs e)
+	{
+		var value = e.Value?.ToString() ?? "なぞのばしょ";
+
+		CurrentRoomIDOption = value;
+
+		if (value == "カスタム")
+			return;
+
+		Messages.Clear();
+
+		RoomID = CurrentRoomIDOption;
+		await UpdateMessages();
+		StateHasChanged();
+	}
+
+	private async Task JoinChatroom()
+	{
+		Messages.Clear();
+		RoomID = BindRoomID;
+		await UpdateMessages();
+		StateHasChanged();
+	}
+
+	private async Task SendMessage()
+	{
+		if (string.IsNullOrWhiteSpace(MessagePosted))
+			return;
+
+		var message = MessagePosted;
+		MessagePosted = string.Empty;
+		StateHasChanged();
+		await Task.Delay(5);
+
+		await VolatileQuery.PostAsync(Http, UserName, RoomID, VolatileQuery.Serialize(message, DateTime.Now));
+		await UpdateMessages();
+	}
+
+	private async Task InitUserName()
+	{
+		static int GetHashValue(string hashCode) => Math.Abs(hashCode.Take(HashLength).StringJoin().IntParse());
+		try
+		{
+			var guidHash = GetHashValue(Utils.Hash($"{AppSettings.UserName}{AppSettings.Guid}"));
+			var vHash = GetHashValue(Utils.Hash(AppSettings.Hash));
+			var userName = $"{AppSettings.UserName}#{guidHash:0000}{vHash:0000}";
+			UserName = userName;
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+		}
+	}
+
+	private async Task ReloadMessages()
+	{
+		var now = DateTime.Now;
+
+		if (now - LastReload <= TimeSpan.FromSeconds(10))
+			return;
+
+		LastReload = now;
+		await UpdateMessages();
+	}
+
+	private async Task UpdateMessages()
+	{
+		var messages = new List<PayloadModel>();
+
+		try
+		{
+			foreach (var i in await VolatileQuery.GetAsync(Http, RoomID))
+			{
+				if (i.Content is null || i.UserName is null)
+					continue;
+
+				var payload = VolatileQuery.Deserialize(i.Content);
+
+				if (payload is null)
+					continue;
+
+				messages.Add((payload, i.UserName));
+			}
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+			throw;
+		}
+
+		Messages = messages;
+		StateHasChanged();
+	}
+
+	private bool IsTheSameUser(string other)
+	{
+		try
+		{
+			var data = (This: Extract(UserName), Other: Extract(other));
+
+			return data.This.Id == data.Other.Id
+				|| data.This.Hash == data.Other.Hash;
+		}
+		catch (Exception ex)
+		when (ex is ArgumentException or IndexOutOfRangeException)
+		{
+			return false;
+		}
+		static (string Name, string Id, string Hash) Extract(string str)
+		{
+			var data = str.Split('#');
+			var name = data.At(0) ?? throw new ArgumentException();
+			var nums = data.At(1) ?? throw new ArgumentException();
+
+			if (nums.Length % 2 != 0)
+				throw new ArgumentException();
+
+			var middle = nums.Length / 2;
+
+			var id = nums[..middle];
+			var hash = nums[middle..];
+
+			if (id.Length != HashLength || hash.Length != HashLength)
+				throw new ArgumentException();
+
+			return (name, id, hash);
+		}
+	}
+}

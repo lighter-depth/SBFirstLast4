@@ -1,4 +1,5 @@
 ﻿@using SBFirstLast4.Pages
+@implements IDisposable
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
@@ -68,13 +69,16 @@
 				<span class="oi oi-terminal" aria-hidden="true"></span> 手動クエリ
 			</NavLink>
 		</div>
-		@if (AppSettings.IsDebug || AppSettings.IsAdmin)
+		@if (AppSettings.VolatileMode)
 		{
 			<div class="nav-item px-3">
-				<NavLink class="nav-link" href="volatile-query">
+				<NavLink class="nav-link" href="volatilequery">
 					<span class="oi oi-rss-alt" aria-hidden="true"></span> 揮発性クエリ
 				</NavLink>
 			</div>
+		}
+		@if (AppSettings.IsDebug || AppSettings.IsAdmin)
+		{
 			<div class="nav-item px-3">
 				<NavLink class="nav-link" href="online-menu">
 					<span class="oi oi-people" aria-hidden="true"></span> 対戦
@@ -116,9 +120,17 @@
 </div>
 
 @code {
+	public static NavMenu? Instance { get; private set; }
+
 	private bool collapseNavMenu = true;
 
 	private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+	protected override void OnInitialized() => Instance = this;
+
+	public void Dispose() => Instance = null;
+
+	internal void RaiseStateHasChanged() => StateHasChanged();
 
 	private void ToggleNavMenu()
 	{

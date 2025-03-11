@@ -200,12 +200,12 @@
 			foreach (var module in ModuleManager.Modules)
 				if (module.StaticStatements.Count > 0)
 					foreach (var statement in module.StaticStatements)
-						await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+						await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, LocalStorage, DownloadFileService);
 
 		foreach (var module in ModuleManager.Modules)
 			if (module.InitStatements.Count > 0)
 				foreach (var statement in module.InitStatements)
-					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, LocalStorage, DownloadFileService);
 	}
 
 	private async Task ImportStoredModules()
@@ -263,7 +263,7 @@
 			if (string.IsNullOrWhiteSpace(input))
 				return;
 
-			await _agent.RunAsync(input, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+			await _agent.RunAsync(input, outputBuffer, _setTranslated, HandleDeletedFiles, _update, LocalStorage, DownloadFileService);
 
 			StateHasChanged();
 
@@ -334,11 +334,11 @@
 
 			if (module?.StaticStatements.Count > 0)
 				foreach (var statement in module.StaticStatements)
-					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, LocalStorage, DownloadFileService);
 
 			if (module?.InitStatements.Count > 0)
 				foreach (var statement in module.InitStatements)
-					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, DownloadFileService);
+					await _agent.RunAsync(statement, outputBuffer, _setTranslated, HandleDeletedFiles, _update, LocalStorage, DownloadFileService);
 
 		}
 		await LocalStorage.SetItemAsync(LSKeys.ModuleFiles, _moduleFiles);

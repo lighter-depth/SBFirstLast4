@@ -283,11 +283,9 @@
 
 			if (!NavigationManager.Uri.StartsWith("https://lighter-depth.github.io") && !AppSettings.IsAdmin)
 			{
-				/*
 				await JSRuntime.Alert("不明な環境での起動を確認しました。ロギングを無効にしてください。");
 				NavigationManager.NavigateTo(string.Empty, true);
 				return;
-				*/
 			}
 
 			await Update("設定を同期中...");

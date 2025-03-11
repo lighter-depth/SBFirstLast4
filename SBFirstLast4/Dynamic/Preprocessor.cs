@@ -1,4 +1,5 @@
 ﻿using BlazorDownloadFile;
+using Blazored.LocalStorage;
 using SBFirstLast4.Pages;
 using System.Diagnostics.CodeAnalysis;
 using Buffer = System.Collections.Generic.List<(string Content, string Type)>;
@@ -123,9 +124,9 @@ public static partial class Preprocessor
 		return false;
 	}
 
-	public static async Task ProcessAsync(string input, Buffer output, Func<Task> handleDeletedFiles, IBlazorDownloadFileService? service = null)
+	public static async Task ProcessAsync(string input, Buffer output, Func<Task> handleDeletedFiles, ILocalStorageService? localStorage = null, IBlazorDownloadFileService? service = null)
 	{
-		if (await TryProcessAsync(input, service) is var result && !result.Success)
+		if (await TryProcessAsync(input, localStorage, service) is var result && !result.Success)
 		{
 			output.Add(($"Error: SBPreprocessException: {result.ErrorMsg}", TextType.Error));
 			return;
@@ -137,7 +138,7 @@ public static partial class Preprocessor
 			await handleDeletedFiles();
 	}
 
-	public static async Task<(bool Success, string[]? Status, string? ErrorMsg)> TryProcessAsync(string input, IBlazorDownloadFileService? service, string moduleName = "USER_DEFINED")
+	public static async Task<(bool Success, string[]? Status, string? ErrorMsg)> TryProcessAsync(string input, ILocalStorageService? localStorage, IBlazorDownloadFileService? service, string moduleName = "USER_DEFINED")
 	{
 		string[] status;
 
@@ -282,7 +283,7 @@ public static partial class Preprocessor
 		if (symbol is "pragma")
 		{
 			var pragma = contents.At(1);
-			if (pragma is not ("auto" or "reflect" or "monitor" or "easyarray"))
+			if (pragma is not ("auto" or "reflect" or "monitor" or "easyarray" or "volatile"))
 				return (false, null, "Invalid syntax: No applicable pragma found.");
 
 			if (pragma is "auto")
@@ -364,6 +365,37 @@ public static partial class Preprocessor
 				}
 				return (false, null, "Invalid syntax: invalid argument for #pragma easyarray directive.");
 			}
+
+			if(pragma is "volatile")
+			{
+				if (localStorage is null)
+					return (false, null, "Access violation: #pragma volatile is inaccessible in discarding contexts");
+
+				if (contents.Length != 3)
+					return (false, null, "Invalid syntax: #pragma volatile syntax must have one argument.");
+
+				if (contents[2] == "enable")
+				{
+					await AppSettings.SetVolatileMode(localStorage, true);
+					status = ["Volatile mode enabled."];
+					return (true, status, null);
+				}
+				if (contents[2] == "disable")
+				{
+					await AppSettings.SetVolatileMode(localStorage, false);
+					status = ["Volatile mode disabled."];
+					return (true, status, null);
+				}
+				if (contents[2] == "toggle")
+				{
+					await AppSettings.SetVolatileMode(localStorage, !AppSettings.VolatileMode);
+					status = [$"Volatile mode {(AppSettings.VolatileMode ? "enabled" : "disabled")}."];
+					return (true, status, null);
+				}
+				return (false, null, "Invalid syntax: invalid argument for #pragma volatile directive.");
+
+			}
+
 			return (false, null, "Invalid syntax: invalid argument for #pragma monitor directive.");
 		}
 

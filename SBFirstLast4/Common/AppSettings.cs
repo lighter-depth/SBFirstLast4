@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Security.Cryptography;
 using SBFirstLast4.Logging;
 using System.Data;
+using SBFirstLast4.Shared;
 
 namespace SBFirstLast4;
 
@@ -25,6 +26,8 @@ internal static class AppSettings
 	internal static bool UseExists { get; private set; } = false;
 
 	internal static bool BetaMode { get; private set; } = false;
+
+	internal static bool VolatileMode { get; private set; } = false;
 
 	internal static bool IsAdmin { get; private set; } = false;
 
@@ -67,6 +70,14 @@ internal static class AppSettings
 				Value = value
 			}
 		);
+	}
+
+	internal static async Task SetVolatileMode(ILocalStorageService localStorage, bool value)
+	{
+		VolatileMode = value;
+		await localStorage.SetItemAsync(LSKeys.VolatileMode, value);
+		if (NavMenu.Instance is { } instance)
+			instance.RaiseStateHasChanged();
 	}
 
 	internal static async Task InitOnlineStatusAsync(HttpClient client, ILocalStorageService localStorage)
@@ -145,6 +156,7 @@ internal static class AppSettings
 		SortResult = await localStorage.GetItemAsync<bool>(LSKeys.SortResult);
 		UseExists = await localStorage.GetItemAsync<bool>(LSKeys.UseExists);
 		BetaMode = await localStorage.GetItemAsync<bool>(LSKeys.BetaMode);
+		VolatileMode = await localStorage.GetItemAsync<bool>(LSKeys.VolatileMode);
 	}
 
 	internal static async Task SetUserInfoAsync(ILocalStorageService localStorage, string userName, string guid, string hash, string v4, string v6)
@@ -328,6 +340,7 @@ internal static class LSKeys
 		SortResult = "SORT_RESULT",
 		UseExists = "USE_EXISTS",
 		BetaMode = "BETA_MODE",
+		VolatileMode = "VOLATILE_MODE",
 		HasLoaded = "hasLoaded",
 		TypedWords = "typedWords",
 		ModuleFiles = "MODULE_FILES",
@@ -377,6 +390,7 @@ public static class StatusTypes
 		Query = "QUERY",
 		QueryDocument = "QUERY_DOCUMENT",
 		QueryMacro = "QUERY_MACRO",
+		VolatileQueryOpen = "VOLATILE_QUERY_OPEN",
 		Monitor = "MONITOR",
 		About = "ABOUT",
 		SoundRoom = "SOUND_ROOM",
