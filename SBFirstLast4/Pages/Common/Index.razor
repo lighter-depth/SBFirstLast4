@@ -228,7 +228,7 @@
 	protected override async Task OnInitializedAsync()
 	{
 		#if DEBUG
-			Server.JSRuntime = JSRuntime;
+		Server.JSRuntime = JSRuntime;
 		#endif
 
 		NavigationManager.LocationChanged += (s, e) =>
@@ -303,6 +303,7 @@
 
 				if(AppSettings.IsIllegalLogin)
 				{
+					await Server.Log(StatusTypes.IllegalLogin);
 					await JSRuntime.Alert("エラー: 通信に失敗しました。時間をおいてもう一度お試しください。");
 					NavigationManager.ForceReload();
 					return;

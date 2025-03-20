@@ -27,6 +27,7 @@ public static class StatusTypes
 	public const string
 		Register = "REGISTER",
 		Login = "LOGIN",
+		IllegalLogin = "ILLEGAL_LOGIN",
 		SearchTL = "SEARCH_TL",
 		SearchTD = "SEARCH_TD",
 		SearchSafe = "SEARCH_SAFE",
