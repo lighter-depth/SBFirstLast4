@@ -173,6 +173,8 @@ public static class JSHelper
 
 public static class NavHelper
 {
+	public static void ForceReload(this NavigationManager nav) => nav.NavigateTo(string.Empty, true);
+
 	public static void GoToIndex(this NavigationManager nav) => nav.NavigateTo(string.Empty, false);
 
 	public static void GoToTop(this NavigationManager nav) => nav.NavigateTo("top", false);

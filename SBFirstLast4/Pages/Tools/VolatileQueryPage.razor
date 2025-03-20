@@ -45,10 +45,10 @@
 				</div>
 			</div>
 		}
-		<div class="chat-input">
-			<input class="message-box" @bind="MessagePosted" placeholder="メッセージを入力..." />
-			<button class="send-btn" @onclick="SendMessage">➤</button>
-		</div>
+	</div>
+	<div class="chat-input">
+		<input class="message-box" @bind="MessagePosted" placeholder="メッセージを入力..." />
+		<button class="send-btn" @onclick="SendMessage">➤</button>
 	</div>
 </div>
 
@@ -160,6 +160,8 @@
 		}
 
 	.chat-messages {
+		display: flex;
+		flex-flow: column-reverse;
 		flex-grow: 1;
 		overflow-y: auto;
 		overflow-x: hidden;
@@ -396,6 +398,7 @@
 		}
 
 		Messages = messages;
+		Messages.Reverse();
 		StateHasChanged();
 	}
 

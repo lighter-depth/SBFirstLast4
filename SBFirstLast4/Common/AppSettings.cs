@@ -47,6 +47,8 @@ internal static class AppSettings
 
 	private const string IllegalLogin = "ILLEGAL_LOGIN";
 
+	internal static bool IsIllegalLogin => Hash is IllegalLogin || V4 is IllegalLogin || V6 is IllegalLogin;
+
 	internal static async Task SetSortResult(ILocalStorageService localStorage, bool value)
 	{
 		SortResult = value;
@@ -89,7 +91,7 @@ internal static class AppSettings
 			status = await client.GetStringAsync($"https://raw.githubusercontent.com/lighter-depth/DictionaryForSB/main/binary/.dsync.txt");
 		}
 		catch (Exception ex)
-		when (ex is HttpRequestException　hex)
+		when (ex is HttpRequestException hex)
 		{
 			var statusCode = hex.StatusCode;
 			var msg = hex.Message;
@@ -253,6 +255,9 @@ internal static class AppSettings
 
 		static async Task<bool> ShouldReturnCore(HttpClient client)
 		{
+			if (IsIllegalLogin)
+				return true;
+
 			string? status;
 			try
 			{
@@ -345,56 +350,4 @@ internal static class LSKeys
 		TypedWords = "typedWords",
 		ModuleFiles = "MODULE_FILES",
 		CachedAuthKey = "AUTHKEY_CACHE";
-}
-
-internal static class StatusTemplate
-{
-	internal static StatusTemplate<T> Create<T>(string type, T order) => new(type, order);
-}
-
-public class StatusTemplate<T>(string type, T order)
-{
-	public string Type { get; } = type;
-
-	public T Order { get; } = order;
-
-	public string Gen => Versioning.Generation.Name;
-
-	public Version Version => Versioning.VersionHistory.Latest;
-
-	public UserInfoTemplate UserInfo => new(AppSettings.UserName, AppSettings.Guid, AppSettings.Hash, AppSettings.V4, AppSettings.V6);
-
-	public DateTime Date => DateTime.Now;
-
-	public sealed record UserInfoTemplate(string UserName, string Guid, string Hash, string V4, string V6);
-}
-
-public static class StatusTypes
-{
-	public const string
-		Register = "REGISTER",
-		Login = "LOGIN",
-		SearchTL = "SEARCH_TL",
-		SearchTD = "SEARCH_TD",
-		SearchSafe = "SEARCH_SAFE",
-		GroupSearchOpen = "GROUP_SEARCH_OPEN",
-		SearchGroup = "SEARCH_GROUP",
-		Download = "DOWNLOAD",
-		TypeCheck = "TYPE_CHECK",
-		BestDmg = "BEST_DMG",
-		CalcDmg = "CALC_DMG",
-		Simulator = "SIMULATOR",
-		RevSimulatorOpen = "REV_SIMULATOR_OPEN",
-		RevSimulator = "REV_SIMULATOR",
-		FastSearch = "FAST_SEARCH",
-		Query = "QUERY",
-		QueryDocument = "QUERY_DOCUMENT",
-		QueryMacro = "QUERY_MACRO",
-		VolatileQueryOpen = "VOLATILE_QUERY_OPEN",
-		Monitor = "MONITOR",
-		About = "ABOUT",
-		SoundRoom = "SOUND_ROOM",
-		UserName = "USERNAME",
-		ToggleBeta = "TOGGLE_BETA",
-		Logout = "LOGOUT";
 }

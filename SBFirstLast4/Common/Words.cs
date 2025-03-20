@@ -55,6 +55,8 @@ public static class Words
 
 	public static void Clear()
 	{
+		ClearDependencies();
+
 		NoTypeWords = [];
 		TypedWords = [];
 		_perfectDic = null;
@@ -79,6 +81,11 @@ public static class Words
 
 		await LoadDataFromOnline(progress, client, localStorage, wordLoader, token);
 		await progress("読み込みを完了しています...");
+	}
+
+	private static void ClearDependencies()
+	{
+		Specialized.RevSimulator.Main.ClearCache();
 	}
 
 	private static async Task LoadDataFromOnline(Progress progress, HttpClient client, ILocalStorageService localStorage, IWordLoaderService wordLoader, DictionaryInitializationToken token)

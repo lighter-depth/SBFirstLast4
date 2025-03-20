@@ -37,6 +37,8 @@ internal static class Main
 		return result;
 	}
 
+	internal static void ClearCache() => Cache.Clear();
+
 	private static List<TurnInfo> PlayerTurn(PlayWord word, bool isPlayer1Turn, (int Ally, int Foe) hp, List<TurnInfo> chain, int maxLen, int saiki = 1, CancellationToken token = default)
 	{
 		//token.ThrowIfCancellationRequested();

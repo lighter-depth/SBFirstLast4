@@ -192,7 +192,8 @@
 		SBFirstLast4は、機能改善並びに不正利用防止のため、以下の情報をサーバーに送信することがあります。<br><br>
 		・ユーザー名<br>
 		・ユーザーに紐づけられるID（GUID）<br>
-		・ユーザーを識別するハッシュ値<br>　（IPアドレスをハッシュ化したもの）<br>
+		・ユーザーを識別するハッシュ値<br>
+		・ユーザーのIPアドレス<br>
 		・ユーザーのアクセス日時<br>
 		・ユーザーのアクション<br>
 		送信されたデータは、APIを通じて第三者に閲覧される可能性があります。
@@ -227,8 +228,9 @@
 	protected override async Task OnInitializedAsync()
 	{
 		#if DEBUG
-	Server.JSRuntime = JSRuntime;
+			Server.JSRuntime = JSRuntime;
 		#endif
+
 		NavigationManager.LocationChanged += (s, e) =>
 		{
 			var location = e.Location;
@@ -270,7 +272,7 @@
 
 			if(AppSettings.IsObsolete)
 			{
-				NavigationManager.NavigateTo("", true);
+				NavigationManager.ForceReload();
 				return;
 			}
 		}
@@ -298,6 +300,13 @@
 
 				await Task.WhenAny(AppSettings.RefreshHashAsync(Http, LocalStorage), Task.Delay(3000));
 				await Update("準備中...");
+
+				if(AppSettings.IsIllegalLogin)
+				{
+					await JSRuntime.Alert("エラー: 通信に失敗しました。時間をおいてもう一度お試しください。");
+					NavigationManager.ForceReload();
+					return;
+				}
 
 				await Server.Log(StatusTypes.Login);
 

@@ -3,6 +3,7 @@
 @inject IJSRuntime JSRuntime
 @implements IDisposable
 @using SBFirstLast4.Pages
+@using SBFirstLast4.Logging
 @using LocalLoader = SBFirstLast4.Words.LocalLoader
 @using WordTypeFormat = SBFirstLast4.ListLoader.WordTypeFormat
 
@@ -287,11 +288,14 @@
 	private void ToggleFile(FileModel file) => file.IsEnabled = !file.IsEnabled;
 
 
-	private void LoadBtn_OnClick()
+	private async Task LoadBtn_OnClick()
 	{
 		Accepting = false;
 		LDDirectLoadingPage.Accepting = true;
 		LDDirectLoadingPage.FilesToRemove = FilesToRemove;
+
+		var fileNames = ListFiles.Select(x => x.Name).Except(FilesToRemove).Take(5).StringJoin(", ");
+		await Server.Log(StatusTypes.LDLoad, fileNames);
 		NavigationManager.NavigateTo("ldloading", false);
 	}
 

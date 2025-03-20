@@ -47,18 +47,18 @@ public sealed partial class QueryAgent
 		if (inputTrim.StartsWith('.') && QueryContexts.ScriptContextSpecifiers.Contains(inputTrim.Split().At(0)))
 		{
 			var context = inputTrim[1..];
-			await SwitchContextAsync(context, output, setTranslated, handleDeletedFiles, update);
+			await SwitchContextAsync(context, output, setTranslated, update);
 			return;
 		}
 
 		if (CurrentContext is QueryContext.Script)
-			await RunScriptAsync(inputTrim, output, setTranslated, handleDeletedFiles, update, localStorage, service);
+			await RunScriptAsync(inputTrim, output, setTranslated, handleDeletedFiles, localStorage, service);
 
 		if (CurrentContext is QueryContext.AnonymousProcedure or QueryContext.NamedProcedure)
 			_currentProcedure?.Push(inputTrim);
 	}
 
-	private async Task SwitchContextAsync(string contextStr, Buffer output, Action<string> setTranslated, Func<Task> handleDeletedFiles, Func<Task> update)
+	private async Task SwitchContextAsync(string contextStr, Buffer output, Action<string> setTranslated, Func<Task> update)
 	{
 		if (contextStr == "end" && ContextStack.Count > 1)
 		{
@@ -128,7 +128,7 @@ public sealed partial class QueryAgent
 		}
 	}
 
-	public async Task RunScriptAsync(string input, Buffer output, Action<string> setTranslated, Func<Task> handleDeletedFiles, Func<Task> update, ILocalStorageService localStorage, IBlazorDownloadFileService service)
+	public async Task RunScriptAsync(string input, Buffer output, Action<string> setTranslated, Func<Task> handleDeletedFiles, ILocalStorageService localStorage, IBlazorDownloadFileService service)
 	{
 		StatementKind = TextType.General;
 
@@ -164,6 +164,7 @@ public sealed partial class QueryAgent
 
 		inputTrim = ReplaceHash(inputTrim);
 
+		// TODO: ほんとはセミコロンが文字列中かの確認もしないとダメ
 		var statements = SplitSemicolonRegex()
 						.Split(inputTrim)
 						.Where(s => !string.IsNullOrWhiteSpace(s))
