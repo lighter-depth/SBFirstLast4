@@ -4,6 +4,8 @@ using System.Security.Cryptography;
 using SBFirstLast4.Logging;
 using System.Data;
 using SBFirstLast4.Shared;
+using Microsoft.JSInterop;
+using static System.Net.WebRequestMethods;
 
 namespace SBFirstLast4;
 
@@ -310,6 +312,45 @@ internal static class AppSettings
 			{
 				return true;
 			}
+		}
+	}
+
+	internal static async Task AlertIdDataAsync(HttpClient client, IJSRuntime jsRuntime, ILocalStorageService localStorage)
+	{
+		try
+		{
+			var spec = await Server.SpeculateAsync(localStorage);
+			if (spec is null)
+			{
+				await jsRuntime.Alert("通信エラーが発生しました。しばらく時間を置いてからもう一度お試しください。");
+				return;
+			}
+
+			if (!spec.Contains("不明"))
+			{
+				await jsRuntime.Alert(spec);
+				return;
+			}
+
+			var name = await localStorage.GetItemAsync<string?>(LSKeys.UserName);
+			var guid = await localStorage.GetItemAsync<string?>(LSKeys.UserId);
+			var hash = await AppSettings.GetHashDirectlyAsync(client);
+
+			if (name is null || guid is null || hash is null)
+			{
+				var tmphash = await AppSettings.TemporaryHashAsync(client);
+				await jsRuntime.Alert($"Data: {{ Status: \"新規ユーザー\", TH: {tmphash} }}");
+				return;
+			}
+
+			var guidTrim = guid.Take(6).StringJoin();
+			var hashTrim = hash.Take(6).StringJoin();
+			var data = $"Data: {{ Status: \"不明なユーザー\", Name: {name}, Id: g0{guidTrim}h0{hashTrim} }}";
+			await jsRuntime.Alert(data);
+		}
+		catch (Exception ex)
+		{
+			await jsRuntime.AlertEx(ex);
 		}
 	}
 

@@ -148,44 +148,7 @@
 		NavigationManager.Return();
 	}
 
-	private async Task CacheBtn_Click()
-	{
-		try
-		{
-			var spec = await Server.SpeculateAsync(LocalStorage);
-			if(spec is null)
-			{
-				await JSRuntime.Alert("通信エラーが発生しました。しばらく時間を置いてからもう一度お試しください。");
-				return;
-			}
-
-			if (!spec.Contains("不明"))
-			{
-				await JSRuntime.Alert(spec);
-				return;
-			}
-
-			var name = await LocalStorage.GetItemAsync<string?>(LSKeys.UserName);
-			var guid = await LocalStorage.GetItemAsync<string?>(LSKeys.UserId);
-			var hash = await AppSettings.GetHashDirectlyAsync(Http);
-
-			if (name is null || guid is null || hash is null)
-			{
-				var tmphash = await AppSettings.TemporaryHashAsync(Http);
-				await JSRuntime.Alert($"Data: {{ Status: \"新規ユーザー\", TH: {tmphash} }}");
-				return;
-			}
-
-			var guidTrim = guid.Take(6).StringJoin();
-			var hashTrim = hash.Take(6).StringJoin();
-			var data = $"Data: {{ Status: \"不明なユーザー\", Name: {name}, Id: g0{guidTrim}h0{hashTrim} }}";
-			await JSRuntime.Alert(data);
-		}
-		catch(Exception ex)
-		{
-			await JSRuntime.AlertEx(ex);
-		}
-	}
+	private async Task CacheBtn_Click() => await AppSettings.AlertIdDataAsync(Http, JSRuntime, LocalStorage);
 
 	public sealed class PasswordModel
 	{

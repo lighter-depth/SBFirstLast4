@@ -6,6 +6,7 @@ internal static class VersionHistory
 
 	internal static readonly (Version Version, string[] Changes)[] Versions =
 	[
+		(new(15, 0, 4), ["「設定」ページにユーザー情報を確認する機能を追加"]),
 		(new(15, 0, 3), ["小規模な不具合の修正"]),
 		(new(15, 0, 2), ["ローカル辞書にロギングを追加", "特殊条件辞書の修正", "機能「革命シミュレーター」をローカル辞書に対応"]),
 		(new(15, 0, 1), ["小規模な不具合の修正"]),
