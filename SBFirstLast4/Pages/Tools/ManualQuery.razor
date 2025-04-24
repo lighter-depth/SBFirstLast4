@@ -144,7 +144,7 @@
 
 	private Dictionary<string, int> _progressPercentages = [];
 
-	internal static TaskCompletionSource<string> InputStream { get; private set; } = new();
+	internal static Completion<string> InputStream { get; private set; } = new();
 
 	internal static CancellationTokenSource Cancellation { get; private set; } = new();
 
@@ -165,11 +165,11 @@
 
 		if (!AppSettings.IsLoggedIn)
 		{
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 			return;
 		}
 		if (!Words.IsLoadedCorrectly)
-			NavigationManager.NavigateTo("top", false);
+			NavigationManager.GoToTop();
 
 		try
 		{
@@ -249,7 +249,7 @@
 			StateHasChanged();
 			await Task.Delay(1);
 
-			InputStream.TrySetResult(input);
+			InputStream.SetResult(input);
 
 			if (WaitingForInput)
 			{
@@ -283,7 +283,6 @@
 	internal static Task<string> GetInputStream()
 	{
 		WaitingForInput = true;
-		InputStream = new();
 		return InputStream.Task;
 	}
 

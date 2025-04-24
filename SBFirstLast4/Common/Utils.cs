@@ -5,7 +5,9 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using SBFirstLast4.Dynamic;
+using SBFirstLast4.Pages;
 using SBFirstLast4.Simulator;
+using Index = System.Index;
 
 namespace SBFirstLast4;
 
@@ -173,11 +175,13 @@ public static class JSHelper
 
 public static class NavHelper
 {
+	public static void GoTo(this NavigationManager nav, string location) => nav.NavigateTo(location, false);
+
 	public static void ForceReload(this NavigationManager nav) => nav.NavigateTo(string.Empty, true);
 
-	public static void GoToIndex(this NavigationManager nav) => nav.NavigateTo(string.Empty, false);
+	public static void Return(this NavigationManager nav) => nav.GoTo(Locations.Index);
 
-	public static void GoToTop(this NavigationManager nav) => nav.NavigateTo("top", false);
+	public static void GoToTop(this NavigationManager nav) => nav.GoTo(Locations.Top);
 }
 
 public static class CollectionHelper
@@ -211,20 +215,6 @@ public static class CollectionHelper
 	public static void Add<T>(this Stack<T> stack, T item) => stack.Push(item);
 
 	public static Span<T> AsSpan<T>(this List<T> list) => CollectionsMarshal.AsSpan(list);
-
-	public static List<string[]> SplitToChunks(this List<string> source, int chunkSize)
-	{
-		const int chunksize = 10000;
-		var sourceSpan = source.AsSpan();
-		var chunks = new List<string[]>((int)Math.Ceiling((double)source.Count / chunkSize));
-		for (var i = 0; i < source.Count; i += chunksize)
-		{
-			var count = Math.Min(chunksize, source.Count - i);
-			chunks.Add(sourceSpan.Slice(i, count).ToArray());
-		}
-
-		return chunks;
-	}
 
 	public static IEnumerable<Word> SortByLength(this IEnumerable<Word> words, SortArg arg)
 	{
@@ -295,7 +285,26 @@ public static class StringHelper
 		=> separator is null ? [str] : str.Split(separator);
 
 	public static bool ContainsAny(this string str, params string[] values)
-		=> values.Any(x => str.Contains(x));
+		=> values.Any(str.Contains);
 
-	public static int IntParse(this string str) => int.TryParse(str, out var result) ? result : default;
+	public static T? Parse<T>(this string? str) where T : IParsable<T> 
+		=> T.TryParse(str, null, out var result) ? result : default;
+
+	public static bool ParseBool(this string? str) => bool.TryParse(str, out var result) && result;
+}
+
+public sealed class Completion<T>
+{
+	private TaskCompletionSource<T> _completionSource = new();
+
+	public Task<T> Task
+	{
+		get
+		{
+			_completionSource = new();
+			return _completionSource.Task;
+		}
+	}
+
+	public void SetResult(T result) => _completionSource.TrySetResult(result);
 }

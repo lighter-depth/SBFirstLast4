@@ -57,8 +57,8 @@ public sealed record BattleData(PlayerData Player1, PlayerData Player2, PlayerDa
 			Player2: PlayerData.Deserialize(data.At(1)),
 			PreActor: PlayerData.Deserialize(data.At(2)),
 			PreReceiver: PlayerData.Deserialize(data.At(3)),
-			IsPlayer1sTurn: Bool.ParseOrDefault(data.At(4)),
-			TurnNum: Int.ParseOrDefault(data.At(5)),
+			IsPlayer1sTurn: data.At(4).ParseBool(),
+			TurnNum: data.At(5).Parse<int>(),
 			UsedWords: usedWords
 		);
 	}
@@ -112,19 +112,19 @@ public sealed record PlayerData(string Name, int AbilityIndex, int HP, int ATKIn
 		return new
 		(
 			Name: data.At(0) ?? string.Empty,
-			AbilityIndex: Int.ParseOrDefault(data.At(1)),
-			HP: Int.ParseOrDefault(data.At(2)),
-			ATKIndex: Int.ParseOrDefault(data.At(3)),
-			DEFIndex: Int.ParseOrDefault(data.At(4)),
+			AbilityIndex: data.At(1).Parse<int>(),
+			HP: data.At(2).Parse<int>(),
+			ATKIndex: data.At(3).Parse<int>(),
+			DEFIndex: data.At(4).Parse<int>(),
 			CurrentWord: Word.Deserialize(data.At(5)),
-			State: (PlayerState)Int.ParseOrDefault(data.At(6)),
+			State: (PlayerState)data.At(6).Parse<int>(),
 			Args: new
 			(
-				FoodRem: Int.ParseOrDefault(data.At(7)),
-				CureRem: Int.ParseOrDefault(data.At(8)),
-				PoisonDmg: Int.ParseOrDefault(data.At(9)),
-				SeedRem: Int.ParseOrDefault(data.At(10)),
-				SkillRem: Int.ParseOrDefault(data.At(11))
+				FoodRem: data.At(7).Parse<int>(),
+				CureRem: data.At(8).Parse<int>(),
+				PoisonDmg: data.At(9).Parse<int>(),
+				SeedRem: data.At(10).Parse<int>(),
+				SkillRem: data.At(11).Parse<int>()
 			)
 		);
 	}

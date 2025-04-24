@@ -452,13 +452,13 @@
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 			return;
 		}
 
 		if (!Words.IsLoadedCorrectly)
 		{
-			NavigationManager.NavigateTo("top", false);
+			NavigationManager.GoToTop();
 			return;
 		}
 
@@ -522,7 +522,7 @@
 				Banned = $"{BannedWords.StringJoin(' ')}"
 			}
 		);
-		NavigationManager.NavigateTo("rev-simulator-result");
+		NavigationManager.GoTo(Locations.RevSimulator.Result);
 	}
 
 	private void TransparentScreen(bool show)

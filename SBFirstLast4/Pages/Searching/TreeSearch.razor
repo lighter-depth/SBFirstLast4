@@ -206,12 +206,12 @@
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 			return;
 		}
 		if (!Words.IsLoadedCorrectly)
 		{
-			NavigationManager.NavigateTo("top", false);
+			NavigationManager.GoToTop();
 			return;
 		}
 
@@ -263,7 +263,7 @@
 
 			if (backToTop)
 			{
-				NavigationManager.NavigateTo("top", false);
+				NavigationManager.GoToTop();
 				return;
 			}
 
@@ -295,6 +295,6 @@
 			order: query
 		);
 
-		NavigationManager.NavigateTo("treesearch-result");
+		NavigationManager.GoTo(Locations.Searching.GroupResult);
 	}
 }

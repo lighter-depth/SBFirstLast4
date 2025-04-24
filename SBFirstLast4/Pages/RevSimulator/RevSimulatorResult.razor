@@ -423,14 +423,14 @@
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 			return;
 		}
 		if (!Words.IsLoadedCorrectly)
-			NavigationManager.NavigateTo("top", false);
+			NavigationManager.GoToTop();
 	}
 
-	private void BackBtn_OnClick() => NavigationManager.NavigateTo("rev-simulator");
+	private void BackBtn_OnClick() => NavigationManager.GoTo(Locations.RevSimulator.Main);
 
 	private static string GetWordTypeText(Word word) =>
 		word.IsSingleType ? word.Type1.TypeToString()

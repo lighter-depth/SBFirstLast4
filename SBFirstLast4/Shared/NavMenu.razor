@@ -15,64 +15,64 @@
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
 	<nav class="flex-column">
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="home" @onclick=GoToHomeBtn_Click>
+			<NavLink class="nav-link" href=@Locations.Searching.TL @onclick=GoToHomeBtn_Click>
 				<span class="oi oi-project" aria-hidden="true"></span> しりとり単語検索
 			</NavLink>
 		</div>
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="typed">
+			<NavLink class="nav-link" href=@Locations.Searching.TD>
 				<span class="oi oi-list-rich" aria-hidden="true"></span> しりバト単語検索
 			</NavLink>
 		</div>
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="safe">
+			<NavLink class="nav-link" href=@Locations.Searching.Safe>
 				<span class="oi oi-heart" aria-hidden="true"></span> 安全単語検索
 			</NavLink>
 		</div>
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="treesearch">
+			<NavLink class="nav-link" href=@Locations.Searching.Group>
 				<span class="oi oi-fork" aria-hidden="true"></span> グループ検索
 			</NavLink>
 		</div>
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="typecheck">
+			<NavLink class="nav-link" href=@Locations.Tools.TypeChecker>
 				<span class="oi oi-magnifying-glass" aria-hidden="true"></span> タイプ判定
 			</NavLink>
 		</div>
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="bestdamage">
+			<NavLink class="nav-link" href=@Locations.Tools.BestDamage>
 				<span class="oi oi-contrast" aria-hidden="true"></span> 最高打点検索
 			</NavLink>
 		</div>
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="calcdamage">
+			<NavLink class="nav-link" href=@Locations.Tools.CalcDamage>
 				<span class="oi oi-calculator" aria-hidden="true"></span> ダメージ計算
 			</NavLink>
 		</div>
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="simulator">
+			<NavLink class="nav-link" href=@Locations.Simulator.Top>
 				<span class="oi oi-puzzle-piece" aria-hidden="true"></span> 簡易シミュレーター
 			</NavLink>
 		</div>
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="rev-simulator">
+			<NavLink class="nav-link" href=@Locations.RevSimulator.Main>
 				<span class="oi oi-layers" aria-hidden="true"></span> 革命シミュレーター
 			</NavLink>
 		</div>
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="fastsearch">
+			<NavLink class="nav-link" href=@Locations.Searching.Fast>
 				<span class="oi oi-media-skip-forward" aria-hidden="true"></span> 高速前方後方一致
 			</NavLink>
 		</div>
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="manualquery">
+			<NavLink class="nav-link" href=@Locations.Tools.ManualQuery>
 				<span class="oi oi-terminal" aria-hidden="true"></span> 手動クエリ
 			</NavLink>
 		</div>
 		@if (AppSettings.VolatileMode)
 		{
 			<div class="nav-item px-3">
-				<NavLink class="nav-link" href="volatilequery">
+				<NavLink class="nav-link" href=@Locations.Tools.VolatileQuery>
 					<span class="oi oi-rss-alt" aria-hidden="true"></span> 揮発性クエリ
 				</NavLink>
 			</div>
@@ -80,46 +80,44 @@
 		@if (AppSettings.IsDebug || AppSettings.IsAdmin)
 		{
 			<div class="nav-item px-3">
-				<NavLink class="nav-link" href="online-menu">
+				<NavLink class="nav-link" href=@Locations.Others.Online>
 					<span class="oi oi-people" aria-hidden="true"></span> 対戦
 				</NavLink>
 			</div>
 		}
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="settings">
+			<NavLink class="nav-link" href=@Locations.Setting>
 				<span class="oi oi-wrench" aria-hidden="true"></span> 設定
 			</NavLink>
 		</div>
 		@if (Words.IsLocal)
 		{
 			<div class="nav-item px-3">
-				<NavLink class="nav-link" href="ldedit" @onclick=GoToLdLoadBtn_Click>
+				<NavLink class="nav-link" href=@Locations.LD.Edit @onclick=GoToLdLoadBtn_Click>
 					<span class="oi oi-data-transfer-upload" aria-hidden="true"></span> ローカル辞書
 				</NavLink>
 			</div>
 		}
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="about">
+			<NavLink class="nav-link" href=@Locations.About>
 				<span class="oi oi-eye" aria-hidden="true"></span> 当サイトについて
 			</NavLink>
 		</div>
 		@if (AppSettings.IsDebug || AppSettings.IsAdmin)
 		{
 			<div class="nav-item px-3">
-				<NavLink class="nav-link" href="debug">
+				<NavLink class="nav-link" href=@Locations.Others.Debug>
 					<span class="oi oi-cog" aria-hidden="true"></span> デバッグ モード
 				</NavLink>
 			</div>
+			<div class="nav-item px-3">
+				<NavLink class="nav-link" href=@Locations.Minigame.Menu>
+					<span class="oi oi-grid-two-up" aria-hidden="true"></span> ミニゲーム
+				</NavLink>
+			</div>
 		}
-		<!--
 		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="minigame">
-				<span class="oi oi-grid-two-up" aria-hidden="true"></span> ミニゲーム
-			</NavLink>
-		</div>
-		-->
-		<div class="nav-item px-3">
-			<NavLink class="nav-link" href="sound-room">
+			<NavLink class="nav-link" href=@Locations.Tools.SoundRoom>
 				<span class="oi oi-musical-note" aria-hidden="true"></span> サウンドルーム
 			</NavLink>
 		</div>
@@ -149,18 +147,18 @@
 		if (Words.IsLite)
 		{
 			if (await JSRuntime.Confirm("完全版の辞書が読み込まれていないため、辞書選択画面に戻ります。よろしいですか？"))
-				NavigationManager.NavigateTo("top", false);
+				NavigationManager.GoToTop();
 
 			return;
 		}
 
-		NavigationManager.NavigateTo("home", false);
+		NavigationManager.GoTo(Locations.Searching.TL);
 	}
 
 	private void GoToLdLoadBtn_Click()
 	{
 		LDLoadComponent.Accepting = true;
 		LDLoadComponent.Editing = true;
-		NavigationManager.NavigateTo("ldedit", false);
+		NavigationManager.GoTo(Locations.LD.Edit);
 	}
 }

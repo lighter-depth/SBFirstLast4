@@ -25,7 +25,7 @@ public static class GameRule
 
 	public static int CalculateScore(int totalWrongCount, double elapsedMilliseconds)
 	{
-		var wrongAttemptsPenalty = totalWrongCount * 100;
+		var wrongAttemptsPenalty = totalWrongCount * 1000;
 		var timePenalty = (int)(elapsedMilliseconds / 10);
 		var score = MaxScore - wrongAttemptsPenalty - timePenalty;
 		return Math.Max(score, 0);

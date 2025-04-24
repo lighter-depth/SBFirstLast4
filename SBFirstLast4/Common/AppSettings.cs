@@ -27,7 +27,17 @@ internal static class AppSettings
 
 	internal static bool BetaMode { get; private set; } = false;
 
-	internal static bool VolatileMode { get; private set; } = false;
+	internal static bool VolatileMode
+	{
+#if VOLATILE_MODE
+		get	=> _volatileMode;
+#else
+		get	=> false;
+#endif
+		private set => _volatileMode = value;
+	}
+
+	private static bool _volatileMode;
 
 	internal static bool IsAdmin { get; private set; } = false;
 

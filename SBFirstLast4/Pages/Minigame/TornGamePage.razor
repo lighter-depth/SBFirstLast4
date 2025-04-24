@@ -1,11 +1,619 @@
 ﻿@page "/torngame"
+@layout NoMenuLayout
+@using System.Diagnostics.CodeAnalysis
 @using SBFirstLast4.Minigames.TornGame
 @namespace SBFirstLast4.Pages
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <PageTitle>@AppTitle.Format("単語判定")</PageTitle>
+
+<link rel="stylesheet" href="css/fonts.css" />
+
+<div class="game-container">
+	<div class="guide-modal-overlay @(IsGuideModalVisible ? "fade-in" : IsInitialLoad ? "" : "fade-out")">
+		<div class="guide-modal @(IsGuideModalVisible ? "slide-up" : IsInitialLoad ? "hidden" : "slide-down")">
+			<div class="guide-modal-content">
+				<h2>あそびかた</h2>
+
+				<div class="guide-rules">
+					<div class="guide-rule">
+						<h3>＜ルール１＞</h3>
+						<p>
+							表示された単語が「４文字のタイプ付き単語」なら、中央の大きな「T」ボタンを優先的にタップします。
+						</p>
+					</div>
+
+					<div class="guide-rule">
+						<h3>＜ルール２＞</h3>
+						<p>
+							４文字のタイプ付き単語でないとき、左右を別々の２文字の単語として見ます。<br />
+							左右の「T(タイプ付き)」「N(タイプなし)」の組み合わせにマッチしたボタンをタップします。
+						</p>
+					</div>
+				</div>
+
+				<button class="guide-modal-close-button @(IsButtonAnimating ? "animate" : "")" @onclick="CloseGuideModal">
+					OK
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="game-header">
+		<div class="header-buttons">
+			<div class="header-button" @onclick=CancelButton_OnClick>
+				<span class="oi oi-x"></span>
+			</div>
+			<div class="header-button" @onclick=GuideButton_OnClick>
+				<span class="oi oi-file"></span>
+			</div>
+		</div>
+		<div class="round-indicator">@CurrentRound/@MaxRound</div>
+	</div>
+	<div class="word-display">
+		<div class="vertical-line"></div>
+		<div class="letter-tiles">
+			<div class="letter-tile">@WordModel.At(0)</div>
+			<div class="letter-tile" style="margin-right: 10px;">@WordModel.At(1)</div>
+			<div class="letter-tile">@WordModel.At(2)</div>
+			<div class="letter-tile">@WordModel.At(3)</div>
+		</div>a
+	</div>
+
+	<div class="button-grid">
+		<button class="quadrant-button top-left-button" @onclick=TNButton_OnClick>
+			<div class="quadrant-label">
+				<div class="quadrant-label-tile">T</div>
+				<div class="quadrant-label-tile">N</div>
+			</div>
+		</button>
+		<button class="quadrant-button top-right-button" @onclick=NTButton_OnClick>
+			<div class="quadrant-label">
+				<div class="quadrant-label-tile">N</div>
+				<div class="quadrant-label-tile">T</div>
+			</div>
+		</button>
+		<button class="quadrant-button bottom-left-button" @onclick=NNButton_OnClick>
+			<div class="quadrant-label">
+				<div class="quadrant-label-tile">N</div>
+				<div class="quadrant-label-tile">N</div>
+			</div>
+		</button>
+		<button class="quadrant-button bottom-right-button" @onclick=TTButton_OnClick>
+			<div class="quadrant-label">
+				<div class="quadrant-label-tile">T</div>
+				<div class="quadrant-label-tile">T</div>
+			</div>
+		</button>
+
+		<button class="center-button" @onclick=TButton_OnClick>T</button>
+	</div>
+	<div class="game-footer"></div>
+</div>
+<style>
+	* {
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0;
+	}
+
+	body, html {
+		height: 100%;
+	}
+
+	.content {
+		padding-top: 0 !important;
+		padding-bottom: 0 !important;
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+	}
+
+	.px-4 {
+		padding-top: 0 !important;
+		padding-bottom: 0 !important;
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+	}
+
+	.game-container {
+		display: flex;
+		flex-direction: column;
+		height: 100vh;
+		background-color: #f9fafb;
+		font-family: 'mplus-1p-regular';
+	}
+
+	.game-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem 1rem;
+		background-color: #333333;
+	}
+
+	.header-buttons {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.header-button {
+		color: white;
+		padding: 0.3rem 1rem;
+		font-size: 0.9rem;
+		cursor: pointer;
+		transition: background-color 0.2s, transform 0.1s;
+	}
+
+		.header-button:active {
+			transform: scale(0.98);
+		}
+
+	.round-indicator {
+		color: white;
+		padding: 0.25rem 0.75rem;
+		font-weight: bold;
+		font-family: 'mplus-1p-regular';
+	}
+
+	.word-display {
+		flex-grow: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: #f5f6f1;
+		position: relative;
+		margin: 4px 3px 8px 3px;
+		border-radius: 25px;
+	}
+
+	.vertical-line {
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 2px;
+		height: 8rem;
+		background-color: #d1d5db;
+	}
+
+	.letter-tiles {
+		display: flex;
+		gap: 0.5rem;
+		z-index: 10;
+	}
+
+	.letter-tile {
+		width: 4.5rem;
+		height: 5.4rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid #e5e7eb;
+		border-radius: 0.5rem;
+		background-color: white;
+		font-size: 2.65rem;
+		font-weight: bold;
+		color: #1f2937;
+		transition: background-color 0.2s;
+		font-family: mplus-1p-bold;
+	}
+
+	.button-grid {
+		height: 50%;
+		position: relative;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: 1fr 1fr;
+		gap: 0.25rem;
+	}
+
+	.quadrant-button {
+		position: relative;
+		border: none;
+		cursor: pointer;
+		transition: opacity 0.2s;
+		background-color: #444444;
+		color: #f5f6f1;
+	}
+
+		.quadrant-button:hover {
+			opacity: 0.9;
+		}
+
+
+	.top-left-button {
+		border-radius: 20px 0 0 0;
+		/* background-color: #dbeafe; */
+		/* color: #1e40af; */
+	}
+
+	.top-right-button {
+		border-radius: 0 20px 0 0;
+		/* background-color: #dcfce7; */
+		/* color: #166534; */
+	}
+
+	.bottom-left-button {
+		/* background-color: #f3e8ff; */
+		/* color: #6b21a8; */
+	}
+
+	.bottom-right-button {
+		/* background-color: #ffedd5; */
+		/* color: #9a3412; */
+	}
+
+	.quadrant-label {
+		position: absolute;
+		display: flex;
+		gap: 0.1rem;
+	}
+
+	.quadrant-label-tile {
+		width: 3rem;
+		height: 3rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: #555555;
+		border-radius: 0.5rem;
+		border: 0px solid #f5f6f1;
+		font-weight: bold;
+		color: #f5f6f1;
+		font-size: 20px;
+	}
+
+	.top-left-button .quadrant-label {
+		top: 1rem;
+		left: 1rem;
+	}
+
+	.top-right-button .quadrant-label {
+		top: 1rem;
+		right: 1rem;
+	}
+
+	.bottom-left-button .quadrant-label {
+		bottom: 1rem;
+		left: 1rem;
+	}
+
+	.bottom-right-button .quadrant-label {
+		bottom: 1rem;
+		right: 1rem;
+	}
+
+	.center-button {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		margin-left: -6rem;
+		margin-top: -6rem;
+		transform-origin: center;
+		width: 12rem;
+		height: 12rem;
+		border-radius: 15%;
+		background-color: #444444;
+		color: white;
+		border: 4px solid #f5f6f1;
+		font-size: 4rem;
+		font-weight: bold;
+		cursor: pointer;
+	}
+
+		.center-button:hover {
+			background-color: #555555;
+		}
+
+	.game-footer {
+		height: 20px;
+		background-color: #444444;
+		margin-top: 3.5px;
+	}
+
+	@@keyframes buttonTransform {
+		0% {
+			transform: scale(1);
+		}
+
+		50% {
+			transform: scale(0.95);
+		}
+
+		100% {
+			transform: scale(1);
+		}
+	}
+
+	@@keyframes tileTransform {
+		0% {
+			transform: scale(1);
+		}
+
+		50% {
+			transform: scale(0.9);
+		}
+
+		100% {
+			transform: scale(1);
+		}
+	}
+
+	.trigger-animation {
+		animation: buttonTransform 0.25s ease-in-out;
+	}
+
+	.letter-tile.animate {
+		animation: tileTransform 0.25s ease-in-out;
+	}
+
+	@@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+
+		to {
+			opacity: 1;
+		}
+	}
+
+	@@keyframes fadeOut {
+		from {
+			opacity: 1;
+		}
+
+		to {
+			opacity: 0;
+		}
+	}
+
+	@@keyframes slideUp {
+		from {
+			transform: translateY(100%);
+		}
+
+		to {
+			transform: translateY(0);
+		}
+	}
+
+	@@keyframes slideDown {
+		from {
+			transform: translateY(0);
+		}
+
+		to {
+			transform: translateY(100%);
+		}
+	}
+
+
+	.guide-modal-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: #444444;
+		z-index: 1000;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+		.guide-modal-overlay.fade-in {
+			animation: fadeIn 0.3s forwards;
+			pointer-events: auto;
+		}
+
+		.guide-modal-overlay.fade-out {
+			animation: fadeOut 0.3s forwards;
+			pointer-events: none;
+		}
+
+	.guide-modal {
+		background-color: white;
+		width: 90%;
+		max-width: 500px;
+		border-radius: 50px;
+		padding: 20px;
+		max-height: 80vh;
+		overflow-y: auto;
+	}
+
+		.guide-modal.hidden {
+			display: none;
+		}
+
+		.guide-modal.slide-up {
+			animation: slideUp 0.4s ease forwards;
+		}
+
+		.guide-modal.slide-down {
+			animation: slideDown 0.4s ease forwards;
+		}
+
+
+	.guide-modal-content {
+		text-align: center;
+	}
+
+		.guide-modal-content h2 {
+			font-family: 'mplus-1p-bold';
+			margin-top: 5px;
+			margin-bottom: 25px;
+		}
+
+	.guide-rules {
+		margin-bottom: 20px;
+	}
+
+	.guide-rule {
+		margin-bottom: 15px;
+		padding: 10px 35px;
+		border-radius: 5px;
+		text-align: center;
+	}
+
+		.guide-rule h3 {
+			margin-bottom: 5px;
+			color: #777777;
+			font-size: 19px;
+			font-family: arial;
+		}
+
+		.guide-rule p {
+			margin-top: 15px;
+			font-size: 17px;
+			font-family: arial;
+		}
+
+	.guide-modal-close-button {
+		background-color: #4475CD;
+		color: white;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 9999px;
+		font-family: 'arial';
+		font-weight: bold;
+		font-size: 21px;
+		cursor: pointer;
+		transition: background-color 0.3s ease;
+		width: 75%;
+	}
+
+		.guide-modal-close-button:hover {
+			background-color: #6495ED;
+		}
+
+		.guide-modal-close-button.animate {
+			animation: buttonTransform 0.3s;
+		}
+</style>
+
+<script>
+	document.querySelectorAll('.quadrant-button, .center-button').forEach(button => {
+		button.addEventListener('mousedown', () => {
+			button.classList.add('trigger-animation');
+
+			button.addEventListener('animationend', () => {
+				button.classList.remove('trigger-animation');
+			}, { once: true });
+
+			document.querySelectorAll('.letter-tile').forEach(tile => {
+				tile.classList.add('animate');
+
+				tile.addEventListener('animationend', () => {
+					tile.classList.remove('animate');
+				}, { once: true });
+			});
+		});
+	});
+</script>
+
 
 @code {
 	private Model? _model;
 
+	private string WordModel = "    ";
+
+	private int CurrentRound = 0;
+
+	private Completion<WordCategory> InputCompletion = new();
+
+	private CancellationTokenSource TokenSource = new();
+
 	private const int MaxRound = 20;
+
+	private bool IsInitialLoad { get; set; } = true;
+
+	private bool IsGuideModalVisible { get; set; }
+
+	private bool IsButtonAnimating { get; set; }
+
+	protected override void OnInitialized()
+	{
+		_model = new(MaxRound, In, Out);
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+			IsInitialLoad = true;
+
+		else if (!IsGuideModalVisible && !IsInitialLoad)
+		{
+			await Task.Delay(300);
+			StateHasChanged();
+		}
+
+		if (_model is null || !firstRender)
+			return;
+
+		try
+		{
+			var result = await _model.RunAsync(TokenSource.Token);
+
+			if (TokenSource.IsCancellationRequested)
+				return;
+
+			await JSRuntime.Alert($"{result.Score} {result.Elapsed}");
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+		}
+	}
+
+	private Task<WordCategory> In() => InputCompletion.Task;
+
+	private async Task Out(string word)
+	{
+		CurrentRound++;
+		WordModel = word;
+		StateHasChanged();
+		await Task.Yield();
+	}
+
+	private void TNButton_OnClick() => InputCompletion.SetResult(WordCategory.TD_TL);
+
+	private void NTButton_OnClick() => InputCompletion.SetResult(WordCategory.TL_TD);
+
+	private void NNButton_OnClick() => InputCompletion.SetResult(WordCategory.TL_TL);
+
+	private void TTButton_OnClick() => InputCompletion.SetResult(WordCategory.TD_TD);
+
+	private void TButton_OnClick() => InputCompletion.SetResult(WordCategory.TD);
+
+	private void OpenGuideModal() => (IsInitialLoad, IsGuideModalVisible) = (false, true);
+
+	private async Task CloseGuideModal()
+	{
+		IsButtonAnimating = true;
+
+		await Task.Delay(150);
+
+		IsGuideModalVisible = false;
+
+		await Task.Delay(10);
+		IsButtonAnimating = false;
+	}
+
+	private void GuideButton_OnClick() => OpenGuideModal();
+
+	private async Task CancelButton_OnClick()
+	{
+		try
+		{
+			TokenSource.Cancel();
+			InputCompletion.SetResult(default);
+		}
+		catch (Exception ex)
+		{
+			await JSRuntime.AlertEx(ex);
+		}
+
+		NavigationManager.GoTo(Locations.Minigame.Menu);
+	}
 }

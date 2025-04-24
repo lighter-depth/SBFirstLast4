@@ -24,7 +24,6 @@
 		padding-top: 10px;
 		text-align: center;
 		font-size: 18px;
-		font-weight: 100;
 		color: black;
 	}
 </style>
@@ -40,7 +39,7 @@
 	{
 		if (!Accepting)
 		{
-			NavigationManager.GoToIndex();
+			NavigationManager.Return();
 			return;
 		}
 
@@ -77,6 +76,6 @@
 		}
 
 		Accepting = false;
-		NavigationManager.NavigateTo("typed", false);
+		NavigationManager.GoTo(Locations.Searching.TD);
 	}
 }

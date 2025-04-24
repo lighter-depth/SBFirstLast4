@@ -180,19 +180,19 @@
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 			return;
 		}
 
 		if (!Words.IsLoadedCorrectly)
 		{
-			NavigationManager.NavigateTo("top", false);
+			NavigationManager.GoToTop();
 			return;
 		}
 
 
 		if (await AppSettings.ShouldReturn(Http))
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -209,7 +209,7 @@
 				if (!success)
 				{
 					await JSRuntime.Alert($"{errorMsg} Query: {Query}");
-					NavigationManager.NavigateTo("treesearch", false);
+					NavigationManager.GoTo(Locations.Searching.Group);
 					return;
 				}
 
@@ -234,7 +234,7 @@
 			{
 				await JSRuntime.AlertEx(ex);
 				await JSRuntime.Alert(Query);
-				NavigationManager.NavigateTo("treesearch", false);
+				NavigationManager.GoTo(Locations.Searching.Group);
 			}
 		}
 	}
@@ -260,6 +260,6 @@
 	{
 		if (IsTyped) DownloadConfig.DataListWord = TypedData;
 		else DownloadConfig.DataListStr = TypelessData;
-		NavigationManager.NavigateTo("download-config");
+		NavigationManager.GoTo(Locations.Searching.Download);
 	}
 }

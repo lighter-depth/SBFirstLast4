@@ -197,7 +197,6 @@ else
 		padding-top: 10px;
 		text-align: center;
 		font-size: 18px;
-		font-weight: 100;
 		color: black;
 	}
 
@@ -331,11 +330,11 @@ else
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 			return;
 		}
 		if (!Words.IsLoadedCorrectly)
-			NavigationManager.NavigateTo("top", false);
+			NavigationManager.GoToTop();
 	}
 	private async void DownloadFile()
 	{

@@ -184,7 +184,6 @@
 		padding-top: 10px;
 		text-align: center;
 		font-size: 18px;
-		font-weight: 100;
 		color: black;
 	}
 </style>
@@ -208,7 +207,7 @@
 	{
 		if (!Accepting)
 		{
-			NavigationManager.GoToIndex();
+			NavigationManager.Return();
 			return;
 		}
 
@@ -296,7 +295,7 @@
 
 		var fileNames = ListFiles.Select(x => x.Name).Except(FilesToRemove).Take(5).StringJoin(", ");
 		await Server.Log(StatusTypes.LDLoad, fileNames);
-		NavigationManager.NavigateTo("ldloading", false);
+		NavigationManager.GoTo(Locations.LD.Loading);
 	}
 
 	private string BackgroundColor(bool isEnabled) => isEnabled ? "darkgray" : "#0056b3";

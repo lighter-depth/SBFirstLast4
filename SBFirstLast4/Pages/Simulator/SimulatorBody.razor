@@ -1210,7 +1210,7 @@
 
 	private List<AnnotatedString> BattleLogItems = [];
 
-	private TaskCompletionSource<Order> OrderCompletion = new();
+	private Completion<Order> OrderCompletion = new();
 
 	private string MessageText = string.Empty;
 	private string WaitMessage = string.Empty;
@@ -1264,11 +1264,11 @@
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 			return;
 		}
 		if (!Words.IsLoadedCorrectly)
-			NavigationManager.NavigateTo("top", false);
+			NavigationManager.GoToTop();
 
 		Battle = new
 		(
@@ -1293,11 +1293,7 @@
 		await Battle.Run();
 	}
 
-	private Task<Order> In()
-	{
-		OrderCompletion = new();
-		return OrderCompletion.Task;
-	}
+	private Task<Order> In() => OrderCompletion.Task;
 
 	private async Task Out(IEnumerable<AnnotatedString> list)
 	{
@@ -1385,7 +1381,7 @@
 			var order = await JSRuntime.GetElementValueById<string>("input");
 			await JSRuntime.ClearElementValueById("input");
 			Preview = Word.Default;
-			OrderCompletion.TrySetResult(Order.Parse(order.Trim().Split(), Battle));
+			OrderCompletion.SetResult(Order.Parse(order.Trim().Split(), Battle));
 		}
 		catch (Exception ex)
 		{
@@ -1814,7 +1810,7 @@
 			return;
 
 		await AudioManager.CancelAudio();
-		NavigationManager.NavigateTo("simulator");
+		NavigationManager.GoTo(Locations.Simulator.Top);
 	}
 
 	private bool IsCurrentSkill(string abilityName) => SkillSelector switch
@@ -1840,7 +1836,7 @@
 	private void OrderChangeAbility(string abilityName)
 	{
 		var selector = SkillSelector != default ? SkillSelector : Battle.IsPlayer1sTurn ? PlayerSelector.Player1 : PlayerSelector.Player2;
-		OrderCompletion.TrySetResult(new(OrderType.Change, abilityName, selector));
+		OrderCompletion.SetResult(new(OrderType.Change, abilityName, selector));
 	}
 
 	private int SkillRemain() => SkillSelector switch

@@ -286,7 +286,7 @@
 			if (!NavigationManager.Uri.StartsWith("https://lighter-depth.github.io") && !AppSettings.IsAdmin)
 			{
 				await JSRuntime.Alert("不明な環境での起動を確認しました。ロギングを無効にしてください。");
-				NavigationManager.NavigateTo(string.Empty, true);
+				NavigationManager.ForceReload();
 				return;
 			}
 
@@ -311,7 +311,7 @@
 
 				await Server.Log(StatusTypes.Login);
 
-				NavigationManager.NavigateTo("top");
+				NavigationManager.GoToTop();
 				return;
 			}
 			IsLoading = false;
@@ -365,7 +365,7 @@
 
 		await Server.Log(StatusTypes.Register);
 
-		NavigationManager.NavigateTo("top");
+		NavigationManager.GoToTop();
 	}
 
 
@@ -380,6 +380,6 @@
 	private void AuthorizeBtn_Click()
 	{
 		AuthPage.Accepting = true;
-		NavigationManager.NavigateTo("auth", false);
+		NavigationManager.GoTo(Locations.Auth);
 	}
 }

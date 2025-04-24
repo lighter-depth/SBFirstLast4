@@ -48,6 +48,18 @@
 				<p class="card-text">ローカル環境から、任意の単語を<br>読み込みます。</p>
 			</div>
 		</div>
+		@if (AppSettings.IsDebug || AppSettings.IsAdmin)
+		{
+			<div class="card" @onclick="DebugDictionaryBtn_Click">
+				<div class="card-body">
+					<button class="btn btn-debug" @onclick="DebugDictionaryBtn_Click">
+						<i class="oi oi-cog"></i>
+						デバッグ辞書
+					</button>
+					<p class="card-text">空の辞書を読み込みます。</p>
+				</div>
+			</div>
+		}
 	</div>
 </div>
 
@@ -136,6 +148,13 @@
 		box-shadow: none;
 	}
 
+	.btn-debug, .btn-debug:hover, .btn-debug:focus, .btn-debug:active:focus {
+		background-color: #8C8C8C;
+		color: white;
+		border-color: transparent;
+		box-shadow: none;
+	}
+
 	i {
 		font-size: 40px;
 		margin-right: 10px;
@@ -180,7 +199,7 @@
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 			return;
 		}
 		await Preprocessor.Initialize(Http);
@@ -200,7 +219,7 @@
 		StateHasChanged();
 		await Task.Delay(1);
 		await LoadDictionaryAsync(DictionaryInitializationToken.Lite);
-		NavigationManager.NavigateTo("typed", false);
+		NavigationManager.GoTo(Locations.Searching.TD);
 	}
 
 	private async Task FullDictionaryBtn_Click()
@@ -210,14 +229,20 @@
 		StateHasChanged();
 		await Task.Delay(1);
 		await LoadDictionaryAsync(DictionaryInitializationToken.Full);
-		NavigationManager.NavigateTo("home", false);
+		NavigationManager.GoTo(Locations.Searching.TL);
 	}
 
 	private void LocalDictionaryBtn_Click()
 	{
 		Words.IsLocal = true;
 		LDLoadComponent.Accepting = true;
-		NavigationManager.NavigateTo("ldload", false);
+		NavigationManager.GoTo(Locations.LD.Load);
+	}
+
+	private void DebugDictionaryBtn_Click()
+	{
+		Words.IsLocal = true;
+		NavigationManager.GoTo(Locations.Minigame.Menu);
 	}
 
 	private async Task CacheBtn_Click()
@@ -227,7 +252,7 @@
 		await LocalStorage.ClearAsync();
 		await JSRuntime.InvokeVoidAsync("alert", "キャッシュを消去しました。");
 
-		NavigationManager.NavigateTo("");
+		NavigationManager.Return();
 	}
 
 

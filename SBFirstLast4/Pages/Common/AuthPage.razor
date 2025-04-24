@@ -106,7 +106,7 @@
 	protected override void OnInitialized()
 	{
 		if (!Accepting)
-			NavigationManager.GoToIndex();
+			NavigationManager.Return();
 	}
 
 	public void Dispose() => Accepting = false;
@@ -145,7 +145,7 @@
 	{
 		AppSettings.IsAccepted = true;
 		await LocalStorage.SetItemAsync(LSKeys.CachedAuthKey, Model.Password);
-		NavigationManager.GoToIndex();
+		NavigationManager.Return();
 	}
 
 	private async Task CacheBtn_Click()

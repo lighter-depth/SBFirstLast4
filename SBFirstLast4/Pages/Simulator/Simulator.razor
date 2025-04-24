@@ -145,7 +145,6 @@
 		padding-top: 10px;
 		text-align: center;
 		font-size: 18px;
-		font-weight: 100;
 		color: black;
 	}
 
@@ -182,11 +181,11 @@
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 			return;
 		}
 		if (!Words.IsLoadedCorrectly)
-			NavigationManager.NavigateTo("top", false);
+			NavigationManager.GoToTop();
 	}
 
 	private async Task SetEquipment(PlayerSelector selector)
@@ -194,7 +193,7 @@
 		await AudioManager.PlayAudio("pera");
 		SimulatorSkill.Selector = selector;
 		SimulatorSkill.CurrentAbility = selector == PlayerSelector.Player1 ? Player1Ability : Player2Ability;
-		NavigationManager.NavigateTo("simulator-skill");
+		NavigationManager.GoTo(Locations.Simulator.Skill);
 	}
 
 	private async Task StartButton_Click()
@@ -210,6 +209,6 @@
 				Last = Player2Ability.ToString()
 			}
 		);
-		NavigationManager.NavigateTo("simulator-body");
+		NavigationManager.GoTo(Locations.Simulator.Main);
 	}
 }

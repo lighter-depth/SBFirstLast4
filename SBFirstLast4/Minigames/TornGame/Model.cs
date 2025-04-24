@@ -1,16 +1,14 @@
 ﻿using System.Diagnostics;
+using In = SBFirstLast4.Minigames.In<SBFirstLast4.Minigames.TornGame.WordCategory>;
+using Out = SBFirstLast4.Minigames.Out<string>;
 
 namespace SBFirstLast4.Minigames.TornGame;
 
-public sealed class Model(int maxRound, In input, Out output)
+public sealed class Model(int maxRound, In input, Out output) : ModelBase<WordCategory, string, GameResult>(input, output)
 {
 	private readonly int _maxRound = maxRound;
 
-	private readonly In _input = input;
-
-	private readonly Out _output = output;
-
-	public async Task<GameResult> RunAsync()
+	public override async Task<GameResult> RunAsync(CancellationToken token)
 	{
 		var totalWrongCount = 0;
 
@@ -18,7 +16,10 @@ public sealed class Model(int maxRound, In input, Out output)
 
 		stopwatch.Start();
 		for (var i = 0; i < _maxRound; i++)
-			totalWrongCount += await ExecuteRound(_input, _output);
+			totalWrongCount += await ExecuteRound(_input, _output, token);
+
+		if (token.IsCancellationRequested)
+			return default;
 
 		stopwatch.Stop();
 
@@ -29,15 +30,21 @@ public sealed class Model(int maxRound, In input, Out output)
 		return new(score, elapsed);
 	}
 
-	private static async Task<int> ExecuteRound(In input, Out output)
+	private static async Task<int> ExecuteRound(In input, Out output, CancellationToken token)
 	{
 		var (category, word) = GameRule.GenerateWord();
+
+		if (token.IsCancellationRequested)
+			return default;
 
 		await output(word);
 
 		var wrongCount = 0;
 		while (true)
 		{
+			if (token.IsCancellationRequested)
+				break;
+
 			if (category == await input())
 				break;
 
@@ -47,7 +54,3 @@ public sealed class Model(int maxRound, In input, Out output)
 		return wrongCount;
 	}
 }
-
-public delegate Task<WordCategory> In();
-
-public delegate Task Out(string str);

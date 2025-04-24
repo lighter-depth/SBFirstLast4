@@ -15,7 +15,7 @@
 	protected override void OnInitialized()
 	{
 		if (!AppSettings.IsDebug && !AppSettings.IsAdmin)
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 	}
 
 	private async Task DebugBtn_OnClick()

@@ -5,7 +5,7 @@ internal static class StatusTemplate
 	internal static StatusTemplate<T> Create<T>(string type, T order) => new(type, order);
 }
 
-public class StatusTemplate<T>(string type, T order)
+public sealed class StatusTemplate<T>(string type, T order)
 {
 	public string Type { get; } = type;
 

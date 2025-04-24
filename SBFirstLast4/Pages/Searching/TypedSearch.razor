@@ -298,7 +298,6 @@
 		padding-top: 10px;
 		text-align: center;
 		font-size: 18px;
-		font-weight: 100;
 		color: black;
 	}
 
@@ -447,17 +446,17 @@
 	{
 		if (!AppSettings.IsLoggedIn)
 		{
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 			return;
 		}
 		if (!Words.IsLoadedCorrectly)
 		{
-			NavigationManager.NavigateTo("top", false);
+			NavigationManager.GoToTop();
 			return;
 		}
 
 		if (await AppSettings.ShouldReturn(Http))
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 	}
 	private async Task SearchButton_Click()
 	{
@@ -591,7 +590,7 @@
 		);
 
 
-		NavigationManager.NavigateTo("result");
+		NavigationManager.GoTo(Locations.Searching.Result);
 	}
 
 	private (WordType? Type1, WordType? Type2) GetTypes()

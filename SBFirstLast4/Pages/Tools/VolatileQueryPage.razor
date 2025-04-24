@@ -288,13 +288,13 @@
 
 		if (!AppSettings.IsLoggedIn || !AppSettings.VolatileMode)
 		{
-			NavigationManager.NavigateTo("", false);
+			NavigationManager.Return();
 			return;
 		}
 
 		if (!Words.IsLoadedCorrectly)
 		{
-			NavigationManager.NavigateTo("top", false);
+			NavigationManager.GoToTop();
 			return;
 		}
 
@@ -348,7 +348,7 @@
 
 	private async Task InitUserName()
 	{
-		static int GetHashValue(string hashCode) => Math.Abs(hashCode.Take(HashLength).StringJoin().IntParse());
+		static int GetHashValue(string hashCode) => Math.Abs(hashCode.Take(HashLength).StringJoin().Parse<int>());
 		try
 		{
 			var guidHash = GetHashValue(Utils.Hash($"{AppSettings.UserName}{AppSettings.Guid}"));
