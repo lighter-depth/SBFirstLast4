@@ -57,9 +57,13 @@ internal static class AppSettings
 
 	private static string CachedAuthKey { get; set; } = string.Empty;
 
+	internal static bool IsIllegalLogin => SpeculateIllegalLogin(Hash) || SpeculateIllegalLogin(V4) || SpeculateIllegalLogin(V6);
+
 	private const string IllegalLogin = "ILLEGAL_LOGIN";
 
-	internal static bool IsIllegalLogin => Hash is IllegalLogin || V4 is IllegalLogin || V6 is IllegalLogin;
+	private const string UnknownHash = "UNKNOWN_HASH";
+
+	private const string UnknownHashLegacy = "UNKOWN_HASH";
 
 	internal static async Task SetSortResult(ILocalStorageService localStorage, bool value)
 	{
@@ -353,6 +357,10 @@ internal static class AppSettings
 			await jsRuntime.AlertEx(ex);
 		}
 	}
+
+
+	private static bool SpeculateIllegalLogin(string str)
+		=> str is IllegalLogin or UnknownHash or UnknownHashLegacy;
 
 
 	internal static bool SkipFlag { get; private set; } =
