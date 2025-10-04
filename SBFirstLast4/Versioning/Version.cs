@@ -6,6 +6,7 @@ internal static class VersionHistory
 
 	internal static readonly (Version Version, string[] Changes)[] Versions =
 	[
+		(new(15, 0, 6), ["とくせいを「いかすい」にしている時に、医療タイプで回復できないことがある問題の修正"]),
 		(new(15, 0, 5), ["ログイン時の認証システムを一部変更"]),
 		(new(15, 0, 4), ["「設定」ページにユーザー情報を確認する機能を追加"]),
 		(new(15, 0, 3), ["小規模な不具合の修正"]),

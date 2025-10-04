@@ -339,7 +339,7 @@ internal sealed class Ikasui : Ability
 			hc.CanHeal = true;
 			return;
 		}
-		hc.CanHeal = hc.Actor.CureCountRemain < Player.MaxCureCount;
+		hc.CanHeal = hc.Actor.CureCountRemain > 0;
 	}
 	public override string ToString() => "いかすい";
 }
